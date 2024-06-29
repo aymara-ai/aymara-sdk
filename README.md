@@ -1,1 +1,2 @@
-# aymara-sdk
+# aymara-ai
+Public-facing SDK repo.
