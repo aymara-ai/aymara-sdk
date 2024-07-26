@@ -12,9 +12,9 @@ import pandas as pd
 from tqdm.auto import tqdm
 from openai import AzureOpenAI, OpenAI
 
-from student import OpenAIStudent, GeminiStudent, StabilityStudent, HomeDepotCanadaStudent
-import helper
-import api
+from sdk.classes.student import OpenAIStudent, GeminiStudent, StabilityStudent, HomeDepotCanadaStudent
+import sdk.classes.helper as helper
+import sdk.classes.api as api
 
 
 class SafetyTest:

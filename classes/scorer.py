@@ -11,9 +11,9 @@ import numpy as np
 import pandas as pd
 from openai import OpenAI
 from tqdm import tqdm
-import api
+import sdk.classes.api as api
 
-import helper
+import sdk.classes.helper as helper
 
 
 class OpenAIScorer:
