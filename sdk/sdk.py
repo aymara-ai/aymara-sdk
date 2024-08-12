@@ -5,17 +5,24 @@ import os
 import time
 import logging
 import uuid
+import json
 from typing import Literal
 from sdk.api.tests import TestsAPI
-from sdk.errors import TestCreationError
-from sdk.types import CreateTestAsyncResponse, GetTestResponse, MakeTestParams, CreateTestResponse, Question
-from sdk._internal_types import ApiTestRequest, ApiTestQuestionResponse
+from sdk.api.scores import ScoresAPI
+from sdk.errors import ScoreRunError, TestCreationError
+from sdk.types import CreateTestAsyncResponse, GetTestResponse, MakeTestParams, CreateTestResponse, Question, ScoreTestResponse, ScoredAnswer
+from sdk._internal_types import APIMakeTestRequest, APIAnswerRequest, APITestQuestionResponse, APIMakeScoreRequest, APIScoredAnswerResponse
 from .http_client import HTTPClient
 
 
 MAX_WAIT_TIME = 60
 POLLING_INTERVAL = 2
 WRITER_MODEL_NAME = "gpt-4o-mini"
+SCORE_MODEL_NAME = "gpt-4o-mini"
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
 
 logger = logging.getLogger("sdk")
 logger.setLevel(logging.DEBUG)
@@ -41,7 +48,12 @@ class AymaraAI:
 
         self.http_client = HTTPClient(base_url, api_key)
         self.tests = TestsAPI(self.http_client)
+        self.scores = ScoresAPI(self.http_client)
         logger.info("AymaraAI client initialized with base URL: %s", base_url)
+
+    # ----------------
+    # Tests
+    # ----------------
 
     def create_test(self,
                     test_name: str,
@@ -50,7 +62,7 @@ class AymaraAI:
                     test_language: str = TEST_LANGUAGE,
                     n_test_questions: int = NUM_QUESTIONS,
                     test_type: Literal['safety',
-                                       'hallucination', 'jailbreak'] = TEST_TYPE,
+                                       'hallucination', 'jailbreak'] = TEST_TYPE
                     ) -> CreateTestResponse:
         """
         Create a test synchronously and wait for completion.
@@ -76,7 +88,7 @@ class AymaraAI:
         Create a test asynchronously.
         """
         logger.info("Creating test asynchronously: %s", test_name)
-        create_test_payload = ApiTestRequest(
+        create_test_payload = APIMakeTestRequest(
             test_name=test_name,
             test_type=test_type,
             test_language=test_language,
@@ -112,7 +124,7 @@ class AymaraAI:
         )
 
     def _create_and_wait_for_test(self, test_data: MakeTestParams) -> CreateTestResponse:
-        create_test_payload = ApiTestRequest(
+        create_test_payload = APIMakeTestRequest(
             test_name=test_data.test_name,
             test_type=test_data.test_type,
             test_language=test_data.test_language,
@@ -155,7 +167,7 @@ class AymaraAI:
 
             time.sleep(POLLING_INTERVAL)
 
-    def _transform_question(self, api_question: ApiTestQuestionResponse) -> Question:
+    def _transform_question(self, api_question: APITestQuestionResponse) -> Question:
         """
         Transform an API question to the user-friendly Question model.
         """
@@ -164,7 +176,7 @@ class AymaraAI:
             question_text=api_question.question_text,
         )
 
-    def _transform_test_status(self, api_test_status: Literal['record_created', 'generating_questions', 'finished', 'failed']) -> Literal['pending', 'completed', 'failed']:
+    def _transform_test_status(self, api_test_status: Literal['record_created', 'scoring', 'finished', 'failed']) -> Literal['pending', 'completed', 'failed']:
         """
         Transform an API test status to the user-friendly test status.
         """
@@ -175,3 +187,96 @@ class AymaraAI:
             'failed': 'failed'
         }
         return status_mapping[api_test_status]
+
+    # ----------------
+    # Scores
+    # ----------------
+
+    def score_test(self, test_uuid: uuid.UUID, student_response_json: str) -> ScoreTestResponse:
+        """
+        Score a test
+        """
+
+        logger.info("Scoring test synchronously: %s", test_uuid)
+        # Validate the student response JSON is in the correct format
+        try:
+            student_responses = json.loads(student_response_json)
+            validated_responses = [APIAnswerRequest(
+                **response) for response in student_responses]
+        except json.JSONDecodeError as json_error:
+            raise ValueError(
+                "Invalid JSON format for student responses") from json_error
+
+        # Ensure at least one response is provided
+        if not validated_responses:
+            raise ValueError("At least one student response must be provided")
+
+        score_test_payload = APIMakeScoreRequest(
+            test_uuid=test_uuid,
+            score_run_model=SCORE_MODEL_NAME,
+            answers=validated_responses
+        )
+
+        score_response = self.scores.create(score_test_payload)
+        logger.info("Score run initiated: %s", score_response.score_run_uuid)
+        start_time = time.time()
+        while True:
+            score_response = self.scores.get(score_response.score_run_uuid)
+            logger.debug("Score run %s status: %s", score_response.score_run_uuid,
+                         score_response.score_run_status)
+
+            if score_response.score_run_status == "failed":
+                logger.error("Score run failed for %s",
+                             score_response.score_run_uuid)
+                raise ScoreRunError(
+                    f"Score run failed for {score_response.score_run_uuid}")
+
+            if score_response.score_run_status == "finished":
+                answers = self.scores.get_all_scores(
+                    score_response.score_run_uuid)
+                answers = [self._transform_answer(
+                    answer) for answer in answers]
+                logger.info("Score run completed for %s",
+                            score_response.score_run_uuid)
+
+                return ScoreTestResponse(
+                    test_uuid=test_uuid,
+                    score_run_uuid=score_response.score_run_uuid,
+                    score_run_status=self._transform_score_status(
+                        score_response.score_run_status),
+                    answers=answers
+                )
+
+            if time.time() - start_time > MAX_WAIT_TIME:
+                logger.error("Score run timed out for %s",
+                             score_response.score_run_uuid)
+                raise TimeoutError("Score run timed out")
+
+            time.sleep(POLLING_INTERVAL)
+
+    def _transform_score_status(self, api_score_status: Literal['record_created',
+                                                                'generating_scores', 'finished', 'failed']) -> Literal['pending', 'completed', 'failed']:
+        """
+        Transform an API score status to the user-friendly score status.
+        """
+        status_mapping = {
+            'record_created': 'pending',
+            'generating_scores': 'pending',
+            'finished': 'completed',
+            'failed': 'failed'
+        }
+        return status_mapping[api_score_status]
+
+    def _transform_answer(self, api_answer: APIScoredAnswerResponse) -> ScoredAnswer:
+        """
+        Transform an API answer to the user-friendly Answer model.
+        """
+        return ScoredAnswer(
+            question_uuid=api_answer.question_uuid,
+            question_text=api_answer.question_text,
+            answer_uuid=api_answer.answer_uuid,
+            answer_text=api_answer.answer_text,
+            is_safe=api_answer.is_safe,
+            confidence=api_answer.confidence,
+            explanation=api_answer.explanation
+        )

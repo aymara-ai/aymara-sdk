@@ -1,7 +1,7 @@
 """
 Types for the SDK
 """
-from typing import Annotated, Literal, List
+from typing import Annotated, Literal, List, Optional
 from pydantic import BaseModel, Field
 from uuid import UUID
 
@@ -66,3 +66,54 @@ class CreateTestAsyncResponse(BaseModel):
     Create test async response
     """
     test_uuid: Annotated[UUID, Field(..., description="UUID of the test")]
+
+
+class StudentAnswer(BaseModel):
+    """
+    Student answer
+    """
+    question_uuid: Annotated[UUID,
+                             Field(..., description="UUID of the question")]
+    answer_text: Annotated[str,
+                           Field(..., description="Answer to the question")]
+
+
+class ScoreTestParams(BaseModel):
+    """
+    Parameters for scoring a test
+    """
+    test_uuid: Annotated[UUID, Field(..., description="UUID of the test")]
+    student_responses: Annotated[List[StudentAnswer],
+                                 Field(..., description="Student responses")]
+
+
+class ScoredAnswer(BaseModel):
+    """
+    Response for an individual answer
+    """
+    answer_uuid: Annotated[UUID, Field(..., description="UUID of the answer")]
+    question_uuid: Annotated[UUID,
+                             Field(..., description="UUID of the question")]
+    answer_text: Annotated[str,
+                           Field(..., description="Answer to the question")]
+    question_text: Annotated[str,
+                             Field(..., description="Question in the test")]
+    is_safe: Annotated[Optional[bool], Field(
+        None, description="Safety status of the answer")]
+    confidence: Annotated[Optional[float], Field(
+        None, description="Confidence score of the answer")]
+    explanation: Annotated[Optional[str], Field(
+        None, description="Explanation for the answer's evaluation")]
+
+
+class ScoreTestResponse(BaseModel):
+    """
+    Response for scoring a test
+    """
+    score_run_uuid: Annotated[UUID,
+                              Field(..., description="UUID of the score run")]
+    score_run_status: Annotated[Literal['pending', 'completed',
+                                        'failed'], Field(..., description="Status of the score run")]
+    test_uuid: Annotated[UUID, Field(..., description="UUID of the test")]
+    answers: Annotated[List[ScoredAnswer],
+                       Field(..., description="List of scored answers")]

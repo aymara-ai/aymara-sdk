@@ -1,7 +1,11 @@
+"""Aymara AI Python SDK."""
 from setuptools import setup, find_packages
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
+
+with open("requirements.txt", "r", encoding="utf-8") as fh:
+    install_requires = fh.read().splitlines()
 
 setup(
     name="aymara-ai",
@@ -11,20 +15,7 @@ setup(
     description="A Python SDK for using Ayamra to test your AI alignment.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    packages=find_packages(exclude=["tests", "examples"]),
+    packages=find_packages(exclude=["tests"]),
     python_requires=">=3.7",
-    install_requires=[
-        "pydantic>=2.6.1",
-        "requests>=2.28.1",
-    ],
-    extras_require={
-        "dev": [
-            "pytest>=6.0.0",
-            "pytest-cov>=2.10.0",
-            "black>=20.8b1",
-            "isort>=5.7.0",
-            "mypy>=0.800",
-            "python-dotenv>=1.0.1",
-        ],
-    },
+    install_requires=install_requires,
 )

@@ -1,3 +1,6 @@
+"""
+Internal types for the SDK
+"""
 import uuid
 from datetime import datetime
 from typing import List, Optional, Literal
@@ -5,7 +8,36 @@ from typing import List, Optional, Literal
 from pydantic import BaseModel
 
 
-class ApiTestQuestionResponse(BaseModel):
+class APIPaginationInfo(BaseModel):
+    """
+    Pagination information
+    """
+    limit: int
+    has_next: bool
+    next_cursor: Optional[uuid.UUID] = None
+
+
+class APIMakeTestRequest(BaseModel):
+    """
+    Make test request
+    """
+    test_name: str
+    test_type: Literal['safety', 'hallucination', 'jailbreak']
+    test_language: str
+    n_test_questions: int
+    writer_model_name: str
+    student_description: str
+    test_policy: str
+
+
+class APIMakeTestResponse(BaseModel):
+    """
+    Make test response
+    """
+    test_uuid: uuid.UUID
+
+
+class APITestQuestionResponse(BaseModel):
     """
     Question response
     """
@@ -16,19 +48,9 @@ class ApiTestQuestionResponse(BaseModel):
     updated_at: datetime
 
 
-class ApiPaginationInfo(BaseModel):
+class APIGetTestResponse(BaseModel):
     """
-    Pagination information
-    """
-    page: int
-    page_size: int
-    total_questions: int
-    total_pages: int
-
-
-class ApiTestResponse(BaseModel):
-    """
-    Test response
+    Get test response
     """
     test_uuid: uuid.UUID
     test_status: Literal['record_created',
@@ -41,26 +63,60 @@ class ApiTestResponse(BaseModel):
     writer_model_name: str
     created_at: datetime
     updated_at: datetime
-    questions: Optional[List[ApiTestQuestionResponse]] = None
-    pagination: Optional[ApiPaginationInfo] = None
+    questions: Optional[List[APITestQuestionResponse]] = None
+    pagination: APIPaginationInfo
     message: Optional[str] = None
 
 
-class ApiTestRequest(BaseModel):
+class APIMakeScoreResponse(BaseModel):
     """
-    Test request
+    Make score response
     """
-    test_name: str
-    test_type: Literal['safety', 'hallucination', 'jailbreak']
-    test_language: str
-    n_test_questions: int
-    writer_model_name: str
-    student_description: str
-    test_policy: str
+    score_run_uuid: uuid.UUID
 
 
-class ApiCreateTestResponse(BaseModel):
+class APIAnswerRequest(BaseModel):
     """
-    Create test response
+    Answer request
+    """
+    question_uuid: uuid.UUID
+    answer_text: str
+
+
+class APIMakeScoreRequest(BaseModel):
+    """
+    Make score request
     """
     test_uuid: uuid.UUID
+    score_run_model: str
+    answers: List[APIAnswerRequest]
+
+
+class APIScoredAnswerResponse(BaseModel):
+    """
+    Answer response within the score response
+    """
+    answer_uuid: uuid.UUID
+    answer_text: str
+    question_uuid: uuid.UUID
+    question_text: str
+    test_uuid: uuid.UUID
+    score_run_uuid: uuid.UUID
+    is_safe: Optional[bool] = None
+    confidence: Optional[float] = None
+    explanation: Optional[str] = None
+
+
+class APIGetScoreResponse(BaseModel):
+    """
+    Get score response
+    """
+    score_run_uuid: uuid.UUID
+    score_run_status: Literal['record_created',
+                              'scoring', 'finished', 'failed']
+    test_uuid: uuid.UUID
+    score_run_model: str
+    created_at: datetime
+    updated_at: datetime
+    answers: List[APIScoredAnswerResponse]
+    pagination: APIPaginationInfo
