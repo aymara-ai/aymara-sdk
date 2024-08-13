@@ -1,3 +1,8 @@
+"""
+This is a simple example of how to use the AymaraAI SDK asynchronously to create a test and get the questions. 
+This example does not wait for the test to be created and the questions to be generated before getting the answers from the student. 
+It also does not wait for the answers to be scored before printing the results.
+"""
 import logging
 import json
 import asyncio

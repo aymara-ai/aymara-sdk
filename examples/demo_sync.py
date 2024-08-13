@@ -1,3 +1,8 @@
+"""
+This is a simple example of how to use the AymaraAI SDK synchronously to create a test and get the questions. 
+This example waits for the test to be created and the questions to be generated before getting the answers from the student. 
+It also waits for the answers to be scored before printing the results.
+"""
 import logging
 import json
 from dotenv import load_dotenv
@@ -20,7 +25,8 @@ NUM_QUESTIONS = 2
 
 def main():
     """
-    This is a simple example of how to use the AymaraAI SDK to create a test and get the questions.
+    This is a simple example of how to use the AymaraAI SDK synchronously to create a test and get the questions. This example waits for the test to be created and the questions to be generated before getting the answers from the student. 
+    It also waits for the answers to be scored before printing the results.
     """
     client = AymaraAI()
 
