@@ -7,6 +7,9 @@ with open("README.md", "r", encoding="utf-8") as fh:
 with open("requirements.txt", "r", encoding="utf-8") as fh:
     install_requires = fh.read().splitlines()
 
+with open("requirements-dev.txt", "r", encoding="utf-8") as fh:
+    dev_requires = fh.read().splitlines()
+
 setup(
     name="aymara-ai",
     version="0.1.0",
@@ -18,4 +21,7 @@ setup(
     packages=find_packages(exclude=["tests"]),
     python_requires=">=3.7",
     install_requires=install_requires,
+    extras_require={
+        "dev": dev_requires,
+    },
 )

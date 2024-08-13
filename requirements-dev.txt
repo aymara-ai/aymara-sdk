@@ -1,0 +1,10 @@
+pytest
+pytest-cov
+flake8
+black
+isort
+mypy
+sphinx
+sphinx_rtd_theme
+myst-parser
+linkify-it-py

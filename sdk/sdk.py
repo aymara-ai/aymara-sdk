@@ -37,6 +37,11 @@ TEST_LANGUAGE = "en"
 class AymaraAI:
     """
     Aymara AI SDK Client
+
+    :param api_key: API key for authenticating with the Aymara AI API.
+    :type api_key: str, optional
+    :param base_url: Base URL for the Aymara AI API, defaults to "https://api.aymara.ai".
+    :type base_url: str, optional
     """
 
     def __init__(self, api_key: str | None = None,
@@ -53,19 +58,47 @@ class AymaraAI:
         logger.info("AymaraAI client initialized with base URL: %s", base_url)
 
     def __enter__(self):
-        """Enable the AymaraAI to be used as a context manager for synchronous operations."""
+        """
+        Enable the AymaraAI to be used as a context manager for synchronous operations.
+
+        :return: The AymaraAI client instance.
+        :rtype: AymaraAI
+        """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Ensure the synchronous session is closed when exiting the context."""
+        """
+        Ensure the synchronous session is closed when exiting the context.
+
+        :param exc_type: Exception type.
+        :type exc_type: type
+        :param exc_val: Exception value.
+        :type exc_val: Exception
+        :param exc_tb: Exception traceback.
+        :type exc_tb: traceback
+        """
         self.http_client.close()
 
     async def __aenter__(self):
-        """Enable the AymaraAI to be used as an async context manager for asynchronous operations."""
+        """
+        Enable the AymaraAI to be used as an async context manager for asynchronous operations.
+
+        :return: The AymaraAI client instance.
+        :rtype: AymaraAI
+        """
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Ensure the asynchronous session is closed when exiting the async context."""
+        """
+        Ensure the asynchronous session is closed when exiting the async context.
+
+        :param exc_type: Exception type.
+        :type exc_type: type
+        :param exc_val: Exception value.
+        :type exc_val: Exception
+        :param exc_tb: Exception traceback.
+        :type exc_tb: traceback
+        """
         await self.http_client.aclose()
 
     # ----------------
@@ -74,6 +107,24 @@ class AymaraAI:
     def _prepare_test_data(self, test_name: str, test_policy: str, student_description: str,
                            test_language: str = TEST_LANGUAGE, n_test_questions: int = NUM_QUESTIONS,
                            test_type: Literal['safety', 'hallucination', 'jailbreak'] = TEST_TYPE) -> APIMakeTestRequest:
+        """
+        Prepare the test data for creating a test.
+
+        :param test_name: Name of the test.
+        :type test_name: str
+        :param test_policy: Policy for the test.
+        :type test_policy: str
+        :param student_description: Description of the student.
+        :type student_description: str
+        :param test_language: Language of the test, defaults to TEST_LANGUAGE.
+        :type test_language: str, optional
+        :param n_test_questions: Number of test questions, defaults to NUM_QUESTIONS.
+        :type n_test_questions: int, optional
+        :param test_type: Type of the test, defaults to TEST_TYPE.
+        :type test_type: Literal['safety', 'hallucination', 'jailbreak'], optional
+        :return: Prepared test data.
+        :rtype: APIMakeTestRequest
+        """
         return APIMakeTestRequest(
             test_name=test_name,
             test_type=test_type,
@@ -85,6 +136,20 @@ class AymaraAI:
         )
 
     def _create_test_response(self, test_uuid: uuid.UUID, test_status: str, test_type: str, questions: List[APITestQuestionResponse]) -> CreateTestResponse:
+        """
+        Create a test response.
+
+        :param test_uuid: UUID of the test.
+        :type test_uuid: uuid.UUID
+        :param test_status: Status of the test.
+        :type test_status: str
+        :param test_type: Type of the test.
+        :type test_type: str
+        :param questions: List of test questions.
+        :type questions: List[APITestQuestionResponse]
+        :return: Created test response.
+        :rtype: CreateTestResponse
+        """
         return CreateTestResponse(
             test_uuid=test_uuid,
             test_status=self._transform_test_status(test_status),
@@ -104,6 +169,23 @@ class AymaraAI:
                     wait_for_completion: bool = True) -> Union[CreateTestResponse, CreateTestAsyncResponse]:
         """
         Create a test synchronously and optionally wait for completion.
+
+        :param test_name: Name of the test.
+        :type test_name: str
+        :param test_policy: Policy for the test.
+        :type test_policy: str
+        :param student_description: Description of the student.
+        :type student_description: str
+        :param test_language: Language of the test, defaults to TEST_LANGUAGE.
+        :type test_language: str, optional
+        :param n_test_questions: Number of test questions, defaults to NUM_QUESTIONS.
+        :type n_test_questions: int, optional
+        :param test_type: Type of the test, defaults to TEST_TYPE.
+        :type test_type: Literal['safety', 'hallucination', 'jailbreak'], optional
+        :param wait_for_completion: Whether to wait for the test to complete, defaults to True.
+        :type wait_for_completion: bool, optional
+        :return: Test response.
+        :rtype: Union[CreateTestResponse, CreateTestAsyncResponse]
         """
         test_data = self._prepare_test_data(
             test_name, test_policy, student_description, test_language, n_test_questions, test_type)
@@ -128,6 +210,23 @@ class AymaraAI:
                                 wait_for_completion: bool = False) -> Union[CreateTestResponse, CreateTestAsyncResponse]:
         """
         Create a test asynchronously and optionally wait for completion.
+
+        :param test_name: Name of the test.
+        :type test_name: str
+        :param test_policy: Policy for the test.
+        :type test_policy: str
+        :param student_description: Description of the student.
+        :type student_description: str
+        :param test_language: Language of the test, defaults to TEST_LANGUAGE.
+        :type test_language: str, optional
+        :param n_test_questions: Number of test questions, defaults to NUM_QUESTIONS.
+        :type n_test_questions: int, optional
+        :param test_type: Type of the test, defaults to TEST_TYPE.
+        :type test_type: Literal['safety', 'hallucination', 'jailbreak'], optional
+        :param wait_for_completion: Whether to wait for the test to complete, defaults to False.
+        :type wait_for_completion: bool, optional
+        :return: Test response.
+        :rtype: Union[CreateTestResponse, CreateTestAsyncResponse]
         """
         test_data = self._prepare_test_data(
             test_name, test_policy, student_description, test_language, n_test_questions, test_type)
@@ -144,6 +243,11 @@ class AymaraAI:
     def get_test(self, test_uuid: uuid.UUID) -> GetTestResponse:
         """
         Get the current status of a test, and questions if it is completed.
+
+        :param test_uuid: UUID of the test.
+        :type test_uuid: uuid.UUID
+        :return: Test response.
+        :rtype: GetTestResponse
         """
         logger.info("Getting test for: %s", test_uuid)
         test_response = self.tests.get(test_uuid)
@@ -165,6 +269,11 @@ class AymaraAI:
     async def get_test_async(self, test_uuid: uuid.UUID) -> GetTestResponse:
         """
         Get the current status of a test asynchronously, and questions if it is completed.
+
+        :param test_uuid: UUID of the test.
+        :type test_uuid: uuid.UUID
+        :return: Test response.
+        :rtype: GetTestResponse
         """
         logger.info("Getting test asynchronously for: %s", test_uuid)
         test_response = await self.tests.async_get(test_uuid)
@@ -184,6 +293,14 @@ class AymaraAI:
         )
 
     def _create_and_wait_for_test(self, test_data: APIMakeTestRequest) -> CreateTestResponse:
+        """
+        Create a test and wait for it to complete.
+
+        :param test_data: Data for creating the test.
+        :type test_data: APIMakeTestRequest
+        :return: Test response.
+        :rtype: CreateTestResponse
+        """
         create_response = self.tests.create(test_data)
         test_uuid = create_response.test_uuid
         logger.info("Test creation initiated: %s", test_uuid)
@@ -211,6 +328,14 @@ class AymaraAI:
             time.sleep(POLLING_INTERVAL)
 
     async def _create_and_wait_for_test_async(self, test_data: APIMakeTestRequest) -> CreateTestResponse:
+        """
+        Create a test asynchronously and wait for it to complete.
+
+        :param test_data: Data for creating the test.
+        :type test_data: APIMakeTestRequest
+        :return: Test response.
+        :rtype: CreateTestResponse
+        """
         create_response = await self.tests.async_create(test_data)
         test_uuid = create_response.test_uuid
         logger.info("Test creation initiated asynchronously: %s", test_uuid)
@@ -240,6 +365,11 @@ class AymaraAI:
     def _transform_question(self, api_question: APITestQuestionResponse) -> Question:
         """
         Transform an API question to the user-friendly Question model.
+
+        :param api_question: API question response.
+        :type api_question: APITestQuestionResponse
+        :return: Transformed question.
+        :rtype: Question
         """
         return Question(
             question_uuid=api_question.question_uuid,
@@ -249,6 +379,11 @@ class AymaraAI:
     def _transform_test_status(self, api_test_status: Literal['record_created', 'scoring', 'finished', 'failed']) -> Literal['pending', 'completed', 'failed']:
         """
         Transform an API test status to the user-friendly test status.
+
+        :param api_test_status: API test status.
+        :type api_test_status: Literal['record_created', 'scoring', 'finished', 'failed']
+        :return: Transformed test status.
+        :rtype: Literal['pending', 'completed', 'failed']
         """
         status_mapping = {
             'record_created': 'pending',
@@ -265,6 +400,15 @@ class AymaraAI:
     def score_test(self, test_uuid: uuid.UUID, student_response_json: str, wait_for_completion: bool = True) -> Union[ScoreTestResponse, CreateScoreAsyncResponse]:
         """
         Score a test synchronously and optionally wait for completion.
+
+        :param test_uuid: UUID of the test.
+        :type test_uuid: uuid.UUID
+        :param student_response_json: JSON string of student responses.
+        :type student_response_json: str
+        :param wait_for_completion: Whether to wait for the score to complete, defaults to True.
+        :type wait_for_completion: bool, optional
+        :return: Score response.
+        :rtype: Union[ScoreTestResponse, CreateScoreAsyncResponse]
         """
         logger.info("Scoring test: %s", test_uuid)
         score_data = self._prepare_score_data(test_uuid, student_response_json)
@@ -285,6 +429,15 @@ class AymaraAI:
     async def score_test_async(self, test_uuid: uuid.UUID, student_response_json: str, wait_for_completion: bool = False) -> Union[ScoreTestResponse, CreateScoreAsyncResponse]:
         """
         Score a test asynchronously and optionally wait for completion.
+
+        :param test_uuid: UUID of the test.
+        :type test_uuid: uuid.UUID
+        :param student_response_json: JSON string of student responses.
+        :type student_response_json: str
+        :param wait_for_completion: Whether to wait for the score to complete, defaults to False.
+        :type wait_for_completion: bool, optional
+        :return: Score response.
+        :rtype: Union[ScoreTestResponse, CreateScoreAsyncResponse]
         """
         logger.info("Scoring test asynchronously: %s", test_uuid)
         score_data = self._prepare_score_data(test_uuid, student_response_json)
