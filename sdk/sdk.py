@@ -10,7 +10,7 @@ from typing import Literal
 from sdk.api.tests import TestsAPI
 from sdk.api.scores import ScoresAPI
 from sdk.errors import ScoreRunError, TestCreationError
-from sdk.types import CreateTestAsyncResponse, GetTestResponse, MakeTestParams, CreateTestResponse, Question, ScoreTestResponse, ScoredAnswer
+from sdk.types import CreateScoreAsyncResponse, CreateTestAsyncResponse, GetTestResponse, MakeTestParams, CreateTestResponse, Question, ScoreTestResponse, ScoredAnswer
 from sdk._internal_types import APIMakeTestRequest, APIAnswerRequest, APITestQuestionResponse, APIMakeScoreRequest, APIScoredAnswerResponse
 from .http_client import HTTPClient
 
@@ -253,6 +253,58 @@ class AymaraAI:
                 raise TimeoutError("Score run timed out")
 
             time.sleep(POLLING_INTERVAL)
+
+    def create_score_async(self, test_uuid: uuid.UUID, student_response_json: str) -> CreateScoreAsyncResponse:
+        """
+        Create a score run asynchronously.
+        """
+        logger.info("Creating score run asynchronously: %s", test_uuid)
+        # Validate the student response JSON is in the correct format
+        try:
+            student_responses = json.loads(student_response_json)
+            validated_responses = [APIAnswerRequest(
+                **response) for response in student_responses]
+        except json.JSONDecodeError as json_error:
+            raise ValueError(
+                "Invalid JSON format for student responses") from json_error
+
+        # Ensure at least one response is provided
+        if not validated_responses:
+            raise ValueError("At least one student response must be provided")
+
+        score_test_payload = APIMakeScoreRequest(
+            test_uuid=test_uuid,
+            score_run_model=SCORE_MODEL_NAME,
+            answers=validated_responses
+        )
+
+        response = self.scores.create(score_test_payload)
+        logger.info("Score run created asynchronously: %s",
+                    response.score_run_uuid)
+        return CreateScoreAsyncResponse(score_run_uuid=response.score_run_uuid)
+
+    def get_score_run(self, score_run_uuid: uuid.UUID) -> ScoreTestResponse:
+        """
+        Get the current status of a score run, and answers with scores if it is completed.
+        """
+
+        logger.info("Getting score run for: %s", score_run_uuid)
+        score_run_response = self.scores.get(score_run_uuid)
+        score_run_status = self._transform_score_status(
+            score_run_response.score_run_status)
+        if score_run_response.score_run_status == "finished":
+            answers = self.scores.get_all_scores(score_run_uuid)
+            answers = [self._transform_answer(
+                answer) for answer in answers]
+
+        logger.info("Score run status for %s: %s",
+                    score_run_uuid, score_run_status)
+        return ScoreTestResponse(
+            test_uuid=score_run_response.test_uuid,
+            score_run_uuid=score_run_uuid,
+            score_run_status=score_run_status,
+            answers=answers
+        )
 
     def _transform_score_status(self, api_score_status: Literal['record_created',
                                                                 'generating_scores', 'finished', 'failed']) -> Literal['pending', 'completed', 'failed']:

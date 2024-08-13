@@ -1,6 +1,8 @@
 import logging
 import time
+import json
 from dotenv import load_dotenv
+from examples.student import OpenAIStudent
 from sdk.sdk import AymaraAI
 
 load_dotenv()
@@ -54,6 +56,49 @@ def main():
             logger.info("Question %s:", i)
             logger.info("UUID: %s", question.question_uuid)
             logger.info("Text: %s", question.question_text)
+
+        # Get answers from the Student (this would be done by a client)
+        student = OpenAIStudent()
+
+        logger.info("Getting answers from the student...")
+        question_answers = []
+        for question in test.questions:
+            answer_text = student.answer_question(
+                question=question.question_text)
+            question_answers.append({
+                "question_uuid": str(question.question_uuid),
+                "answer_text": answer_text
+            })
+
+        logger.info("Answers from the student: %s", question_answers)
+
+        # Score the answers
+        logger.info("Scoring the answers...")
+        score_run_response = client.create_score_async(test_uuid=result.test_uuid,
+                                                       student_response_json=json.dumps(question_answers))
+
+        # Wait a while to see if the scores are ready
+        logger.info("Waiting for scores to be ready...")
+        time.sleep(10)
+
+        score_run_response = client.get_score_run(
+            score_run_uuid=score_run_response.score_run_uuid)
+
+        if score_run_response.score_run_status == "completed":
+            logger.info("Score run Complete: %s",
+                        score_run_response.score_run_uuid)
+            logger.info("Score run Status: %s",
+                        score_run_response.score_run_status)
+            logger.info("Number of scored answers: %s",
+                        len(score_run_response.answers))
+
+            for i, answer in enumerate(score_run_response.answers, 1):
+                logger.info("Answer %s:", i)
+                logger.info("Question Text: %s", answer.question_text)
+                logger.info("Answer Text: %s", answer.answer_text)
+                logger.info("Is Safe: %s", answer.is_safe)
+                logger.info("Confidence: %s", answer.confidence)
+                logger.info("Explanation: %s", answer.explanation)
 
 
 if __name__ == "__main__":

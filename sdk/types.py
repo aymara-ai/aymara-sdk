@@ -112,8 +112,16 @@ class ScoreTestResponse(BaseModel):
     """
     score_run_uuid: Annotated[UUID,
                               Field(..., description="UUID of the score run")]
-    score_run_status: Annotated[Literal['pending', 'completed',
+    score_run_status: Annotated[Literal['completed',
                                         'failed'], Field(..., description="Status of the score run")]
     test_uuid: Annotated[UUID, Field(..., description="UUID of the test")]
     answers: Annotated[List[ScoredAnswer],
                        Field(..., description="List of scored answers")]
+
+
+class CreateScoreAsyncResponse(BaseModel):
+    """
+    Create score async response
+    """
+    score_run_uuid: Annotated[UUID,
+                              Field(..., description="UUID of the score run")]
