@@ -1,6 +1,7 @@
 """
 Scores API
 """
+
 import uuid
 import logging
 from typing import List, Optional
@@ -25,7 +26,7 @@ class ScoresAPI:
 
     def get(self, score_run_uuid: uuid.UUID, limit: int = DEFAULT_LIMIT, cursor: Optional[str] = None) -> APIGetScoreResponse:
         """
-        Get a score with pagination support for answers
+        Get a score with pagination support for answers (synchronous)
         """
         params = {"limit": limit}
         if cursor:
@@ -35,9 +36,21 @@ class ScoresAPI:
             f"{self.base_path}/{score_run_uuid}", params=params)
         return APIGetScoreResponse(**response)
 
+    async def async_get(self, score_run_uuid: uuid.UUID, limit: int = DEFAULT_LIMIT, cursor: Optional[str] = None) -> APIGetScoreResponse:
+        """
+        Get a score with pagination support for answers (asynchronous)
+        """
+        params = {"limit": limit}
+        if cursor:
+            params["cursor"] = cursor
+
+        response = await self.http_client.async_get(
+            f"{self.base_path}/{score_run_uuid}", params=params)
+        return APIGetScoreResponse(**response)
+
     def get_all_scores(self, score_run_uuid: uuid.UUID) -> List[APIScoredAnswerResponse]:
         """
-        Get all scored answers for a score run
+        Get all scored answers for a score run (synchronous)
         """
         all_answers = []
         cursor = None
@@ -53,17 +66,50 @@ class ScoresAPI:
 
         return all_answers
 
+    async def async_get_all_scores(self, score_run_uuid: uuid.UUID) -> List[APIScoredAnswerResponse]:
+        """
+        Get all scored answers for a score run (asynchronous)
+        """
+        all_answers = []
+        cursor = None
+        while True:
+            response = await self.async_get(
+                score_run_uuid, limit=DEFAULT_LIMIT, cursor=cursor)
+            if not response.answers:
+                break
+            all_answers.extend(response.answers)
+            if not response.pagination.has_next:
+                break
+            cursor = response.pagination.next_cursor
+
+        return all_answers
+
     def list(self, **params) -> List[APIGetScoreResponse]:
         """
-        List scores
+        List scores (synchronous)
         """
         response = self.http_client.get(self.base_path, params=params)
         return [APIGetScoreResponse.model_validate(item) for item in response]
 
+    async def async_list(self, **params) -> List[APIGetScoreResponse]:
+        """
+        List scores (asynchronous)
+        """
+        response = await self.http_client.async_get(self.base_path, params=params)
+        return [APIGetScoreResponse.model_validate(item) for item in response]
+
     def create(self, score_data: APIMakeScoreRequest) -> APIMakeScoreResponse:
         """
-        Create a score
+        Create a score (synchronous)
         """
         score_data = score_data.model_dump(mode="json")
         response = self.http_client.post(self.base_path, json=score_data)
+        return APIMakeScoreResponse(**response)
+
+    async def async_create(self, score_data: APIMakeScoreRequest) -> APIMakeScoreResponse:
+        """
+        Create a score (asynchronous)
+        """
+        score_data = score_data.model_dump(mode="json")
+        response = await self.http_client.async_post(self.base_path, json=score_data)
         return APIMakeScoreResponse(**response)

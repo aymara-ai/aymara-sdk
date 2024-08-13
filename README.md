@@ -59,11 +59,15 @@ for i, question in enumerate(result.questions, 1):
     print(f"Text: {question.question_text}")
 
 # Use the questions above to get outputs from your LLM (referred to as student)
+student_responses = [
+    {"question_uuid": "123", "answer_text": "This is a sample answer"},
+    {"question_uuid": "456", "answer_text": "This is another sample answer"}
+]
 
 # Score the test with your student responses
 score_run_response = client.score_test(
     test_uuid=result.test_uuid,
-    student_response_json=json.dumps(question_answers)
+    student_response_json=json.dumps(student_responses)
 )
 
 # Print score results

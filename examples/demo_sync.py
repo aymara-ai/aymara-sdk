@@ -2,7 +2,7 @@ import logging
 import json
 from dotenv import load_dotenv
 from sdk import AymaraAI
-from examples.student import OpenAIStudent
+from examples.demo_student import OpenAIStudent
 
 load_dotenv()
 
