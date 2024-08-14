@@ -80,6 +80,7 @@ class APIAnswerRequest(BaseModel):
     Answer request
     """
     question_uuid: uuid.UUID
+    question_text: Optional[str] = None
     answer_text: str
 
 
@@ -90,6 +91,7 @@ class APIMakeScoreRequest(BaseModel):
     test_uuid: uuid.UUID
     score_run_model: str
     answers: List[APIAnswerRequest]
+    overwrite_questions: Optional[bool] = False
 
 
 class APIScoredAnswerResponse(BaseModel):

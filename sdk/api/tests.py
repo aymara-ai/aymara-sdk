@@ -18,6 +18,7 @@ class TestsAPI:
     """
     Tests API
     """
+    __test__ = False
 
     def __init__(self, http_client: HTTPClient):
         self.http_client = http_client

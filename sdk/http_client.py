@@ -50,8 +50,8 @@ class HTTPClient:
 
     async def _handle_async_response(self, response: aiohttp.ClientResponse):
         """Handle the response for asynchronous requests."""
-        response.raise_for_status()
         logger.debug("Received async response: status=%s", response.status)
+        response.raise_for_status()
         return await response.json()
 
     def _make_request(self, method: str, endpoint: str, **kwargs) -> Dict[str, Any]:

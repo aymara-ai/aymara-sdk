@@ -20,7 +20,6 @@ MAX_WAIT_TIME = 60
 POLLING_INTERVAL = 2
 WRITER_MODEL_NAME = "gpt-4o-mini"
 SCORE_MODEL_NAME = "gpt-4o-mini"
-
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -49,8 +48,8 @@ class AymaraAI:
         if api_key is None:
             api_key = os.getenv("AYMARA_API_KEY")
         if api_key is None:
-            logger.error("API key is not set")
-            raise ValueError("API key is not set")
+            logger.error("API key is required")
+            raise ValueError("API key is required")
 
         self.http_client = HTTPClient(base_url, api_key)
         self.tests = TestsAPI(self.http_client)
@@ -257,7 +256,7 @@ class AymaraAI:
             questions = [self._transform_question(
                 q) for q in self.tests.get_all_questions(test_uuid)]
 
-        logger.info("Test status for %s: %s", test_uuid, test_status)
+        logger.debug("Test status for %s: %s", test_uuid, test_status)
         return GetTestResponse(
             test_uuid=test_uuid,
             test_name=test_response.test_name,
@@ -283,7 +282,7 @@ class AymaraAI:
             questions = [self._transform_question(
                 q) for q in await self.tests.async_get_all_questions(test_uuid)]
 
-        logger.info("Test status for %s: %s", test_uuid, test_status)
+        logger.debug("Test status for %s: %s", test_uuid, test_status)
         return GetTestResponse(
             test_uuid=test_uuid,
             test_name=test_response.test_name,
@@ -309,7 +308,7 @@ class AymaraAI:
         while True:
             test_response = self.tests.get(test_uuid)
             logger.debug("Test %s status: %s", test_uuid,
-                         test_response.test_status)
+                         self._transform_test_status(test_response.test_status))
 
             if test_response.test_status == "failed":
                 logger.error("Test creation failed for %s", test_uuid)
@@ -344,7 +343,7 @@ class AymaraAI:
         while True:
             test_response = await self.tests.async_get(test_uuid)
             logger.debug("Test %s status: %s", test_uuid,
-                         test_response.test_status)
+                         self._transform_test_status(test_response.test_status))
 
             if test_response.test_status == "failed":
                 logger.error("Test creation failed for %s", test_uuid)
@@ -397,7 +396,7 @@ class AymaraAI:
     # Scores
     # ----------------
 
-    def score_test(self, test_uuid: uuid.UUID, student_response_json: str, wait_for_completion: bool = True) -> Union[ScoreTestResponse, CreateScoreAsyncResponse]:
+    def score_test(self, test_uuid: uuid.UUID, student_response_json: str, wait_for_completion: bool = True, overwrite_questions: bool = False) -> Union[ScoreTestResponse, CreateScoreAsyncResponse]:
         """
         Score a test synchronously and optionally wait for completion.
 
@@ -411,7 +410,8 @@ class AymaraAI:
         :rtype: Union[ScoreTestResponse, CreateScoreAsyncResponse]
         """
         logger.info("Scoring test: %s", test_uuid)
-        score_data = self._prepare_score_data(test_uuid, student_response_json)
+        score_data = self._prepare_score_data(
+            test_uuid, student_response_json, overwrite_questions)
 
         if wait_for_completion:
             logger.info(
@@ -426,7 +426,7 @@ class AymaraAI:
         logger.info("Score run created: %s", score_response.score_run_uuid)
         return score_response
 
-    async def score_test_async(self, test_uuid: uuid.UUID, student_response_json: str, wait_for_completion: bool = False) -> Union[ScoreTestResponse, CreateScoreAsyncResponse]:
+    async def score_test_async(self, test_uuid: uuid.UUID, student_response_json: str, wait_for_completion: bool = False, overwrite_questions: bool = False) -> Union[ScoreTestResponse, CreateScoreAsyncResponse]:
         """
         Score a test asynchronously and optionally wait for completion.
 
@@ -438,9 +438,12 @@ class AymaraAI:
         :type wait_for_completion: bool, optional
         :return: Score response.
         :rtype: Union[ScoreTestResponse, CreateScoreAsyncResponse]
+        :param overwrite_questions: Whether to overwrite the questions, defaults to False. Should only be used for testing purposes.
+        :type overwrite_questions: bool, optional
         """
         logger.info("Scoring test asynchronously: %s", test_uuid)
-        score_data = self._prepare_score_data(test_uuid, student_response_json)
+        score_data = self._prepare_score_data(
+            test_uuid, student_response_json, overwrite_questions)
 
         if wait_for_completion:
             logger.info(
@@ -462,7 +465,10 @@ class AymaraAI:
         """
         logger.info("Getting score run for: %s", score_run_uuid)
         score_run_response = self.scores.get(score_run_uuid)
-        return self._process_score_run_response(score_run_response)
+        scores = None
+        if score_run_response.score_run_status == "finished":
+            scores = self.scores.get_all_scores(score_run_uuid)
+        return self._process_score_run_response(score_run_response, scores)
 
     async def get_score_run_async(self, score_run_uuid: uuid.UUID) -> ScoreTestResponse:
         """
@@ -470,9 +476,12 @@ class AymaraAI:
         """
         logger.info("Getting score run asynchronously for: %s", score_run_uuid)
         score_run_response = await self.scores.async_get(score_run_uuid)
-        return self._process_score_run_response(score_run_response)
+        scores = None
+        if score_run_response.score_run_status == "finished":
+            scores = await self.scores.async_get_all_scores(score_run_uuid)
+        return self._process_score_run_response(score_run_response, scores)
 
-    def _prepare_score_data(self, test_uuid: uuid.UUID, student_response_json: str) -> APIMakeScoreRequest:
+    def _prepare_score_data(self, test_uuid: uuid.UUID, student_response_json: str, overwrite_questions: bool = False) -> APIMakeScoreRequest:
         try:
             student_responses = json.loads(student_response_json)
             validated_responses = [APIAnswerRequest(
@@ -487,7 +496,8 @@ class AymaraAI:
         return APIMakeScoreRequest(
             test_uuid=test_uuid,
             score_run_model=SCORE_MODEL_NAME,
-            answers=validated_responses
+            answers=validated_responses,
+            overwrite_questions=overwrite_questions
         )
 
     def _create_and_wait_for_score(self, score_data: APIMakeScoreRequest) -> ScoreTestResponse:
@@ -499,14 +509,15 @@ class AymaraAI:
         while True:
             score_response = self.scores.get(score_run_uuid)
             logger.debug("Score run %s status: %s", score_run_uuid,
-                         score_response.score_run_status)
+                         self._transform_score_status(score_response.score_run_status))
 
             if score_response.score_run_status == "failed":
                 logger.error("Score run failed for %s", score_run_uuid)
                 raise ScoreRunError(f"Score run failed for {score_run_uuid}")
 
             if score_response.score_run_status == "finished":
-                return self._process_score_run_response(score_response)
+                scores = self.scores.get_all_scores(score_run_uuid)
+                return self._process_score_run_response(score_response, scores)
 
             if time.time() - start_time > MAX_WAIT_TIME:
                 logger.error("Score run timed out for %s", score_run_uuid)
@@ -523,14 +534,15 @@ class AymaraAI:
         while True:
             score_response = await self.scores.async_get(score_run_uuid)
             logger.debug("Score run %s status: %s", score_run_uuid,
-                         score_response.score_run_status)
+                         self._transform_score_status(score_response.score_run_status))
 
             if score_response.score_run_status == "failed":
                 logger.error("Score run failed for %s", score_run_uuid)
                 raise ScoreRunError(f"Score run failed for {score_run_uuid}")
 
             if score_response.score_run_status == "finished":
-                return self._process_score_run_response(score_response)
+                scores = await self.scores.async_get_all_scores(score_run_uuid)
+                return self._process_score_run_response(score_response, scores)
 
             if asyncio.get_event_loop().time() - start_time > MAX_WAIT_TIME:
                 logger.error("Score run timed out for %s", score_run_uuid)
@@ -538,17 +550,16 @@ class AymaraAI:
 
             await asyncio.sleep(POLLING_INTERVAL)
 
-    def _process_score_run_response(self, score_run_response) -> ScoreTestResponse:
+    def _process_score_run_response(self, score_run_response, scores=None) -> ScoreTestResponse:
         score_run_status = self._transform_score_status(
             score_run_response.score_run_status)
         answers = None
         if score_run_response.score_run_status == "finished":
-            answers = self.scores.get_all_scores(
-                score_run_response.score_run_uuid)
-            answers = [self._transform_answer(answer) for answer in answers]
+            answers = [self._transform_answer(answer)
+                       for answer in (scores or [])]
 
-        logger.info("Score run status for %s: %s",
-                    score_run_response.score_run_uuid, score_run_status)
+        logger.debug("Score run status for %s: %s",
+                     score_run_response.score_run_uuid, score_run_status)
         return ScoreTestResponse(
             test_uuid=score_run_response.test_uuid,
             score_run_uuid=score_run_response.score_run_uuid,
@@ -562,7 +573,7 @@ class AymaraAI:
         """
         status_mapping = {
             'record_created': 'pending',
-            'generating_scores': 'pending',
+            'scoring': 'pending',
             'finished': 'completed',
             'failed': 'failed'
         }
