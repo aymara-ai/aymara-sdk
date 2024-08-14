@@ -408,6 +408,8 @@ class AymaraAI:
         :type wait_for_completion: bool, optional
         :return: Score response.
         :rtype: Union[ScoreTestResponse, CreateScoreAsyncResponse]
+        :param overwrite_questions: Whether to overwrite the questions, defaults to False. Should only be used for testing purposes.
+        :type overwrite_questions: bool, optional
         """
         logger.info("Scoring test: %s", test_uuid)
         score_data = self._prepare_score_data(
