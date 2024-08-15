@@ -3,9 +3,12 @@ Internal types for the SDK
 """
 import uuid
 from datetime import datetime
-from typing import List, Optional, Literal
+from typing import List, Optional
+from enum import Enum
 
 from pydantic import BaseModel
+
+from sdk.types import TestType
 
 
 class APIPaginationInfo(BaseModel):
@@ -22,12 +25,13 @@ class APIMakeTestRequest(BaseModel):
     Make test request
     """
     test_name: str
-    test_type: Literal['safety', 'hallucination', 'jailbreak']
+    test_type: TestType
     test_language: str
     n_test_questions: int
     writer_model_name: str
     student_description: str
-    test_policy: str
+    test_policy: Optional[str] = None
+    test_system_prompt: Optional[str] = None
 
 
 class APIMakeTestResponse(BaseModel):
@@ -48,13 +52,19 @@ class APITestQuestionResponse(BaseModel):
     updated_at: datetime
 
 
+class APITestStatus(str, Enum):
+    RECORD_CREATED = 'record_created'
+    GENERATING_QUESTIONS = 'generating_questions'
+    FINISHED = 'finished'
+    FAILED = 'failed'
+
+
 class APIGetTestResponse(BaseModel):
     """
     Get test response
     """
     test_uuid: uuid.UUID
-    test_status: Literal['record_created',
-                         'generating_questions', 'finished', 'failed']
+    test_status: APITestStatus
     test_name: str
     client_name: str
     test_type: str
@@ -106,7 +116,16 @@ class APIScoredAnswerResponse(BaseModel):
     score_run_uuid: uuid.UUID
     is_safe: Optional[bool] = None
     confidence: Optional[float] = None
+    is_follow: Optional[bool] = None
+    instruction_unfollowed: Optional[str] = None
     explanation: Optional[str] = None
+
+
+class APIScoreRunStatus(str, Enum):
+    RECORD_CREATED = 'record_created'
+    SCORING = 'scoring'
+    FINISHED = 'finished'
+    FAILED = 'failed'
 
 
 class APIGetScoreResponse(BaseModel):
@@ -114,9 +133,9 @@ class APIGetScoreResponse(BaseModel):
     Get score response
     """
     score_run_uuid: uuid.UUID
-    score_run_status: Literal['record_created',
-                              'scoring', 'finished', 'failed']
+    score_run_status: APIScoreRunStatus
     test_uuid: uuid.UUID
+    test_type: TestType
     score_run_model: str
     created_at: datetime
     updated_at: datetime

@@ -2,9 +2,7 @@
 
 import logging
 from typing import Dict, Any, Optional
-import aiohttp
-import requests
-
+import httpx
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -30,8 +28,8 @@ class HTTPClient:
         self.base_url = base_url
         self.timeout = timeout
         self.api_key = api_key
-        self._sync_session = requests.Session()
-        self._async_session = None
+        self._sync_client = httpx.Client()
+        self._async_client = None
         logger.debug("HTTPClient initialized with base_url: %s", base_url)
 
     def _get_full_url(self, endpoint: str) -> str:
@@ -42,17 +40,18 @@ class HTTPClient:
         """Get headers including the API key."""
         return {"x-api-key": self.api_key}
 
-    def _handle_response(self, response: requests.Response):
+    def _handle_response(self, response: httpx.Response):
         """Handle the response for synchronous requests."""
         response.raise_for_status()
         logger.debug("Received response: status=%s", response.status_code)
         return response.json()
 
-    async def _handle_async_response(self, response: aiohttp.ClientResponse):
+    async def _handle_async_response(self, response: httpx.Response):
         """Handle the response for asynchronous requests."""
-        logger.debug("Received async response: status=%s", response.status)
+        logger.debug("Received async response: status=%s",
+                     response.status_code)
         response.raise_for_status()
-        return await response.json()
+        return response.json()
 
     def _make_request(self, method: str, endpoint: str, **kwargs) -> Dict[str, Any]:
         """Make a synchronous request."""
@@ -61,7 +60,7 @@ class HTTPClient:
         headers.update(kwargs.get('headers', {}))
         kwargs['headers'] = headers
         logger.debug("Making %s request to %s", method, url)
-        response = self._sync_session.request(
+        response = self._sync_client.request(
             method, url, timeout=self.timeout, **kwargs)
         return self._handle_response(response)
 
@@ -72,10 +71,10 @@ class HTTPClient:
         headers.update(kwargs.get('headers', {}))
         kwargs['headers'] = headers
         logger.debug("Making async %s request to %s", method, url)
-        if self._async_session is None:
-            self._async_session = aiohttp.ClientSession()
-        async with self._async_session.request(method, url, timeout=self.timeout, **kwargs) as response:
-            return await self._handle_async_response(response)
+        if self._async_client is None:
+            self._async_client = httpx.AsyncClient()
+        response = await self._async_client.request(method, url, timeout=self.timeout, **kwargs)
+        return await self._handle_async_response(response)
 
     def get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Make a synchronous GET request."""
@@ -94,25 +93,25 @@ class HTTPClient:
         return await self._make_async_request("POST", endpoint, data=data, json=json)
 
     def close(self):
-        """Close both synchronous and asynchronous sessions."""
-        if self._sync_session:
-            self._sync_session.close()
-            self._sync_session = None
-        logger.debug("Closed synchronous session")
+        """Close both synchronous and asynchronous clients."""
+        if self._sync_client:
+            self._sync_client.close()
+            self._sync_client = None
+        logger.debug("Closed synchronous client")
 
     async def aclose(self):
-        """Close the asynchronous session."""
-        if self._async_session:
-            await self._async_session.close()
-            self._async_session = None
-        logger.debug("Closed asynchronous session")
+        """Close the asynchronous client."""
+        if self._async_client:
+            await self._async_client.aclose()
+            self._async_client = None
+        logger.debug("Closed asynchronous client")
 
     def __enter__(self):
         """Enable the HTTPClient to be used as a context manager for synchronous operations."""
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Ensure the synchronous session is closed when exiting the context."""
+        """Ensure the synchronous client is closed when exiting the context."""
         self.close()
 
     async def __aenter__(self):
@@ -120,9 +119,9 @@ class HTTPClient:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Ensure the asynchronous session is closed when exiting the async context."""
+        """Ensure the asynchronous client is closed when exiting the async context."""
         await self.aclose()
 
     def __del__(self):
-        """Ensure synchronous session is closed when the object is garbage collected."""
+        """Ensure synchronous client is closed when the object is garbage collected."""
         self.close()

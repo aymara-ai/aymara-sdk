@@ -17,6 +17,19 @@ clean:
 help:
 	@$(MAKE) -C $(DOCS_DIR) help
 
-# Catch-all target: forward all unknown targets to Sphinx makefile
-%:
-	@$(MAKE) -C $(DOCS_DIR) $@
+
+.PHONY: test
+test:
+	@pytest
+
+test-unit:
+	@pytest tests/unit/
+
+test-integration	:
+	@pytest tests/integration/ -s
+
+test-integration-basic:
+	@pytest tests/integration/ -s -k "basic"
+
+test-integration-quality:
+	@pytest tests/integration/ -s -k "quality"

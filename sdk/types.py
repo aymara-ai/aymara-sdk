@@ -2,26 +2,21 @@
 Types for the SDK
 """
 from uuid import UUID
-from typing import Annotated, Literal, List, Optional
+from typing import Annotated, List, Optional
 from pydantic import BaseModel, Field
+from enum import Enum
 
 
-class MakeTestParams(BaseModel):
-    """
-    Parameters for making a test
-    """
-    test_name: Annotated[str, Field(..., description="Name of the test", json_schema_extra={
-                                    "example": "Safety Test 1"})]
-    test_type: Annotated[Literal['safety', 'hallucination',
-                                 'jailbreak'], Field(..., description="Type of the test")]
-    test_language: Annotated[str, Field(..., description="Language of the test", json_schema_extra={
-                                        "example": "en"})]
-    student_description: Annotated[str, Field(..., description="Description of the student", json_schema_extra={
-                                              "example": "A high school student"})]
-    test_policy: Annotated[str, Field(..., description="Policy for the test", json_schema_extra={
-                                      "example": "No explicit content"})]
-    n_test_questions: Annotated[int, Field(
-        ..., ge=1, description="Number of test questions", json_schema_extra={"example": 10})]
+class TestType(Enum):
+    SAFETY = 'safety'
+    HALLUCINATION = 'hallucination'
+    JAILBREAK = 'jailbreak'
+
+
+class Status(Enum):
+    FAILED = 'failed'
+    PENDING = 'pending'
+    COMPLETED = 'completed'
 
 
 class Question(BaseModel):
@@ -40,10 +35,9 @@ class GetTestResponse(BaseModel):
     """
     test_uuid: Annotated[UUID, Field(..., description="UUID of the test")]
     test_name: Annotated[str, Field(..., description="Name of the test")]
-    test_type: Annotated[Literal['safety', 'hallucination',
-                                 'jailbreak'], Field(..., description="Type of the test")]
-    test_status: Annotated[Literal['failed', 'pending',
-                                   'completed'], Field(..., description="Status of the test")]
+    test_type: Annotated[TestType, Field(..., description="Type of the test")]
+    test_status: Annotated[Status,
+                           Field(..., description="Status of the test")]
     questions: Annotated[List[Question] | None, Field(
         None, description="Questions in the test")]
 
@@ -53,10 +47,9 @@ class CreateTestResponse(BaseModel):
     Create test response
     """
     test_uuid: Annotated[UUID, Field(..., description="UUID of the test")]
-    test_status: Annotated[Literal['failed', 'completed'],
+    test_status: Annotated[Status,
                            Field(..., description="Status of the test")]
-    test_type: Annotated[Literal['safety', 'hallucination',
-                                 'jailbreak'], Field(..., description="Type of the test")]
+    test_type: Annotated[TestType, Field(..., description="Type of the test")]
     questions: Annotated[List[Question],
                          Field(..., description="Questions in the test")]
 
@@ -74,6 +67,8 @@ class StudentAnswer(BaseModel):
     """
     question_uuid: Annotated[UUID,
                              Field(..., description="UUID of the question")]
+    question_text: Annotated[Optional[str],
+                             Field(None, description="Question in the test, use to override the question text for testing.")]
     answer_text: Annotated[str,
                            Field(..., description="Answer to the question")]
 
@@ -87,10 +82,12 @@ class ScoreTestParams(BaseModel):
                                  Field(..., description="Student responses")]
 
 
-class ScoredAnswer(BaseModel):
+class BaseScoredAnswer(BaseModel):
     """
-    Response for an individual answer
+    Base class for scored answers
     """
+    __abstract__ = True
+
     answer_uuid: Annotated[UUID, Field(..., description="UUID of the answer")]
     question_uuid: Annotated[UUID,
                              Field(..., description="UUID of the question")]
@@ -98,10 +95,28 @@ class ScoredAnswer(BaseModel):
                            Field(..., description="Answer to the question")]
     question_text: Annotated[str,
                              Field(..., description="Question in the test")]
-    is_safe: Annotated[Optional[bool], Field(
-        None, description="Safety status of the answer")]
-    confidence: Annotated[Optional[float], Field(
-        None, description="Confidence score of the answer")]
+
+
+class ScoredSafetyAnswer(BaseScoredAnswer):
+    """
+    Response for an individual answer in a safety test
+    """
+    is_safe: Annotated[bool, Field(
+        ..., description="Safety status of the answer")]
+    confidence: Annotated[float, Field(
+        ..., description="Confidence score of the answer")]
+    explanation: Annotated[Optional[str], Field(
+        None, description="Explanation for the answer's evaluation")]
+
+
+class ScoredJailbreakAnswer(BaseScoredAnswer):
+    """
+    Response for an individual answer in a jailbreak test
+    """
+    is_follow: Annotated[bool, Field(
+        ..., description="Boolean representing if the answer follows the system prompt")]
+    instruction_unfollowed: Annotated[Optional[str], Field(
+        None, description="Instruction that was not followed")]
     explanation: Annotated[Optional[str], Field(
         None, description="Explanation for the answer's evaluation")]
 
@@ -112,10 +127,10 @@ class ScoreTestResponse(BaseModel):
     """
     score_run_uuid: Annotated[UUID,
                               Field(..., description="UUID of the score run")]
-    score_run_status: Annotated[Literal['completed', 'failed', 'pending'],
+    score_run_status: Annotated[Status,
                                 Field(..., description="Status of the score run")]
     test_uuid: Annotated[UUID, Field(..., description="UUID of the test")]
-    answers: Annotated[List[ScoredAnswer] | None,
+    answers: Annotated[List[ScoredSafetyAnswer | ScoredJailbreakAnswer] | None,
                        Field(None, description="List of scored answers")]
 
 

@@ -67,8 +67,8 @@ disable = [
 max-line-length = 100
 
 [tool.pylint.design]
-max-args = 8
-max-attributes = 8
+max-args = 10
+max-attributes = 10
 
 [tool.pylint.master]
 ignore-patterns = ["test_.*?py", "conftest.py"]
