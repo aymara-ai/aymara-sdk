@@ -8,6 +8,8 @@ from enum import Enum
 
 
 class TestType(Enum):
+    __test__ = False
+
     SAFETY = 'safety'
     HALLUCINATION = 'hallucination'
     JAILBREAK = 'jailbreak'

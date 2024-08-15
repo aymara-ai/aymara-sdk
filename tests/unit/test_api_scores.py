@@ -3,7 +3,7 @@ import uuid
 from unittest.mock import Mock, AsyncMock
 import pytest
 from sdk.api.scores import ScoresAPI
-from sdk._internal_types import APIGetScoreResponse, APIMakeScoreRequest, APIMakeScoreResponse, APIScoredAnswerResponse
+from sdk._internal_types import APIGetScoreResponse, APIMakeScoreRequest, APIMakeScoreResponse, APIScoredAnswerResponse, TestType
 
 
 @pytest.fixture
@@ -22,6 +22,7 @@ def test_get(scores_api, mock_http_client):
         "score_run_uuid": str(score_run_uuid),
         "score_run_status": "finished",
         "test_uuid": str(uuid.uuid4()),
+        "test_type": TestType.SAFETY.value,
         "score_run_model": "gpt-4",
         "created_at": "2023-01-01T00:00:00Z",
         "updated_at": "2023-01-01T00:00:00Z",
@@ -47,6 +48,7 @@ def test_get(scores_api, mock_http_client):
     assert isinstance(response, APIGetScoreResponse)
     assert str(response.score_run_uuid) == str(score_run_uuid)
     assert response.score_run_status == "finished"
+    assert response.test_type == TestType.SAFETY
     assert len(response.answers) == 1
     mock_http_client.get.assert_called_once_with(
         f"v1/scores/{score_run_uuid}", params={"limit": 20}
@@ -60,6 +62,7 @@ async def test_async_get(scores_api, mock_http_client):
         "score_run_uuid": str(score_run_uuid),
         "score_run_status": "finished",
         "test_uuid": str(uuid.uuid4()),
+        "test_type": TestType.HALLUCINATION.value,
         "score_run_model": "gpt-4",
         "created_at": "2023-01-01T00:00:00Z",
         "updated_at": "2023-01-01T00:00:00Z",
@@ -85,6 +88,7 @@ async def test_async_get(scores_api, mock_http_client):
     assert isinstance(response, APIGetScoreResponse)
     assert str(response.score_run_uuid) == str(score_run_uuid)
     assert response.score_run_status == "finished"
+    assert response.test_type == TestType.HALLUCINATION
     assert len(response.answers) == 1
     mock_http_client.async_get.assert_called_once_with(
         f"v1/scores/{score_run_uuid}", params={"limit": 20}
@@ -97,6 +101,7 @@ def test_get_all_scores(scores_api, mock_http_client):
         "score_run_uuid": str(score_run_uuid),
         "score_run_status": "finished",
         "test_uuid": str(uuid.uuid4()),
+        "test_type": TestType.JAILBREAK.value,
         "score_run_model": "gpt-4",
         "created_at": "2023-01-01T00:00:00Z",
         "updated_at": "2023-01-01T00:00:00Z",
@@ -134,6 +139,7 @@ async def test_async_get_all_scores(scores_api, mock_http_client):
         "score_run_uuid": str(score_run_uuid),
         "score_run_status": "finished",
         "test_uuid": str(uuid.uuid4()),
+        "test_type": TestType.SAFETY.value,
         "score_run_model": "gpt-4",
         "created_at": "2023-01-01T00:00:00Z",
         "updated_at": "2023-01-01T00:00:00Z",
@@ -170,6 +176,7 @@ def test_list(scores_api, mock_http_client):
             "score_run_uuid": str(uuid.uuid4()),
             "score_run_status": "finished",
             "test_uuid": str(uuid.uuid4()),
+            "test_type": TestType.SAFETY.value,
             "score_run_model": "gpt-4",
             "created_at": "2023-01-01T00:00:00Z",
             "updated_at": "2023-01-01T00:00:00Z",
@@ -192,6 +199,7 @@ def test_list(scores_api, mock_http_client):
             "score_run_uuid": str(uuid.uuid4()),
             "score_run_status": "scoring",
             "test_uuid": str(uuid.uuid4()),
+            "test_type": TestType.HALLUCINATION.value,
             "score_run_model": "gpt-4",
             "created_at": "2023-01-02T00:00:00Z",
             "updated_at": "2023-01-02T00:00:00Z",
@@ -217,6 +225,8 @@ def test_list(scores_api, mock_http_client):
 
     assert len(response) == 2
     assert all(isinstance(r, APIGetScoreResponse) for r in response)
+    assert response[0].test_type == TestType.SAFETY
+    assert response[1].test_type == TestType.HALLUCINATION
     mock_http_client.get.assert_called_once_with("v1/scores", params={})
 
 
@@ -227,6 +237,7 @@ async def test_async_list(scores_api, mock_http_client):
             "score_run_uuid": str(uuid.uuid4()),
             "score_run_status": "finished",
             "test_uuid": str(uuid.uuid4()),
+            "test_type": TestType.JAILBREAK.value,
             "score_run_model": "gpt-4",
             "created_at": "2023-01-01T00:00:00Z",
             "updated_at": "2023-01-01T00:00:00Z",
@@ -249,6 +260,7 @@ async def test_async_list(scores_api, mock_http_client):
             "score_run_uuid": str(uuid.uuid4()),
             "score_run_status": "scoring",
             "test_uuid": str(uuid.uuid4()),
+            "test_type": TestType.SAFETY.value,
             "score_run_model": "gpt-4",
             "created_at": "2023-01-02T00:00:00Z",
             "updated_at": "2023-01-02T00:00:00Z",
@@ -274,6 +286,8 @@ async def test_async_list(scores_api, mock_http_client):
 
     assert len(response) == 2
     assert all(isinstance(r, APIGetScoreResponse) for r in response)
+    assert response[0].test_type == TestType.JAILBREAK
+    assert response[1].test_type == TestType.SAFETY
     mock_http_client.async_get.assert_called_once_with("v1/scores", params={})
 
 

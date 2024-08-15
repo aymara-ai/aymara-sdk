@@ -23,13 +23,13 @@ test:
 	@pytest
 
 test-unit:
-	@pytest tests/unit/
+	@pytest tests/unit/ $(ARGS)
 
-test-integration	:
-	@pytest tests/integration/ -s
+test-integration:
+	@pytest tests/integration/ -s $(ARGS)
 
 test-integration-basic:
-	@pytest tests/integration/ -s -k "basic"
+	@pytest tests/integration/ -s -k "basic" $(ARGS)
 
 test-integration-quality:
-	@pytest tests/integration/ -s -k "quality"
+	@pytest tests/integration/ -s -k "quality" $(ARGS)

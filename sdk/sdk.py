@@ -170,8 +170,13 @@ class AymaraAI:
         :rtype: Union[CreateTestResponse, CreateTestAsyncResponse]
         """
         test_data = self._prepare_test_data(
-            test_name, test_policy, test_system_prompt, student_description,
-            test_language, n_test_questions, test_type
+            test_name=test_name,
+            test_policy=test_policy,
+            test_system_prompt=test_system_prompt,
+            student_description=student_description,
+            test_language=test_language,
+            n_test_questions=n_test_questions,
+            test_type=test_type
         )
 
         if wait_for_completion:

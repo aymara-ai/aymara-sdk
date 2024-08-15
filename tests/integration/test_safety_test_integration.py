@@ -1,5 +1,3 @@
-import uuid
-import json
 import pytest
 import time
 import asyncio
@@ -8,7 +6,7 @@ import os
 from examples.demo_student import OpenAIStudent
 
 from sdk.sdk import AymaraAI
-from sdk.types import CreateScoreAsyncResponse, CreateTestAsyncResponse, GetTestResponse, CreateTestResponse, ScoreTestResponse
+from sdk.types import CreateScoreAsyncResponse, CreateTestAsyncResponse, GetTestResponse, CreateTestResponse, ScoreTestResponse, StudentAnswer, Status
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -86,7 +84,7 @@ def test_sync_run_with_wait_for_completion(aymara_client, check_quality):
         )
 
         assert isinstance(create_test_response, CreateTestResponse)
-        assert create_test_response.test_status == "completed"
+        assert create_test_response.test_status == Status.COMPLETED
         assert len(create_test_response.questions) == N_TEST_QUESTIONS
 
         # If checking quality, replace the student answer question UUIDs with the generated question UUIDs
@@ -97,31 +95,34 @@ def test_sync_run_with_wait_for_completion(aymara_client, check_quality):
                 answer["question_uuid"] = str(
                     create_test_response.questions[i].question_uuid)
 
-            student_response_json = [{k: v for k, v in answer.items(
-            ) if k != 'expected_safety'} for answer in QUESTIONS_AND_ANSWERS]
+            student_answers = [StudentAnswer(
+                question_uuid=answer["question_uuid"],
+                question_text=answer["question_text"],
+                answer_text=answer["answer_text"]
+            ) for answer in QUESTIONS_AND_ANSWERS]
         else:
             logger.debug(
                 "Not checking quality, getting answers from a demo student")
             # Get answers from a demo student
             student = OpenAIStudent()
-            student_response_json = []
-            for i, questions in enumerate(create_test_response.questions):
-                answer = student.answer_question(questions.question_text)
-                student_response_json.append({
-                    "question_uuid": str(questions.question_uuid),
-                    "answer_text": answer
-                })
+            student_answers = []
+            for question in create_test_response.questions:
+                answer = student.answer_question(question.question_text)
+                student_answers.append(StudentAnswer(
+                    question_uuid=question.question_uuid,
+                    answer_text=answer
+                ))
 
         # Score the test
         score_response = aymara_client.score_test(
             test_uuid=create_test_response.test_uuid,
-            student_response_json=json.dumps(student_response_json),
+            student_answers=student_answers,
             wait_for_completion=True,
             overwrite_questions=check_quality
         )
 
         assert isinstance(score_response, ScoreTestResponse)
-        assert score_response.score_run_status == "completed"
+        assert score_response.score_run_status == Status.COMPLETED
         assert len(score_response.answers) == N_TEST_QUESTIONS
 
         # If checking quality, verify safety scores and explanations
@@ -161,7 +162,7 @@ async def test_async_run_with_wait_for_completion(aymara_client, check_quality):
         )
 
         assert isinstance(create_test_response, CreateTestResponse)
-        assert create_test_response.test_status == "completed"
+        assert create_test_response.test_status == Status.COMPLETED
         assert len(create_test_response.questions) == N_TEST_QUESTIONS
 
         # If checking quality, replace the student answer question UUIDs with the generated question UUIDs
@@ -172,31 +173,34 @@ async def test_async_run_with_wait_for_completion(aymara_client, check_quality):
                 answer["question_uuid"] = str(
                     create_test_response.questions[i].question_uuid)
 
-            student_response_json = [{k: v for k, v in answer.items(
-            ) if k != 'expected_safety'} for answer in QUESTIONS_AND_ANSWERS]
+            student_answers = [StudentAnswer(
+                question_uuid=answer["question_uuid"],
+                question_text=answer["question_text"],
+                answer_text=answer["answer_text"]
+            ) for answer in QUESTIONS_AND_ANSWERS]
         else:
             logger.debug(
                 "Not checking quality, getting answers from a demo student")
             # Get answers from a demo student
             student = OpenAIStudent()
-            student_response_json = []
-            for i, questions in enumerate(create_test_response.questions):
-                answer = student.answer_question(questions.question_text)
-                student_response_json.append({
-                    "question_uuid": str(questions.question_uuid),
-                    "answer_text": answer
-                })
+            student_answers = []
+            for question in create_test_response.questions:
+                answer = student.answer_question(question.question_text)
+                student_answers.append(StudentAnswer(
+                    question_uuid=question.question_uuid,
+                    answer_text=answer
+                ))
 
         # Score the test
         score_response = await aymara_client.score_test_async(
             test_uuid=create_test_response.test_uuid,
-            student_response_json=json.dumps(student_response_json),
+            student_answers=student_answers,
             wait_for_completion=True,
             overwrite_questions=check_quality
         )
 
         assert isinstance(score_response, ScoreTestResponse)
-        assert score_response.score_run_status == "completed"
+        assert score_response.score_run_status == Status.COMPLETED
         assert len(score_response.answers) == N_TEST_QUESTIONS
 
         # If checking quality, verify safety scores and explanations
@@ -246,12 +250,12 @@ def test_sync_create_test_without_wait(aymara_client, check_quality):
         while max_wait > 0:
             test_status = aymara_client.get_test(test_uuid)
             assert isinstance(test_status, GetTestResponse)
-            if test_status.test_status == "completed":
+            if test_status.test_status == Status.COMPLETED:
                 break
             time.sleep(5)
             max_wait -= 5
 
-        assert test_status.test_status == "completed"
+        assert test_status.test_status == Status.COMPLETED
         assert len(test_status.questions) == N_TEST_QUESTIONS
 
         logger.info(
@@ -282,12 +286,12 @@ async def test_async_create_test_without_wait(aymara_client, check_quality):
         while max_wait > 0:
             test_status = await aymara_client.get_test_async(test_uuid)
             assert isinstance(test_status, GetTestResponse)
-            if test_status.test_status == "completed":
+            if test_status.test_status == Status.COMPLETED:
                 break
             await asyncio.sleep(5)
             max_wait -= 5
 
-        assert test_status.test_status == "completed"
+        assert test_status.test_status == Status.COMPLETED
         assert len(test_status.questions) == N_TEST_QUESTIONS
 
         logger.info(
@@ -318,12 +322,12 @@ async def test_async_full_run_without_wait(aymara_client, check_quality):
         while max_wait > 0:
             test_status = await aymara_client.get_test_async(test_uuid)
             assert isinstance(test_status, GetTestResponse)
-            if test_status.test_status == "completed":
+            if test_status.test_status == Status.COMPLETED:
                 break
             await asyncio.sleep(5)
             max_wait -= 5
 
-        assert test_status.test_status == "completed"
+        assert test_status.test_status == Status.COMPLETED
         assert len(test_status.questions) == N_TEST_QUESTIONS
 
         if check_quality:
@@ -334,25 +338,28 @@ async def test_async_full_run_without_wait(aymara_client, check_quality):
                 answer["question_uuid"] = str(
                     test_status.questions[i].question_uuid)
 
-            student_response_json = [{k: v for k, v in answer.items(
-            ) if k != 'expected_safety'} for answer in QUESTIONS_AND_ANSWERS]
+            student_answers = [StudentAnswer(
+                question_uuid=answer["question_uuid"],
+                question_text=answer["question_text"],
+                answer_text=answer["answer_text"]
+            ) for answer in QUESTIONS_AND_ANSWERS]
         else:
             logger.debug(
                 "Not checking quality, getting answers from a demo student")
             # Get answers from a demo student
             student = OpenAIStudent()
-            student_response_json = []
-            for i, questions in enumerate(test_status.questions):
-                answer = student.answer_question(questions.question_text)
-                student_response_json.append({
-                    "question_uuid": str(questions.question_uuid),
-                    "answer_text": answer
-                })
+            student_answers = []
+            for question in test_status.questions:
+                answer = student.answer_question(question.question_text)
+                student_answers.append(StudentAnswer(
+                    question_uuid=question.question_uuid,
+                    answer_text=answer
+                ))
 
         # Score the test without waiting
         score_response = await aymara_client.score_test_async(
             test_uuid=test_uuid,
-            student_response_json=json.dumps(student_response_json),
+            student_answers=student_answers,
             wait_for_completion=False,
             overwrite_questions=check_quality
         )
@@ -366,12 +373,12 @@ async def test_async_full_run_without_wait(aymara_client, check_quality):
         while max_wait > 0:
             score_status = await aymara_client.get_score_run_async(score_run_uuid)
             assert isinstance(score_status, ScoreTestResponse)
-            if score_status.score_run_status == "completed":
+            if score_status.score_run_status == Status.COMPLETED:
                 break
             await asyncio.sleep(5)
             max_wait -= 5
 
-        assert score_status.score_run_status == "completed"
+        assert score_status.score_run_status == Status.COMPLETED
         assert len(score_status.answers) == N_TEST_QUESTIONS
 
         if check_quality:
@@ -418,12 +425,12 @@ def test_sync_full_run_without_wait(aymara_client, check_quality):
             test_response = aymara_client.get_test(test_uuid)
 
             assert isinstance(test_response, GetTestResponse)
-            if test_response.test_status == "completed":
+            if test_response.test_status == Status.COMPLETED:
                 break
             time.sleep(5)
             max_wait -= 5
 
-        assert test_response.test_status == "completed"
+        assert test_response.test_status == Status.COMPLETED
         assert len(test_response.questions) == N_TEST_QUESTIONS
 
         if check_quality:
@@ -432,25 +439,26 @@ def test_sync_full_run_without_wait(aymara_client, check_quality):
                 answer["question_uuid"] = str(
                     test_response.questions[i].question_uuid)
 
-            # Score the test without waiting
-            student_response_json = json.dumps([{k: v for k, v in answer.items(
-            ) if k != 'expected_safety'} for answer in QUESTIONS_AND_ANSWERS])
+            student_answers = [StudentAnswer(
+                question_uuid=answer["question_uuid"],
+                question_text=answer["question_text"],
+                answer_text=answer["answer_text"]
+            ) for answer in QUESTIONS_AND_ANSWERS]
         else:
             # Get answers from a demo student
             student = OpenAIStudent()
-            student_response_json = []
-            for i, questions in enumerate(test_response.questions):
-                answer = student.answer_question(questions.question_text)
-                student_response_json.append({
-                    "question_uuid": str(questions.question_uuid),
-                    "answer_text": answer
-                })
+            student_answers = []
+            for question in test_response.questions:
+                answer = student.answer_question(question.question_text)
+                student_answers.append(StudentAnswer(
+                    question_uuid=question.question_uuid,
+                    answer_text=answer
+                ))
 
-            student_response_json = json.dumps(student_response_json)
-
+        # Score the test without waiting
         score_response = aymara_client.score_test(
             test_uuid=test_uuid,
-            student_response_json=student_response_json,
+            student_answers=student_answers,
             wait_for_completion=False,
             overwrite_questions=check_quality
         )
@@ -463,20 +471,31 @@ def test_sync_full_run_without_wait(aymara_client, check_quality):
         max_wait = 60
         while max_wait > 0:
             score_status = aymara_client.get_score_run(score_run_uuid)
-            if score_status.score_run_status == "completed":
+            if score_status.score_run_status == Status.COMPLETED:
                 break
             time.sleep(5)
             max_wait -= 5
 
-        assert score_status.score_run_status == "completed"
+        assert score_status.score_run_status == Status.COMPLETED
         assert len(score_status.answers) == N_TEST_QUESTIONS
 
         if check_quality:
             # Verify that the exact number of unsafe answers was detected
-            unsafe_answers = [
-                answer for answer in score_status.answers if not answer.is_safe]
-            assert len(
-                unsafe_answers) == EXPECTED_UNSAFE_COUNT, f"Expected {EXPECTED_UNSAFE_COUNT} unsafe answers, but found {len(unsafe_answers)}"
+            unsafe_count = 0
+            for i, answer in enumerate(score_status.answers):
+                question = next(
+                    (x for x in QUESTIONS_AND_ANSWERS if x["question_text"] == answer.question_text), None)
 
-            logger.info(
-                "Synchronous score run without wait completed successfully!")
+                logger.debug(
+                    f"Answer {i}: {answer.answer_text} - Expected safety: {question['expected_safety']}, Actual safety: {answer.is_safe}, Confidence: {answer.confidence:.2f}. Explanation: {answer.explanation}")
+                assert answer.is_safe == question["expected_safety"]
+                assert answer.confidence > 0.8
+                if not answer.is_safe:
+                    unsafe_count += 1
+                    assert answer.explanation is not None and len(
+                        answer.explanation) > 0
+
+            assert unsafe_count == EXPECTED_UNSAFE_COUNT, f"Expected {EXPECTED_UNSAFE_COUNT} unsafe answers, but found {unsafe_count}"
+
+        logger.info(
+            "Synchronous score run without wait completed successfully!")
