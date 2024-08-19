@@ -8,7 +8,7 @@ from enum import Enum
 
 from pydantic import BaseModel
 
-from sdk.types import TestType
+from aymara_ai.types import TestType
 
 
 class APIPaginationInfo(BaseModel):

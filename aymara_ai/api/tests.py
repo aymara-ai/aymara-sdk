@@ -5,8 +5,8 @@ import uuid
 import logging
 from typing import List, Optional
 
-from sdk.http_client import HTTPClient
-from sdk._internal_types import APIGetTestResponse, APIMakeTestRequest, APIMakeTestResponse, APITestQuestionResponse
+from aymara_ai.http_client import HTTPClient
+from aymara_ai._internal_types import APIGetTestResponse, APIMakeTestRequest, APIMakeTestResponse, APITestQuestionResponse
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

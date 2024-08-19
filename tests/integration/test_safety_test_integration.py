@@ -5,8 +5,8 @@ import logging
 import os
 from examples.demo_student import OpenAIStudent
 
-from sdk.sdk import AymaraAI
-from sdk.types import CreateScoreAsyncResponse, CreateTestAsyncResponse, GetTestResponse, CreateTestResponse, ScoreTestResponse, StudentAnswer, Status
+from aymara_ai.sdk import AymaraAI
+from aymara_ai.types import CreateScoreAsyncResponse, CreateTestAsyncResponse, GetTestResponse, CreateTestResponse, ScoreTestResponse, StudentAnswer, Status
 from dotenv import load_dotenv
 
 load_dotenv()

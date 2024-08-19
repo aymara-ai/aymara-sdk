@@ -93,7 +93,7 @@ class HTTPClient:
         return await self._make_async_request("POST", endpoint, data=data, json=json)
 
     def close(self):
-        """Close both synchronous and asynchronous clients."""
+        """Close synchronous client."""
         if self._sync_client:
             self._sync_client.close()
             self._sync_client = None

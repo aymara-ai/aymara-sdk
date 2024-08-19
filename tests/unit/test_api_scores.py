@@ -2,8 +2,8 @@
 import uuid
 from unittest.mock import Mock, AsyncMock
 import pytest
-from sdk.api.scores import ScoresAPI
-from sdk._internal_types import APIGetScoreResponse, APIMakeScoreRequest, APIMakeScoreResponse, APIScoredAnswerResponse, TestType
+from aymara_ai.api.scores import ScoresAPI
+from aymara_ai._internal_types import APIGetScoreResponse, APIMakeScoreRequest, APIMakeScoreResponse, APIScoredAnswerResponse, TestType
 
 
 @pytest.fixture

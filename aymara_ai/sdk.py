@@ -7,12 +7,12 @@ import logging
 import uuid
 import asyncio
 from typing import Literal, Union, List, Optional, overload
-from sdk.api.tests import TestsAPI
-from sdk.api.scores import ScoresAPI
-from sdk.errors import ScoreRunError, TestCreationError
-from sdk.types import CreateScoreAsyncResponse, CreateTestAsyncResponse, GetTestResponse, CreateTestResponse, Question, ScoreTestResponse, ScoredJailbreakAnswer, ScoredSafetyAnswer, StudentAnswer
-from sdk._internal_types import APIMakeTestRequest, APIAnswerRequest, APITestQuestionResponse, APIMakeScoreRequest, APIScoredAnswerResponse, APIGetScoreResponse, APIScoreRunStatus, APITestStatus
-from sdk.types import TestType, Status
+from aymara_ai.api.tests import TestsAPI
+from aymara_ai.api.scores import ScoresAPI
+from aymara_ai.errors import ScoreRunError, TestCreationError
+from aymara_ai.types import CreateScoreAsyncResponse, CreateTestAsyncResponse, GetTestResponse, CreateTestResponse, Question, ScoreTestResponse, ScoredJailbreakAnswer, ScoredSafetyAnswer, StudentAnswer
+from aymara_ai._internal_types import APIMakeTestRequest, APIAnswerRequest, APITestQuestionResponse, APIMakeScoreRequest, APIScoredAnswerResponse, APIGetScoreResponse, APIScoreRunStatus, APITestStatus
+from aymara_ai.types import TestType, Status
 from .http_client import HTTPClient
 
 logging.basicConfig(
@@ -20,18 +20,18 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
-MAX_WAIT_TIME = 120
 POLLING_INTERVAL = 2
-WRITER_MODEL_NAME = "gpt-4o-mini"
-SCORE_MODEL_NAME = "gpt-4o-mini"
+WRITER_MODEL_NAME = "gpt-4o-mini"  # TODO: Remove before publishing
+SCORE_MODEL_NAME = "gpt-4o-mini"  # TODO: Remove before publishing
 
 logger = logging.getLogger("sdk")
 logger.setLevel(logging.DEBUG)
 
 # Test Creation Defaults
-NUM_QUESTIONS = 20
-TEST_TYPE = TestType.SAFETY
-TEST_LANGUAGE = "en"
+DEFAULT_MAX_WAIT_TIME: int = 120
+DEFAULT_NUM_QUESTIONS: int = 20
+DEFAULT_TEST_TYPE: TestType = TestType.SAFETY
+DEFAULT_TEST_LANGUAGE: str = "en"
 
 
 class AymaraAI:
@@ -42,12 +42,15 @@ class AymaraAI:
     :type api_key: str, optional
     :param base_url: Base URL for the Aymara AI API, defaults to "https://api.aymara.ai".
     :type base_url: str, optional
+    :param max_wait_time: Maximum wait time for test creation, defaults to DEFAULT_MAX_WAIT_TIME.
+    :type max_wait_time: int, optional
     """
 
     def __init__(
         self,
         api_key: str | None = None,
-        base_url: str = "https://api.aymara.ai"
+        base_url: str = "https://api.aymara.ai",
+        max_wait_time: int = DEFAULT_MAX_WAIT_TIME,
     ):
         if api_key is None:
             api_key = os.getenv("AYMARA_API_KEY")
@@ -58,6 +61,7 @@ class AymaraAI:
         self.http_client = HTTPClient(base_url, api_key)
         self.tests = TestsAPI(self.http_client)
         self.scores = ScoresAPI(self.http_client)
+        self.max_wait_time = max_wait_time
         logger.info("AymaraAI client initialized with base URL: %s", base_url)
 
     def __enter__(self):
@@ -113,11 +117,11 @@ class AymaraAI:
         self,
         test_name: str,
         student_description: str,
-        test_type: TestType = TEST_TYPE,
+        test_type: TestType = DEFAULT_TEST_TYPE,
         test_policy: Optional[str] = None,
         test_system_prompt: Optional[str] = None,
-        test_language: str = TEST_LANGUAGE,
-        n_test_questions: int = NUM_QUESTIONS,
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        n_test_questions: int = DEFAULT_NUM_QUESTIONS,
         wait_for_completion: Literal[True] = True
     ) -> CreateTestResponse:
         ...
@@ -127,11 +131,11 @@ class AymaraAI:
         self,
         test_name: str,
         student_description: str,
-        test_type: TestType = TEST_TYPE,
+        test_type: TestType = DEFAULT_TEST_TYPE,
         test_policy: Optional[str] = None,
         test_system_prompt: Optional[str] = None,
-        test_language: str = TEST_LANGUAGE,
-        n_test_questions: int = NUM_QUESTIONS,
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        n_test_questions: int = DEFAULT_NUM_QUESTIONS,
         wait_for_completion: Literal[False] = False
     ) -> CreateTestAsyncResponse:
         ...
@@ -140,11 +144,11 @@ class AymaraAI:
         self,
         test_name: str,
         student_description: str,
-        test_type: TestType = TEST_TYPE,
+        test_type: TestType = DEFAULT_TEST_TYPE,
         test_policy: Optional[str] = None,
         test_system_prompt: Optional[str] = None,
-        test_language: str = TEST_LANGUAGE,
-        n_test_questions: int = NUM_QUESTIONS,
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        n_test_questions: int = DEFAULT_NUM_QUESTIONS,
         wait_for_completion: bool = True
     ) -> Union[CreateTestResponse, CreateTestAsyncResponse]:
         """
@@ -195,9 +199,9 @@ class AymaraAI:
         student_description: str,
         test_policy: Optional[str] = None,
         test_system_prompt: Optional[str] = None,
-        test_language: str = TEST_LANGUAGE,
-        n_test_questions: int = NUM_QUESTIONS,
-        test_type: TestType = TEST_TYPE,
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        n_test_questions: int = DEFAULT_NUM_QUESTIONS,
+        test_type: TestType = DEFAULT_TEST_TYPE,
         wait_for_completion: Literal[True] = True
     ) -> CreateTestResponse:
         ...
@@ -209,9 +213,9 @@ class AymaraAI:
         student_description: str,
         test_policy: Optional[str] = None,
         test_system_prompt: Optional[str] = None,
-        test_language: str = TEST_LANGUAGE,
-        n_test_questions: int = NUM_QUESTIONS,
-        test_type: TestType = TEST_TYPE,
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        n_test_questions: int = DEFAULT_NUM_QUESTIONS,
+        test_type: TestType = DEFAULT_TEST_TYPE,
         wait_for_completion: Literal[False] = False
     ) -> CreateTestAsyncResponse:
         ...
@@ -222,9 +226,9 @@ class AymaraAI:
         student_description: str,
         test_policy: Optional[str] = None,
         test_system_prompt: Optional[str] = None,
-        test_language: str = TEST_LANGUAGE,
-        n_test_questions: int = NUM_QUESTIONS,
-        test_type: TestType = TEST_TYPE,
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        n_test_questions: int = DEFAULT_NUM_QUESTIONS,
+        test_type: TestType = DEFAULT_TEST_TYPE,
         wait_for_completion: bool = False
     ) -> Union[CreateTestResponse, CreateTestAsyncResponse]:
         """
@@ -325,9 +329,9 @@ class AymaraAI:
         test_policy: Optional[str],
         test_system_prompt: Optional[str],
         student_description: str,
-        test_language: str = TEST_LANGUAGE,
-        n_test_questions: int = NUM_QUESTIONS,
-        test_type: TestType = TEST_TYPE
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        n_test_questions: int = DEFAULT_NUM_QUESTIONS,
+        test_type: TestType = DEFAULT_TEST_TYPE
     ) -> APIMakeTestRequest:
         """
         Prepare the test data for creating a test.
@@ -424,7 +428,7 @@ class AymaraAI:
                 questions = self.tests.get_all_questions(test_uuid)
                 return self._create_test_response(test_uuid, test_response.test_status, test_response.test_type, questions)
 
-            if time.time() - start_time > MAX_WAIT_TIME:
+            if time.time() - start_time > self.max_wait_time:
                 logger.error("Test creation timed out for %s", test_uuid)
                 raise TimeoutError("Test creation timed out")
 
@@ -459,7 +463,7 @@ class AymaraAI:
                 questions = await self.tests.async_get_all_questions(test_uuid)
                 return self._create_test_response(test_uuid, test_response.test_status, test_response.test_type, questions)
 
-            if asyncio.get_event_loop().time() - start_time > MAX_WAIT_TIME:
+            if asyncio.get_event_loop().time() - start_time > self.max_wait_time:
                 logger.error("Test creation timed out for %s", test_uuid)
                 raise TimeoutError("Test creation timed out")
 
@@ -667,7 +671,7 @@ class AymaraAI:
                 logger.info("Score run completed with %s", score_response)
                 return self._process_score_run_response(score_response)
 
-            if time.time() - start_time > MAX_WAIT_TIME:
+            if time.time() - start_time > self.max_wait_time:
                 logger.error("Score run timed out for %s", score_run_uuid)
                 raise TimeoutError("Score run timed out")
 
@@ -700,7 +704,7 @@ class AymaraAI:
                 score_response.answers = await self.scores.async_get_all_scores(score_run_uuid)
                 return self._process_score_run_response(score_response)
 
-            if asyncio.get_event_loop().time() - start_time > MAX_WAIT_TIME:
+            if asyncio.get_event_loop().time() - start_time > self.max_wait_time:
                 logger.error("Score run timed out for %s", score_run_uuid)
                 raise TimeoutError("Score run timed out")
 

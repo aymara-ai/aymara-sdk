@@ -1,8 +1,8 @@
 import uuid
 from unittest.mock import Mock, AsyncMock
 import pytest
-from sdk.api.tests import TestsAPI
-from sdk._internal_types import APIGetTestResponse, APIMakeTestRequest, APIMakeTestResponse
+from aymara_ai.api.tests import TestsAPI
+from aymara_ai._internal_types import APIGetTestResponse, APIMakeTestRequest, APIMakeTestResponse
 
 
 @pytest.fixture

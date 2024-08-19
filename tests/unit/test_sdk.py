@@ -2,9 +2,9 @@ import pytest
 import uuid
 import os
 from unittest.mock import Mock, AsyncMock
-from sdk.sdk import AymaraAI
-from sdk._internal_types import APIMakeTestRequest
-from sdk.types import CreateTestAsyncResponse, CreateTestResponse, GetTestResponse, ScoreTestResponse, Status, StudentAnswer, TestType
+from aymara_ai.sdk import AymaraAI
+from aymara_ai._internal_types import APIMakeTestRequest
+from aymara_ai.types import CreateTestAsyncResponse, CreateTestResponse, GetTestResponse, ScoreTestResponse, Status, StudentAnswer, TestType
 
 
 def test_init_with_api_key():

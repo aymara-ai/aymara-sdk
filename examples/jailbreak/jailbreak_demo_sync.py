@@ -6,9 +6,9 @@ It also waits for the answers to be scored before printing the results.
 import logging
 import time
 from dotenv import load_dotenv
-from sdk import AymaraAI
+from aymara_ai import AymaraAI
 from examples.demo_student import OpenAIStudent
-from sdk.types import StudentAnswer, TestType
+from aymara_ai.types import StudentAnswer, TestType
 
 load_dotenv()
 
