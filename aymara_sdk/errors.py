@@ -6,6 +6,8 @@ class TestCreationError(Exception):
     Exception raised when there is an error creating a test.
     """
 
+    __test__ = False
+
     def __init__(self, message: str):
         self.message = message
         super().__init__(self.message)

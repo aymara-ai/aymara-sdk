@@ -18,14 +18,15 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "httpx==0.27.0",
+    "httpx>=0.23.0,<0.24.0",
     "multiprocess==0.70.16",
     "openai==1.40.1",
     "pandas==2.2.2",
-    "pydantic==2.8.2",
+    "pydantic==2.1.1",
     "python-dotenv==1.0.1",
     "requests==2.32.3",
     "uuid_utils==0.9.0",
+    "openapi-python-client==0.21.3"
 ]
 
 [project.optional-dependencies]
@@ -33,83 +34,20 @@ dev = [
     "pytest",
     "pytest-cov",
     "pytest-asyncio",
-    "flake8",
-    "black",
-    "isort",
+    "ruff",
     "mypy",
     "sphinx",
     "sphinx_rtd_theme",
-    "myst-parser"
+    "myst-parser",
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aymara_sdk*", "examples*"]
+exclude = []
 
 
 [tool.pytest.ini_options]
-norecursedirs = ["aymara_ai/*"]
-
-[tool.black]
-line-length = 100
-target-version = ['py37']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
-)/
-'''
-
-[tool.isort]
-profile = "black"
-line_length = 100
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
-
-[tool.mypy]
-python_version = "3.7"
-ignore_missing_imports = true
-strict_optional = true
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-
-[tool.coverage.run]
-source = ["sdk"]
-omit = ["tests/*", "examples/*"]
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "if self.debug:",
-    "if __name__ == .__main__.:",
-    "raise NotImplementedError",
-    "pass",
-    "except ImportError:",
-]
-
-[tool.pylint.messages_control]
-disable = [
-    "missing-docstring",
-    "missing-function-docstring",
-    "missing-class-docstring",
-    "missing-module-docstring"
-]
-
-[tool.pylint.format]
-max-line-length = 100
-
-[tool.pylint.design]
-max-args = 10
-max-attributes = 10
-
-[tool.pylint.master]
-ignore-patterns = ["test_.*?py", "conftest.py"]
+norecursedirs = ["aymara_sdk/*"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

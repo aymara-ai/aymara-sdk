@@ -26,10 +26,8 @@ test-unit:
 	@pytest tests/unit/ $(ARGS)
 
 test-integration:
-	@pytest tests/integration/ -s $(ARGS)
+	@pytest tests/integration/ $(ARGS) -s $(test)
 
-test-integration-basic:
-	@pytest tests/integration/ -s -k "basic" $(ARGS)
 
-test-integration-quality:
-	@pytest tests/integration/ -s -k "quality" $(ARGS)
+generate-client:
+	openapi-python-client generate --url http://localhost:8000/openapi.json --output-path aymara_sdk/generated --overwrite
