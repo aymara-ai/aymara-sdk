@@ -1,5 +1,5 @@
 import pytest
-from aymara_ai.sdk import AymaraAI
+from aymara_sdk.sdk import AymaraAI
 
 API_KEY = "test_api_key"
 
