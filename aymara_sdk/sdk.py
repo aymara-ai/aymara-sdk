@@ -531,15 +531,13 @@ class AymaraAI:
                 self._transform_test_status(test_response.test_status).value,
             )
 
-            if test_response.test_status == "failed":
+            if test_response.test_status == models.TestStatus.FAILED:
                 logger.error("Test creation failed for %s", test_uuid)
                 raise TestCreationError(f"Test creation failed for {test_uuid}")
 
-            if test_response.test_status == "finished":
+            if test_response.test_status == models.TestStatus.FINISHED:
                 logger.info("Test creation completed for %s", test_uuid)
-                questions = await core_api_get_test_questions.asyncio(
-                    client=self.client, test_uuid=test_uuid
-                )
+                questions = await self._get_all_questions_async(test_uuid)
                 return self._create_test_response(
                     test_uuid,
                     test_response.test_status,

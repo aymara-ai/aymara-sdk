@@ -2,10 +2,8 @@ import pytest
 import time
 import asyncio
 import logging
-import os
 from examples.demo_student import OpenAIStudent
 
-from aymara_sdk.sdk import AymaraAI
 from aymara_sdk.types import (
     CreateScoreNoWaitResponse,
     CreateTestNoWaitResponse,
@@ -21,25 +19,6 @@ load_dotenv(override=True)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
-# Read environment variables
-ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
-logger.info(f"ENVIRONMENT: {ENVIRONMENT}")
-
-
-@pytest.fixture
-def aymara_client():
-    if ENVIRONMENT == "staging":
-        testing_api_key = os.getenv("STAGING_TESTING_API_KEY")
-    elif ENVIRONMENT == "production":
-        testing_api_key = os.getenv("PROD_TESTING_API_KEY")
-
-    base_url = (
-        "https://staging-api.aymara.ai"
-        if ENVIRONMENT == "staging"
-        else "https://api.aymara.ai"
-    )
-    return AymaraAI(api_key=testing_api_key, base_url=base_url)
 
 
 # Test data
