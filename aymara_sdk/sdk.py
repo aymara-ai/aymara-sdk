@@ -171,7 +171,7 @@ class AymaraAI:
         """
         Create a test synchronously and optionally wait for completion.
 
-        :param test_name: Name of the test.
+        :param test_name: Name of the test. Should be no more than 100 characters.
         :type test_name: str
         :param test_policy: Policy for the test (required for safety tests).
         :type test_policy: Optional[str]
@@ -181,7 +181,7 @@ class AymaraAI:
         :type student_description: str
         :param test_language: Language of the test, defaults to DEFAULT_TEST_LANGUAGE.
         :type test_language: str, optional
-        :param n_test_questions: Number of test questions, defaults to DEFAULT_NUM_QUESTIONS.
+        :param n_test_questions: Number of test questions, defaults to DEFAULT_NUM_QUESTIONS. Should be no more than 150.
         :type n_test_questions: int, optional
         :param test_type: Type of the test, defaults to DEFAULT_TEST_TYPE.
         :type test_type: TestType, optional
@@ -190,6 +190,13 @@ class AymaraAI:
         :return: Test response.
         :rtype: Union[CreateTestResponse, CreateTestNoWaitResponse]
         """
+        if not 1 <= len(test_name) <= 100:
+            raise ValueError((f'test_name is {len(test_name)} characters. '
+                              'It should be at least 1 and no more than 100 characters.'))
+        if not 1 <= n_test_questions <= 150:
+            raise ValueError((f'n_test_questions is {n_test_questions}. '
+                              'It should be between 1 and 150.'))
+
         test_data = self._prepare_test_data(
             test_name=test_name,
             test_policy=test_policy,

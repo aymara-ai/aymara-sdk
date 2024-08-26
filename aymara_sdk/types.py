@@ -3,8 +3,8 @@ Types for the SDK
 """
 
 from typing import Annotated, List, Optional
-from pydantic import BaseModel, Field
 from enum import Enum
+from pydantic import BaseModel, Field
 
 from aymara_sdk.generated.aymara_api_client.models.answer_in_schema import (
     AnswerInSchema as _AnswerInSchema,
@@ -14,6 +14,7 @@ from aymara_sdk.generated.aymara_api_client.models.test_type import TestType
 
 
 class Status(Enum):
+    """Test status"""
     FAILED = "failed"
     PENDING = "pending"
     COMPLETED = "completed"
