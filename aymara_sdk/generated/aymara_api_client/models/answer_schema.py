@@ -19,7 +19,6 @@ class AnswerSchema:
         answer_uuid (str):
         answer_text (str):
         question (QuestionSchema):
-        is_passed (Union[None, Unset, bool]):
         explanation (Union[None, Unset, str]):
         confidence (Union[None, Unset, float]):
     """
@@ -27,7 +26,6 @@ class AnswerSchema:
     answer_uuid: str
     answer_text: str
     question: "QuestionSchema"
-    is_passed: Union[None, Unset, bool] = UNSET
     explanation: Union[None, Unset, str] = UNSET
     confidence: Union[None, Unset, float] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -38,12 +36,6 @@ class AnswerSchema:
         answer_text = self.answer_text
 
         question = self.question.to_dict()
-
-        is_passed: Union[None, Unset, bool]
-        if isinstance(self.is_passed, Unset):
-            is_passed = UNSET
-        else:
-            is_passed = self.is_passed
 
         explanation: Union[None, Unset, str]
         if isinstance(self.explanation, Unset):
@@ -66,8 +58,6 @@ class AnswerSchema:
                 "question": question,
             }
         )
-        if is_passed is not UNSET:
-            field_dict["is_passed"] = is_passed
         if explanation is not UNSET:
             field_dict["explanation"] = explanation
         if confidence is not UNSET:
@@ -85,15 +75,6 @@ class AnswerSchema:
         answer_text = d.pop("answer_text")
 
         question = QuestionSchema.from_dict(d.pop("question"))
-
-        def _parse_is_passed(data: object) -> Union[None, Unset, bool]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(Union[None, Unset, bool], data)
-
-        is_passed = _parse_is_passed(d.pop("is_passed", UNSET))
 
         def _parse_explanation(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -117,7 +98,6 @@ class AnswerSchema:
             answer_uuid=answer_uuid,
             answer_text=answer_text,
             question=question,
-            is_passed=is_passed,
             explanation=explanation,
             confidence=confidence,
         )

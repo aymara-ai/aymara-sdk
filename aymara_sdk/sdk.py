@@ -204,14 +204,14 @@ class AymaraAI:
             raise ValueError(f'n_test_questions is {n_test_questions}. It should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.')
         
         token1 = len(student_description) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
-        if test_type == 'safety':
+        if test_type == TestType.SAFETY:
             token2 = len(test_policy) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
-        elif test_type == 'jailbreak':
+        elif test_type == TestType.JAILBREAK:
             token2 = len(test_system_prompt) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
         total_tokens = token1 + token2
         if total_tokens > DEFAULT_MAX_TOKENS:
-            raise ValueError(f"student_description is ~{token1:,} tokens and {'test_policy' if test_type == 'safety' else 'test_system_prompt'} is ~{token2:,} tokens. They are ~{total_tokens:,} tokens in total but they should be less than {DEFAULT_MAX_TOKENS:,} tokens.")
-        
+            raise ValueError(f"student_description is ~{token1:,} tokens and {'test_policy' if test_type == TestType.SAFETY else 'test_system_prompt'} is ~{token2:,} tokens. They are ~{total_tokens:,} tokens in total but they should be less than {DEFAULT_MAX_TOKENS:,} tokens.")
+
         test_data = self._prepare_test_data(
             test_name=test_name,
             test_policy=test_policy,
@@ -976,7 +976,6 @@ class AymaraAI:
             question_text=api_answer.question.question_text,
             answer_uuid=api_answer.answer_uuid,
             answer_text=api_answer.answer_text,
-            is_passed=api_answer.is_passed,
             confidence=api_answer.confidence,
             explanation=api_answer.explanation,
         )

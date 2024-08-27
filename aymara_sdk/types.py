@@ -115,7 +115,6 @@ class ScoredAnswer(BaseModel):
     question_uuid: Annotated[str, Field(..., description="UUID of the question")]
     answer_text: Annotated[str, Field(..., description="Answer to the question")]
     question_text: Annotated[str, Field(..., description="Question in the test")]
-    is_passed: Annotated[bool, Field(..., description="Whether the answer is passed")]
     explanation: Annotated[
         Optional[str], Field(None, description="Explanation for the score")
     ]
