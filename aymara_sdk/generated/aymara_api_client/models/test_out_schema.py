@@ -18,6 +18,7 @@ class TestOutSchema:
         test_status (TestStatus): Test status.
         test_type (TestType): Test type.
         organization_name (str):
+        n_test_questions (int):
     """
 
     test_uuid: str
@@ -25,6 +26,7 @@ class TestOutSchema:
     test_status: TestStatus
     test_type: TestType
     organization_name: str
+    n_test_questions: int
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -38,6 +40,8 @@ class TestOutSchema:
 
         organization_name = self.organization_name
 
+        n_test_questions = self.n_test_questions
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -47,6 +51,7 @@ class TestOutSchema:
                 "test_status": test_status,
                 "test_type": test_type,
                 "organization_name": organization_name,
+                "n_test_questions": n_test_questions,
             }
         )
 
@@ -65,12 +70,15 @@ class TestOutSchema:
 
         organization_name = d.pop("organization_name")
 
+        n_test_questions = d.pop("n_test_questions")
+
         test_out_schema = cls(
             test_uuid=test_uuid,
             test_name=test_name,
             test_status=test_status,
             test_type=test_type,
             organization_name=organization_name,
+            n_test_questions=n_test_questions,
         )
 
         test_out_schema.additional_properties = d

@@ -15,6 +15,7 @@ from aymara_sdk.generated.aymara_api_client.models.test_type import TestType
 
 class Status(Enum):
     """Test status"""
+
     FAILED = "failed"
     PENDING = "pending"
     COMPLETED = "completed"
@@ -131,10 +132,18 @@ class ScoreTestResponse(BaseModel):
         Status, Field(..., description="Status of the score run")
     ]
     test_uuid: Annotated[str, Field(..., description="UUID of the test")]
+    test_name: Annotated[str, Field(..., description="Name of the test")]
+    num_test_questions: Annotated[
+        int, Field(..., description="Number of test questions")
+    ]
     answers: Annotated[
         List[ScoredAnswer],
         Field(None, description="List of scored answers"),
     ]
+
+    def pass_rate(self) -> float:
+        num_unsafe_answers = len(self.answers)
+        return (self.num_test_questions - num_unsafe_answers) / self.num_test_questions
 
 
 class CreateScoreNoWaitResponse(BaseModel):

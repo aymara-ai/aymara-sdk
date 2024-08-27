@@ -6,6 +6,8 @@ import os
 import time
 import logging
 import asyncio
+import matplotlib.pyplot as plt
+
 from typing import Literal, Union, List, Optional, overload
 from aymara_sdk.errors import ScoreRunError, TestCreationError
 from aymara_sdk.generated.aymara_api_client.api.score_runs import (
@@ -198,11 +200,19 @@ class AymaraAI:
         :rtype: Union[CreateTestResponse, CreateTestNoWaitResponse]
         """
         if not DEFAULT_TEST_NAME_LEN_MIN <= len(test_name) <= DEFAULT_TEST_NAME_LEN_MAX:
-            raise ValueError(f'test_name is {len(test_name)} characters. It should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.')
-        
-        if not DEFAULT_NUM_QUESTIONS_MIN <= n_test_questions <= DEFAULT_NUM_QUESTIONS_MAX:
-            raise ValueError(f'n_test_questions is {n_test_questions}. It should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.')
-        
+            raise ValueError(
+                f"test_name is {len(test_name)} characters. It should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters."
+            )
+
+        if (
+            not DEFAULT_NUM_QUESTIONS_MIN
+            <= n_test_questions
+            <= DEFAULT_NUM_QUESTIONS_MAX
+        ):
+            raise ValueError(
+                f"n_test_questions is {n_test_questions}. It should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions."
+            )
+
         token1 = len(student_description) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
         if test_type == TestType.SAFETY:
             token2 = len(test_policy) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
@@ -210,7 +220,9 @@ class AymaraAI:
             token2 = len(test_system_prompt) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
         total_tokens = token1 + token2
         if total_tokens > DEFAULT_MAX_TOKENS:
-            raise ValueError(f"student_description is ~{token1:,} tokens and {'test_policy' if test_type == TestType.SAFETY else 'test_system_prompt'} is ~{token2:,} tokens. They are ~{total_tokens:,} tokens in total but they should be less than {DEFAULT_MAX_TOKENS:,} tokens.")
+            raise ValueError(
+                f"student_description is ~{token1:,} tokens and {'test_policy' if test_type == TestType.SAFETY else 'test_system_prompt'} is ~{token2:,} tokens. They are ~{total_tokens:,} tokens in total but they should be less than {DEFAULT_MAX_TOKENS:,} tokens."
+            )
 
         test_data = self._prepare_test_data(
             test_name=test_name,
@@ -719,6 +731,8 @@ class AymaraAI:
         return self._create_score_run_response(
             score_run_response.test.test_uuid,
             score_run_response.test.test_type,
+            score_run_response.test.test_name,
+            score_run_response.test.n_test_questions,
             score_run_uuid,
             score_run_response.score_run_status,
             answers,
@@ -744,6 +758,8 @@ class AymaraAI:
         return self._create_score_run_response(
             score_run_response.test.test_uuid,
             score_run_response.test.test_type,
+            score_run_response.test.test_name,
+            score_run_response.test.n_test_questions,
             score_run_uuid,
             score_run_response.score_run_status,
             answers,
@@ -816,6 +832,8 @@ class AymaraAI:
                 return self._create_score_run_response(
                     score_response.test.test_uuid,
                     score_response.test.test_type,
+                    score_response.test.test_name,
+                    score_response.test.n_test_questions,
                     score_run_uuid,
                     score_response.score_run_status,
                     answers,
@@ -863,6 +881,8 @@ class AymaraAI:
                 return self._create_score_run_response(
                     score_response.test.test_uuid,
                     score_response.test.test_type,
+                    score_response.test.test_name,
+                    score_response.test.n_test_questions,
                     score_run_uuid,
                     score_response.score_run_status,
                     answers,
@@ -913,6 +933,8 @@ class AymaraAI:
         self,
         test_uuid: str,
         test_type: models.TestType,
+        test_name: str,
+        num_test_questions: int,
         score_run_uuid: str,
         score_run_status: models.ScoreRunStatus,
         answers: List[models.AnswerSchema] | None,
@@ -928,8 +950,10 @@ class AymaraAI:
 
         return ScoreTestResponse(
             test_uuid=test_uuid,
+            num_test_questions=num_test_questions,
             score_run_uuid=score_run_uuid,
             score_run_status=self._transform_score_status(score_run_status),
+            test_name=test_name,
             answers=[self._transform_answer(test_type, answer) for answer in answers]
             if answers
             else None,
@@ -979,3 +1003,20 @@ class AymaraAI:
             confidence=api_answer.confidence,
             explanation=api_answer.explanation,
         )
+
+    # Utility
+    @staticmethod
+    def visualize_score_runs(score_runs: List[ScoreTestResponse]) -> None:
+        """Visualize score runs as a bar graph of pass rates."""
+
+        test_names = [score.test_name for score in score_runs]
+        pass_rates = [score.pass_rate() * 100 for score in score_runs]
+
+        plt.figure(figsize=(10, 6))
+        plt.bar(test_names, pass_rates)
+        plt.xlabel("Tests")
+        plt.ylabel("Pass Rate (%)")
+        plt.yticks(range(0, 101, 10))
+        plt.xticks(rotation=45, ha="right")
+        plt.tight_layout()
+        plt.show()
