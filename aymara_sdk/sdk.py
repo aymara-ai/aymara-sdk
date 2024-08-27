@@ -53,6 +53,14 @@ DEFAULT_NUM_QUESTIONS: int = 20
 DEFAULT_TEST_TYPE: TestType = TestType.SAFETY
 DEFAULT_TEST_LANGUAGE: str = "en"
 
+# Input Limit Defaults
+DEFAULT_TEST_NAME_LEN_MIN: int = 1
+DEFAULT_TEST_NAME_LEN_MAX: int = 100
+DEFAULT_NUM_QUESTIONS_MIN: int = 1
+DEFAULT_NUM_QUESTIONS_MAX: int = 150
+DEFAULT_CHAR_TO_TOKEN_MULTIPLIER: float = 0.15
+DEFAULT_MAX_TOKENS: int = 100000
+
 
 class AymaraAI:
     """
@@ -171,17 +179,17 @@ class AymaraAI:
         """
         Create a test synchronously and optionally wait for completion.
 
-        :param test_name: Name of the test. Should be no more than 100 characters.
+        :param test_name: Name of the test. Should be between DEFAULT_TEST_NAME_LEN_MIN and DEFAULT_TEST_NAME_LEN_MAX characters.
         :type test_name: str
-        :param test_policy: Policy for the test (required for safety tests).
+        :param test_policy: Policy of the test, which will measure compliance against this policy (required for safety tests).
         :type test_policy: Optional[str]
-        :param test_system_prompt: System prompt for the test (required for jailbreak tests).
+        :param test_system_prompt: System prompt of the AI that will take the test, which will measure compliance against these instructions (required for jailbreak tests).
         :type test_system_prompt: Optional[str]
-        :param student_description: Description of the student.
+        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
         :type student_description: str
         :param test_language: Language of the test, defaults to DEFAULT_TEST_LANGUAGE.
         :type test_language: str, optional
-        :param n_test_questions: Number of test questions, defaults to DEFAULT_NUM_QUESTIONS. Should be no more than 150.
+        :param n_test_questions: Number of test questions, defaults to DEFAULT_NUM_QUESTIONS. Should be between DEFAULT_NUM_QUESTIONS_MIN and and DEFAULT_NUM_QUESTIONS_MAX questions.
         :type n_test_questions: int, optional
         :param test_type: Type of the test, defaults to DEFAULT_TEST_TYPE.
         :type test_type: TestType, optional
@@ -190,13 +198,21 @@ class AymaraAI:
         :return: Test response.
         :rtype: Union[CreateTestResponse, CreateTestNoWaitResponse]
         """
-        if not 1 <= len(test_name) <= 100:
-            raise ValueError((f'test_name is {len(test_name)} characters. '
-                              'It should be at least 1 and no more than 100 characters.'))
-        if not 1 <= n_test_questions <= 150:
-            raise ValueError((f'n_test_questions is {n_test_questions}. '
-                              'It should be between 1 and 150.'))
-
+        if not DEFAULT_TEST_NAME_LEN_MIN <= len(test_name) <= DEFAULT_TEST_NAME_LEN_MAX:
+            raise ValueError(f'test_name is {len(test_name)} characters. It should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.')
+        
+        if not DEFAULT_NUM_QUESTIONS_MIN <= n_test_questions <= DEFAULT_NUM_QUESTIONS_MAX:
+            raise ValueError(f'n_test_questions is {n_test_questions}. It should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.')
+        
+        token1 = len(student_description) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
+        if test_type == 'safety':
+            token2 = len(test_policy) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
+        elif test_type == 'jailbreak':
+            token2 = len(test_system_prompt) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
+        total_tokens = token1 + token2
+        if total_tokens > DEFAULT_MAX_TOKENS:
+            raise ValueError(f"student_description is ~{token1:,} tokens and {'test_policy' if test_type == 'safety' else 'test_system_prompt'} is ~{token2:,} tokens. They are ~{total_tokens:,} tokens in total but they should be less than {DEFAULT_MAX_TOKENS:,} tokens.")
+        
         test_data = self._prepare_test_data(
             test_name=test_name,
             test_policy=test_policy,
