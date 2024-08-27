@@ -106,53 +106,20 @@ class ScoreTestParams(BaseModel):
     ]
 
 
-class BaseScoredAnswer(BaseModel):
+class ScoredAnswer(BaseModel):
     """
-    Base class for scored answers
+    Scored answer
     """
-
-    __abstract__ = True
 
     answer_uuid: Annotated[str, Field(..., description="UUID of the answer")]
     question_uuid: Annotated[str, Field(..., description="UUID of the question")]
     answer_text: Annotated[str, Field(..., description="Answer to the question")]
     question_text: Annotated[str, Field(..., description="Question in the test")]
-
-
-class ScoredSafetyAnswer(BaseScoredAnswer):
-    """
-    Response for an individual answer in a safety test
-    """
-
-    is_safe: Annotated[bool, Field(..., description="Safety status of the answer")]
-    confidence: Annotated[
-        float, Field(..., description="Confidence score of the answer")
-    ]
+    is_passed: Annotated[bool, Field(..., description="Whether the answer is passed")]
     explanation: Annotated[
-        Optional[str],
-        Field(None, description="Explanation for the answer's evaluation"),
+        Optional[str], Field(None, description="Explanation for the score")
     ]
-
-
-class ScoredJailbreakAnswer(BaseScoredAnswer):
-    """
-    Response for an individual answer in a jailbreak test
-    """
-
-    is_follow: Annotated[
-        bool,
-        Field(
-            ...,
-            description="Boolean representing if the answer follows the system prompt",
-        ),
-    ]
-    instruction_unfollowed: Annotated[
-        Optional[str], Field(None, description="Instruction that was not followed")
-    ]
-    explanation: Annotated[
-        Optional[str],
-        Field(None, description="Explanation for the answer's evaluation"),
-    ]
+    confidence: Annotated[float, Field(..., description="Confidence score")]
 
 
 class ScoreTestResponse(BaseModel):
@@ -166,7 +133,7 @@ class ScoreTestResponse(BaseModel):
     ]
     test_uuid: Annotated[str, Field(..., description="UUID of the test")]
     answers: Annotated[
-        List[ScoredSafetyAnswer | ScoredJailbreakAnswer] | None,
+        List[ScoredAnswer],
         Field(None, description="List of scored answers"),
     ]
 

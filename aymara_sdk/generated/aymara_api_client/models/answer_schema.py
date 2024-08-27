@@ -19,9 +19,7 @@ class AnswerSchema:
         answer_uuid (str):
         answer_text (str):
         question (QuestionSchema):
-        is_safe (Union[None, Unset, bool]):
-        is_follow (Union[None, Unset, bool]):
-        instruction_unfollowed (Union[None, Unset, str]):
+        is_passed (Union[None, Unset, bool]):
         explanation (Union[None, Unset, str]):
         confidence (Union[None, Unset, float]):
     """
@@ -29,9 +27,7 @@ class AnswerSchema:
     answer_uuid: str
     answer_text: str
     question: "QuestionSchema"
-    is_safe: Union[None, Unset, bool] = UNSET
-    is_follow: Union[None, Unset, bool] = UNSET
-    instruction_unfollowed: Union[None, Unset, str] = UNSET
+    is_passed: Union[None, Unset, bool] = UNSET
     explanation: Union[None, Unset, str] = UNSET
     confidence: Union[None, Unset, float] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -43,23 +39,11 @@ class AnswerSchema:
 
         question = self.question.to_dict()
 
-        is_safe: Union[None, Unset, bool]
-        if isinstance(self.is_safe, Unset):
-            is_safe = UNSET
+        is_passed: Union[None, Unset, bool]
+        if isinstance(self.is_passed, Unset):
+            is_passed = UNSET
         else:
-            is_safe = self.is_safe
-
-        is_follow: Union[None, Unset, bool]
-        if isinstance(self.is_follow, Unset):
-            is_follow = UNSET
-        else:
-            is_follow = self.is_follow
-
-        instruction_unfollowed: Union[None, Unset, str]
-        if isinstance(self.instruction_unfollowed, Unset):
-            instruction_unfollowed = UNSET
-        else:
-            instruction_unfollowed = self.instruction_unfollowed
+            is_passed = self.is_passed
 
         explanation: Union[None, Unset, str]
         if isinstance(self.explanation, Unset):
@@ -82,12 +66,8 @@ class AnswerSchema:
                 "question": question,
             }
         )
-        if is_safe is not UNSET:
-            field_dict["is_safe"] = is_safe
-        if is_follow is not UNSET:
-            field_dict["is_follow"] = is_follow
-        if instruction_unfollowed is not UNSET:
-            field_dict["instruction_unfollowed"] = instruction_unfollowed
+        if is_passed is not UNSET:
+            field_dict["is_passed"] = is_passed
         if explanation is not UNSET:
             field_dict["explanation"] = explanation
         if confidence is not UNSET:
@@ -106,32 +86,14 @@ class AnswerSchema:
 
         question = QuestionSchema.from_dict(d.pop("question"))
 
-        def _parse_is_safe(data: object) -> Union[None, Unset, bool]:
+        def _parse_is_passed(data: object) -> Union[None, Unset, bool]:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
             return cast(Union[None, Unset, bool], data)
 
-        is_safe = _parse_is_safe(d.pop("is_safe", UNSET))
-
-        def _parse_is_follow(data: object) -> Union[None, Unset, bool]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(Union[None, Unset, bool], data)
-
-        is_follow = _parse_is_follow(d.pop("is_follow", UNSET))
-
-        def _parse_instruction_unfollowed(data: object) -> Union[None, Unset, str]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(Union[None, Unset, str], data)
-
-        instruction_unfollowed = _parse_instruction_unfollowed(d.pop("instruction_unfollowed", UNSET))
+        is_passed = _parse_is_passed(d.pop("is_passed", UNSET))
 
         def _parse_explanation(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -155,9 +117,7 @@ class AnswerSchema:
             answer_uuid=answer_uuid,
             answer_text=answer_text,
             question=question,
-            is_safe=is_safe,
-            is_follow=is_follow,
-            instruction_unfollowed=instruction_unfollowed,
+            is_passed=is_passed,
             explanation=explanation,
             confidence=confidence,
         )

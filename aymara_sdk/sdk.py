@@ -30,8 +30,7 @@ from aymara_sdk.types import (
     CreateTestResponse,
     Question,
     ScoreTestResponse,
-    ScoredJailbreakAnswer,
-    ScoredSafetyAnswer,
+    ScoredAnswer,
     StudentAnswer,
 )
 
@@ -810,7 +809,7 @@ class AymaraAI:
             if score_response.score_run_status == models.ScoreRunStatus.FINISHED:
                 answers = self._get_all_score_run_answers(score_run_uuid)
                 logger.info(
-                    "Score run completed with %s, answers: %s",
+                    "Score run completed for test type %s, answers: %s",
                     score_response.test.test_type,
                     answers,
                 )
@@ -955,23 +954,9 @@ class AymaraAI:
         }
         return status_mapping[api_score_status]
 
-    @overload
-    def _transform_answer(
-        self,
-        test_type: Literal[models.TestType.SAFETY],
-        api_answer: models.AnswerSchema,
-    ) -> ScoredSafetyAnswer: ...
-
-    @overload
-    def _transform_answer(
-        self,
-        test_type: Literal[models.TestType.JAILBREAK],
-        api_answer: models.AnswerSchema,
-    ) -> ScoredJailbreakAnswer: ...
-
     def _transform_answer(
         self, test_type: models.TestType, api_answer: models.AnswerSchema
-    ) -> Union[ScoredSafetyAnswer, ScoredJailbreakAnswer]:
+    ) -> ScoredAnswer:
         """
         Transform an API answer to the user-friendly Answer model.
 
@@ -980,32 +965,18 @@ class AymaraAI:
         :param api_answer: API scored answer response.
         :type api_answer: AnswerSchema
         :return: Transformed scored answer.
-        :rtype: Union[ScoredSafetyAnswer, ScoredJailbreakAnswer]
+        :rtype: ScoredAnswer
         """
-        logger.debug("Transforming answer for test type: %s", test_type)
         if not isinstance(test_type, TestType):
             logger.warning(
                 "Unexpected test_type: %s is not of type TestType", type(test_type)
             )
-        if test_type == TestType.SAFETY:
-            return ScoredSafetyAnswer(
-                question_uuid=api_answer.question.question_uuid,
-                question_text=api_answer.question.question_text,
-                answer_uuid=api_answer.answer_uuid,
-                answer_text=api_answer.answer_text,
-                is_safe=api_answer.is_safe,
-                confidence=api_answer.confidence,
-                explanation=api_answer.explanation,
-            )
-        elif test_type == TestType.JAILBREAK:
-            return ScoredJailbreakAnswer(
-                question_uuid=api_answer.question.question_uuid,
-                question_text=api_answer.question.question_text,
-                answer_uuid=api_answer.answer_uuid,
-                answer_text=api_answer.answer_text,
-                is_follow=api_answer.is_follow,
-                instruction_unfollowed=api_answer.instruction_unfollowed,
-                explanation=api_answer.explanation,
-            )
-        else:
-            raise ValueError(f"Unsupported test type: {test_type}")
+        return ScoredAnswer(
+            question_uuid=api_answer.question.question_uuid,
+            question_text=api_answer.question.question_text,
+            answer_uuid=api_answer.answer_uuid,
+            answer_text=api_answer.answer_text,
+            is_passed=api_answer.is_passed,
+            confidence=api_answer.confidence,
+            explanation=api_answer.explanation,
+        )

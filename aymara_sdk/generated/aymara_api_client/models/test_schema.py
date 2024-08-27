@@ -16,7 +16,7 @@ class TestSchema:
         test_name (str):
         n_test_questions (int):
         student_description (str):
-        test_type (Union[Unset, TestType]):  Default: TestType.SAFETY.
+        test_type (Union[Unset, TestType]): Test type. Default: TestType.SAFETY.
         test_language (Union[Unset, str]):  Default: 'en'.
         test_policy (Union[None, Unset, str]):
         test_system_prompt (Union[None, Unset, str]):

@@ -15,8 +15,8 @@ class TestOutSchema:
     Attributes:
         test_uuid (str):
         test_name (str):
-        test_status (TestStatus):
-        test_type (TestType):
+        test_status (TestStatus): Test status.
+        test_type (TestType): Test type.
         organization_name (str):
     """
 

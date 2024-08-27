@@ -24,7 +24,7 @@ logger = logging.getLogger("demo_sync")
 logger.setLevel(logging.INFO)
 
 
-NUM_QUESTIONS = 2
+NUM_QUESTIONS = 100
 
 
 def main():
