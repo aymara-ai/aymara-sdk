@@ -2,11 +2,13 @@
 Aymara AI SDK
 """
 
+import math
 import os
 import time
 import logging
 import asyncio
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 
 from typing import Literal, Union, List, Optional, overload
 from aymara_sdk.errors import ScoreRunError, TestCreationError
@@ -1006,17 +1008,64 @@ class AymaraAI:
 
     # Utility
     @staticmethod
-    def visualize_score_runs(score_runs: List[ScoreTestResponse]) -> None:
-        """Visualize score runs as a bar graph of pass rates."""
+    def visualize_score_runs(
+        score_runs: List[ScoreTestResponse],
+        title: Optional[str] = None,
+        ylim_min: Optional[float] = None,
+        yaxis_is_percent: bool = True,
+        ylabel: str = 'Answers Passed',
+        xlabel: str = 'Tests',
+        xtick_rot: float = 30.0,
+        xtick_labels_dict: Optional[dict] = None,
+        **kwargs,
+    ) -> None:
+        """
+        Visualize score runs as a bar graph of pass rates.
+
+        :param score_runs: List of test score runs to graph.
+        :type score_runs: List[ScoreTestResponse]
+        :param title: Graph title.
+        :type title: str, optional
+        :param ylim_min: y-axis lower limit, defaults to rounding down to the nearest decimal (yaxis_is_percent=True) or ten (yaxis_is_percent=False).
+        :type ylim_min: float, optional
+        :param yaxis_is_percent: Whether to show the pass rate as a percent (instead of the total number of questions passed), defaults to True.
+        :type yaxis_is_percent: bool, optional
+        :param ylabel: Label of the y-axis, defaults to 'Answers Passed'.
+        :type ylabel: str
+        :param xlabel: Label of the x-axis, defaults to 'Tests'.
+        :type xlabel: str
+        :param xtick_rot: rotation of the x-axis tick labels, defaults to 30.
+        :type xtick_rot: float
+        :param xtick_labels_dict: Maps test_names (keys) to x-axis tick labels (values).
+        :type xtick_labels_dict: dict, optional
+        :param kwargs: Options to pass to matplotlib.pyplot.bar.
+        """
 
         test_names = [score.test_name for score in score_runs]
-        pass_rates = [score.pass_rate() * 100 for score in score_runs]
+        pass_rates = [score.pass_rate() for score in score_runs]
 
-        plt.figure(figsize=(10, 6))
-        plt.bar(test_names, pass_rates)
-        plt.xlabel("Tests")
-        plt.ylabel("Pass Rate (%)")
-        plt.yticks(range(0, 101, 10))
-        plt.xticks(rotation=45, ha="right")
+        if ylim_min is None:
+            ylim_min = math.floor(min(pass_rates) * 10) / 10
+
+        ax = plt.bar(test_names, pass_rates, **kwargs)
+
+        # Title
+        ax.set_title(title)
+
+        # x-axis
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=xtick_rot, ha='right')
+        ax.set_xlabel(xlabel, fontweight='bold')
+        if xtick_labels_dict:
+            xtick_labels = [label.get_text() for label in ax.get_xticklabels()]
+            new_labels = [xtick_labels_dict.get(label, label) for label in xtick_labels]
+            ax.set_xticklabels(new_labels)
+
+        # y-axis
+        ax.set_ylabel(ylabel, fontweight='bold')
+        if yaxis_is_percent:
+            def to_percent(y):
+                return f'{y * 100:.0f}%'
+            ax.yaxis.set_major_formatter(FuncFormatter(to_percent))
+
         plt.tight_layout()
         plt.show()
