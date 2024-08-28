@@ -1011,7 +1011,7 @@ class AymaraAI:
     # Utility
     @staticmethod
     def get_pass_stats(
-        score_runs: List[ScoreTestResponse],
+        score_runs: Union[List[ScoreTestResponse], ScoreTestResponse],
     ) -> pd.DataFrame:
         """
         Create a DataFrame of pass rates and pass totals from one or more score runs.
@@ -1021,6 +1021,9 @@ class AymaraAI:
         :return: DataFrame of pass rates per score run.
         :rtype: pd.DataFrame 
         """
+        if isinstance(score_runs, ScoreTestResponse):
+            score_runs = [score_runs]
+
         return pd.DataFrame(
             data={
                 'test_name': [score.test_name for score in score_runs],
@@ -1032,7 +1035,7 @@ class AymaraAI:
 
     @staticmethod
     def graph_pass_rates(
-        score_runs: List[ScoreTestResponse],
+        score_runs: Union[List[ScoreTestResponse], ScoreTestResponse],
         title: Optional[str] = None,
         ylim_min: Optional[float] = None,
         yaxis_is_percent: bool = True,
@@ -1066,6 +1069,8 @@ class AymaraAI:
         :type xtick_labels_dict: dict, optional
         :param kwargs: Options to pass to matplotlib.pyplot.bar.
         """
+        if isinstance(score_runs, ScoreTestResponse):
+            score_runs = [score_runs]
 
         pass_rates = [score.pass_rate() for score in score_runs]
         names = [score.test_name if xaxis_is_tests else score.score_run_uuid for score in score_runs]
