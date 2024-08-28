@@ -9,6 +9,7 @@ import logging
 import asyncio
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
+import pandas as pd
 
 from typing import Literal, Union, List, Optional, overload
 from aymara_sdk.errors import ScoreRunError, TestCreationError
@@ -727,6 +728,7 @@ class AymaraAI:
         score_run_response = core_api_get_score_run.sync(
             client=self.client, score_run_uuid=score_run_uuid
         )
+        print(score_run_response)
         answers = None
         if score_run_response.score_run_status == models.ScoreRunStatus.FINISHED:
             answers = self._get_all_score_run_answers(score_run_uuid)
@@ -1008,19 +1010,41 @@ class AymaraAI:
 
     # Utility
     @staticmethod
-    def visualize_score_runs(
+    def get_pass_stats(
+        score_runs: List[ScoreTestResponse],
+    ) -> pd.DataFrame:
+        """
+        Create a DataFrame of pass rates and pass totals from one or more score runs.
+
+        :param score_runs: List of test score runs to graph.
+        :type score_runs: List[ScoreTestResponse]
+        :return: DataFrame of pass rates per score run.
+        :rtype: pd.DataFrame 
+        """
+        return pd.DataFrame(
+            data={
+                'test_name': [score.test_name for score in score_runs],
+                'pass_rate': [score.pass_rate() for score in score_runs],
+                'pass_total': [score.pass_rate() * score.num_test_questions for score in score_runs],
+            },
+            index=pd.Index([score.score_run_uuid for score in score_runs], name='score_run_uuid'),
+        )
+
+    @staticmethod
+    def graph_pass_rates(
         score_runs: List[ScoreTestResponse],
         title: Optional[str] = None,
         ylim_min: Optional[float] = None,
         yaxis_is_percent: bool = True,
         ylabel: str = 'Answers Passed',
-        xlabel: str = 'Tests',
+        xaxis_is_tests: bool = True,
+        xlabel: Optional[str] = None,
         xtick_rot: float = 30.0,
         xtick_labels_dict: Optional[dict] = None,
         **kwargs,
     ) -> None:
         """
-        Visualize score runs as a bar graph of pass rates.
+        Draw a bar graph of pass rates from one or more score runs.
 
         :param score_runs: List of test score runs to graph.
         :type score_runs: List[ScoreTestResponse]
@@ -1032,7 +1056,9 @@ class AymaraAI:
         :type yaxis_is_percent: bool, optional
         :param ylabel: Label of the y-axis, defaults to 'Answers Passed'.
         :type ylabel: str
-        :param xlabel: Label of the x-axis, defaults to 'Tests'.
+        :param xaxis_is_tests: Whether the x-axis represents tests (True) or score runs (False), defaults to True.
+        :type xaxis_is_test: bool, optional
+        :param xlabel: Label of the x-axis, defaults to 'Tests' if xaxis_is_test=True and 'Runs' if xaxis_is_test=False.
         :type xlabel: str
         :param xtick_rot: rotation of the x-axis tick labels, defaults to 30.
         :type xtick_rot: float
@@ -1041,19 +1067,23 @@ class AymaraAI:
         :param kwargs: Options to pass to matplotlib.pyplot.bar.
         """
 
-        test_names = [score.test_name for score in score_runs]
         pass_rates = [score.pass_rate() for score in score_runs]
+        names = [score.test_name if xaxis_is_tests else score.score_run_uuid for score in score_runs]
 
         if ylim_min is None:
             ylim_min = math.floor(min(pass_rates) * 10) / 10
 
-        ax = plt.bar(test_names, pass_rates, **kwargs)
-
+        fig, ax = plt.subplots()
+        ax.bar(names, pass_rates, **kwargs)
+        
         # Title
         ax.set_title(title)
 
         # x-axis
+        ax.set_xticks(range(len(names)))
         ax.set_xticklabels(ax.get_xticklabels(), rotation=xtick_rot, ha='right')
+        if xlabel is None:
+            xlabel = 'Tests' if xaxis_is_tests else 'Score Runs'
         ax.set_xlabel(xlabel, fontweight='bold')
         if xtick_labels_dict:
             xtick_labels = [label.get_text() for label in ax.get_xticklabels()]
@@ -1063,8 +1093,8 @@ class AymaraAI:
         # y-axis
         ax.set_ylabel(ylabel, fontweight='bold')
         if yaxis_is_percent:
-            def to_percent(y):
-                return f'{y * 100:.0f}%'
+            def to_percent(y, _):
+                    return f'{y * 100:.0f}%'
             ax.yaxis.set_major_formatter(FuncFormatter(to_percent))
 
         plt.tight_layout()
