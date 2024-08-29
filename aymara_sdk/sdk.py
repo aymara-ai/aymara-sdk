@@ -1,18 +1,22 @@
 """
 Aymara AI SDK
+
+This module provides the main interface for interacting with the Aymara AI API.
+It includes functionality for creating and managing tests, scoring tests, and visualizing results.
 """
 
 import math
 import os
 import time
-import logging
 import asyncio
+from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import pandas as pd
 
-from typing import Literal, Union, List, Optional, overload
-from aymara_sdk.errors import ScoreRunError, TestCreationError
+
+from typing import List, Optional
+from aymara_sdk.errors import ScoreRunError
 from aymara_sdk.generated.aymara_api_client.api.score_runs import (
     core_api_create_score_run,
     core_api_get_score_run,
@@ -27,34 +31,27 @@ from aymara_sdk.generated.aymara_api_client import (
     models,
     client,
 )
+from aymara_sdk.logger import SDKLogger
 
 from aymara_sdk.types import (
-    CreateScoreNoWaitResponse,
-    CreateTestNoWaitResponse,
     GetTestResponse,
     CreateTestResponse,
-    Question,
+    QuestionResponse,
+    ScoreTestParams,
     ScoreTestResponse,
-    ScoredAnswer,
+    ScoredAnswerResponse,
     StudentAnswer,
+    TestParams,
 )
 
-from aymara_sdk.types import TestType, Status
+from aymara_sdk.types import Status
 
 
-logging.basicConfig(
-    level=logging.WARNING, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-
-POLLING_INTERVAL = 2
-
-logger = logging.getLogger("sdk")
-logger.setLevel(logging.DEBUG)
+POLLING_INTERVAL = 1  # seconds
 
 # Test Creation Defaults
 DEFAULT_MAX_WAIT_TIME: int = 120
 DEFAULT_NUM_QUESTIONS: int = 20
-DEFAULT_TEST_TYPE: TestType = TestType.SAFETY
 DEFAULT_TEST_LANGUAGE: str = "en"
 
 # Input Limit Defaults
@@ -69,6 +66,9 @@ DEFAULT_MAX_TOKENS: int = 100000
 class AymaraAI:
     """
     Aymara AI SDK Client
+
+    This class provides methods for interacting with the Aymara AI API, including
+    creating and managing tests, scoring tests, and retrieving results.
 
     :param api_key: API key for authenticating with the Aymara AI API.
         Read from the AYMARA_API_KEY environment variable if not provided.
@@ -85,15 +85,17 @@ class AymaraAI:
         base_url: str = "https://api.aymara.ai",
         max_wait_time: int = DEFAULT_MAX_WAIT_TIME,
     ):
+        self.logger = SDKLogger()
+
         if api_key is None:
             api_key = os.getenv("AYMARA_API_KEY")
         if api_key is None:
-            logger.error("API key is required")
+            self.logger.error("API key is required")
             raise ValueError("API key is required")
 
         self.client = client.Client(base_url=base_url, headers={"x-api-key": api_key})
         self.max_wait_time = max_wait_time
-        logger.info("AymaraAI client initialized with base URL: %s", base_url)
+        self.logger.info(f"AymaraAI client initialized with base URL: {base_url}")
 
     def __enter__(self):
         """
@@ -143,147 +145,177 @@ class AymaraAI:
     # Tests
     # ----------------
 
-    @overload
     def create_test(
         self,
         test_name: str,
         student_description: str,
-        test_type: TestType = DEFAULT_TEST_TYPE,
-        test_policy: Optional[str] = None,
-        test_system_prompt: Optional[str] = None,
+        test_policy: str,
         test_language: str = DEFAULT_TEST_LANGUAGE,
         n_test_questions: int = DEFAULT_NUM_QUESTIONS,
-        wait_for_completion: Literal[True] = True,
-    ) -> CreateTestResponse: ...
-
-    @overload
-    def create_test(
-        self,
-        test_name: str,
-        student_description: str,
-        test_type: TestType = DEFAULT_TEST_TYPE,
-        test_policy: Optional[str] = None,
-        test_system_prompt: Optional[str] = None,
-        test_language: str = DEFAULT_TEST_LANGUAGE,
-        n_test_questions: int = DEFAULT_NUM_QUESTIONS,
-        wait_for_completion: Literal[False] = False,
-    ) -> CreateTestNoWaitResponse: ...
-
-    def create_test(
-        self,
-        test_name: str,
-        student_description: str,
-        test_type: TestType = DEFAULT_TEST_TYPE,
-        test_policy: Optional[str] = None,
-        test_system_prompt: Optional[str] = None,
-        test_language: str = DEFAULT_TEST_LANGUAGE,
-        n_test_questions: int = DEFAULT_NUM_QUESTIONS,
-        wait_for_completion: bool = True,
-    ) -> Union[CreateTestResponse, CreateTestNoWaitResponse]:
+    ) -> CreateTestResponse:
         """
-        Create a test synchronously and optionally wait for completion.
+        Create a test synchronously and wait for completion.
 
-        :param test_name: Name of the test. Should be between DEFAULT_TEST_NAME_LEN_MIN and DEFAULT_TEST_NAME_LEN_MAX characters.
+        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
         :type test_name: str
-        :param test_policy: Policy of the test, which will measure compliance against this policy (required for safety tests).
-        :type test_policy: Optional[str]
-        :param test_system_prompt: System prompt of the AI that will take the test, which will measure compliance against these instructions (required for jailbreak tests).
-        :type test_system_prompt: Optional[str]
         :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
         :type student_description: str
-        :param test_language: Language of the test, defaults to DEFAULT_TEST_LANGUAGE.
+        :param test_policy: Policy of the test, which will measure compliance against this policy (required for safety tests).
+        :type test_policy: str
+        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
         :type test_language: str, optional
-        :param n_test_questions: Number of test questions, defaults to DEFAULT_NUM_QUESTIONS. Should be between DEFAULT_NUM_QUESTIONS_MIN and and DEFAULT_NUM_QUESTIONS_MAX questions.
+        :param n_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
         :type n_test_questions: int, optional
-        :param test_type: Type of the test, defaults to DEFAULT_TEST_TYPE.
-        :type test_type: TestType, optional
-        :param wait_for_completion: Whether to wait for the test to complete, defaults to True.
-        :type wait_for_completion: bool, optional
-        :return: Test response.
-        :rtype: Union[CreateTestResponse, CreateTestNoWaitResponse]
+        :return: Test response containing test details and generated questions.
+        :rtype: CreateTestResponse
+
+        :raises ValueError: If the test_name length is not within the allowed range.
+        :raises ValueError: If n_test_questions is not within the allowed range.
+        :raises ValueError: If test_policy is not provided for safety tests.
+        :raises ValueError: If test_system_prompt is not provided for jailbreak tests.
         """
-        if not DEFAULT_TEST_NAME_LEN_MIN <= len(test_name) <= DEFAULT_TEST_NAME_LEN_MAX:
-            raise ValueError(
-                f"test_name is {len(test_name)} characters. It should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters."
-            )
-
-        if (
-            not DEFAULT_NUM_QUESTIONS_MIN
-            <= n_test_questions
-            <= DEFAULT_NUM_QUESTIONS_MAX
-        ):
-            raise ValueError(
-                f"n_test_questions is {n_test_questions}. It should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions."
-            )
-
-        token1 = len(student_description) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
-        if test_type == TestType.SAFETY:
-            token2 = len(test_policy) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
-        elif test_type == TestType.JAILBREAK:
-            token2 = len(test_system_prompt) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
-        total_tokens = token1 + token2
-        if total_tokens > DEFAULT_MAX_TOKENS:
-            raise ValueError(
-                f"student_description is ~{token1:,} tokens and {'test_policy' if test_type == TestType.SAFETY else 'test_system_prompt'} is ~{token2:,} tokens. They are ~{total_tokens:,} tokens in total but they should be less than {DEFAULT_MAX_TOKENS:,} tokens."
-            )
-
         test_data = self._prepare_test_data(
-            test_name=test_name,
-            test_policy=test_policy,
-            test_system_prompt=test_system_prompt,
-            student_description=student_description,
-            test_language=test_language,
-            n_test_questions=n_test_questions,
-            test_type=test_type,
+            test_name,
+            test_policy,
+            student_description,
+            test_language,
+            n_test_questions,
         )
 
-        if wait_for_completion:
-            logger.info("Creating test and waiting for completion: %s", test_name)
-            return self._create_and_wait_for_test(test_data)
-        else:
-            logger.info("Creating test without waiting: %s", test_name)
-            response = core_api_create_test.sync(client=self.client, body=test_data)
-            return CreateTestNoWaitResponse(test_uuid=response.test_uuid)
-
-    @overload
-    async def create_test_async(
-        self,
-        test_name: str,
-        student_description: str,
-        test_policy: Optional[str] = None,
-        test_system_prompt: Optional[str] = None,
-        test_language: str = DEFAULT_TEST_LANGUAGE,
-        n_test_questions: int = DEFAULT_NUM_QUESTIONS,
-        test_type: TestType = DEFAULT_TEST_TYPE,
-        wait_for_completion: Literal[True] = True,
-    ) -> CreateTestResponse: ...
-
-    @overload
-    async def create_test_async(
-        self,
-        test_name: str,
-        student_description: str,
-        test_policy: Optional[str] = None,
-        test_system_prompt: Optional[str] = None,
-        test_language: str = DEFAULT_TEST_LANGUAGE,
-        n_test_questions: int = DEFAULT_NUM_QUESTIONS,
-        test_type: TestType = DEFAULT_TEST_TYPE,
-        wait_for_completion: Literal[False] = False,
-    ) -> CreateTestNoWaitResponse: ...
+        return self._create_and_wait_for_test(test_data)
 
     async def create_test_async(
         self,
         test_name: str,
         student_description: str,
-        test_policy: Optional[str] = None,
-        test_system_prompt: Optional[str] = None,
+        test_policy: str,
         test_language: str = DEFAULT_TEST_LANGUAGE,
         n_test_questions: int = DEFAULT_NUM_QUESTIONS,
-        test_type: TestType = DEFAULT_TEST_TYPE,
-        wait_for_completion: bool = False,
-    ) -> Union[CreateTestResponse, CreateTestNoWaitResponse]:
+    ) -> CreateTestResponse:
         """
-        Create a test asynchronously and optionally wait for completion.
+        Create a test asynchronously and wait for completion.
+
+        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
+        :type test_name: str
+        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
+        :type student_description: str
+        :param test_policy: Policy of the test, which will measure compliance against this policy (required for safety tests).
+        :type test_policy: str
+        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
+        :type test_language: str, optional
+        :param n_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
+        :type n_test_questions: int, optional
+        :return: Test response containing test details and generated questions.
+        :rtype: CreateTestResponse
+
+        :raises ValueError: If the test_name length is not within the allowed range.
+        :raises ValueError: If n_test_questions is not within the allowed range.
+        :raises ValueError: If test_policy is not provided for safety tests.
+        :raises ValueError: If test_system_prompt is not provided for jailbreak tests.
+        """
+        test_data = self._prepare_test_data(
+            test_name,
+            test_policy,
+            student_description,
+            test_language,
+            n_test_questions,
+        )
+
+        return await self._create_and_wait_for_test_async(test_data)
+
+    def get_test(self, test_uuid: str) -> GetTestResponse:
+        """
+        Get the current status of a test, and questions if it is completed.
+
+        :param test_uuid: UUID of the test.
+        :type test_uuid: str
+        :return: Test response.
+        :rtype: GetTestResponse
+        """
+        self.logger.debug(f"Getting test for: {test_uuid}")
+        test_response = core_api_get_test.sync(client=self.client, test_uuid=test_uuid)
+        test_status = self._transform_test_status(test_response.test_status)
+        questions = None
+        if test_response.test_status == models.TestStatus.FINISHED:
+            questions = self._get_all_questions(test_uuid)
+
+        self.logger.debug(f"Test status for {test_uuid}: {test_status.value}")
+        return GetTestResponse(
+            test_uuid=test_uuid,
+            test_name=test_response.test_name,
+            test_status=test_status,
+            test_type=test_response.test_type,
+            questions=questions,
+        )
+
+    async def get_test_async(self, test_uuid: str) -> GetTestResponse:
+        """
+        Get the current status of a test asynchronously, and questions if it is completed.
+
+        :param test_uuid: UUID of the test.
+        :type test_uuid: str
+        :return: Test response.
+        :rtype: GetTestResponse
+        """
+        self.logger.debug(f"Getting test asynchronously for: {test_uuid}")
+        test_response = await core_api_get_test.asyncio(
+            client=self.client, test_uuid=test_uuid
+        )
+        test_status = self._transform_test_status(test_response.test_status)
+        questions = None
+        if test_response.test_status == models.TestStatus.FINISHED:
+            questions = await self._get_all_questions_async(test_uuid)
+
+        self.logger.debug("Test status for %s: %s", test_uuid, test_status.value)
+        return GetTestResponse(
+            test_uuid=test_uuid,
+            test_name=test_response.test_name,
+            test_status=test_status,
+            test_type=test_response.test_type,
+            questions=[
+                QuestionResponse.from_question_schema(question)
+                for question in questions
+            ]
+            if questions
+            else None,
+        )
+
+    async def create_multiple_tests_async(
+        self, test_inputs: List[TestParams]
+    ) -> List[CreateTestResponse]:
+        """
+        Create multiple tests asynchronously and monitor their progress.
+
+        :param test_inputs: List of TestParams objects containing test creation inputs.
+        :type test_inputs: List[TestParams]
+        :return: List of CreateTestResponse objects for the created tests.
+        :rtype: List[CreateTestResponse]
+        """
+
+        tasks = [
+            self._create_and_wait_for_test_async(test_data) for test_data in test_inputs
+        ]
+        results = []
+        for task in tqdm.as_completed(
+            tasks,
+            desc="Creating tests...",
+            unit="tests",
+            bar_format="{desc}: {percentage:3.0f}% |{bar}| {n_fmt}/{total_fmt}",
+        ):
+            result = await task
+            results.append(result)
+        return results
+
+    def _prepare_test_data(
+        self,
+        test_name: str,
+        test_policy: str,
+        student_description: str,
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        n_test_questions: int = DEFAULT_NUM_QUESTIONS,
+    ) -> models.TestSchema:
+        """
+        Prepare the test data for creating a test.
 
         :param test_name: Name of the test.
         :type test_name: str
@@ -297,143 +329,29 @@ class AymaraAI:
         :type test_language: str, optional
         :param n_test_questions: Number of test questions, defaults to DEFAULT_NUM_QUESTIONS.
         :type n_test_questions: int, optional
-        :param test_type: Type of the test, defaults to DEFAULT_TEST_TYPE.
-        :type test_type: TestType, optional
-        :param wait_for_completion: Whether to wait for the test to complete, defaults to False.
-        :type wait_for_completion: bool, optional
-        :return: Test response.
-        :rtype: Union[CreateTestResponse, CreateTestNoWaitResponse]
-        """
-        test_data = self._prepare_test_data(
-            test_name,
-            test_policy,
-            test_system_prompt,
-            student_description,
-            test_language,
-            n_test_questions,
-            test_type,
-        )
-
-        if wait_for_completion:
-            logger.info("Creating test and waiting for completion: %s", test_name)
-            return await self._create_and_wait_for_test_async(test_data)
-        else:
-            logger.info("Creating test asynchronously: %s", test_name)
-            response = await core_api_create_test.asyncio(
-                client=self.client, body=test_data
-            )
-            return CreateTestNoWaitResponse(test_uuid=response.test_uuid)
-
-    def get_test(self, test_uuid: str) -> GetTestResponse:
-        """
-        Get the current status of a test, and questions if it is completed.
-
-        :param test_uuid: UUID of the test.
-        :type test_uuid: str
-        :return: Test response.
-        :rtype: GetTestResponse
-        """
-        logger.info("Getting test for: %s", test_uuid)
-        test_response = core_api_get_test.sync(client=self.client, test_uuid=test_uuid)
-        test_status = self._transform_test_status(test_response.test_status)
-        questions = None
-        if test_response.test_status == models.TestStatus.FINISHED:
-            questions = self._get_all_questions(test_uuid)
-
-        logger.debug("Test status for %s: %s", test_uuid, test_status.value)
-        return GetTestResponse(
-            test_uuid=test_uuid,
-            test_name=test_response.test_name,
-            test_status=test_status,
-            test_type=test_response.test_type,
-            questions=[
-                Question.from_question_schema(question) for question in questions
-            ]
-            if questions
-            else None,
-        )
-
-    async def get_test_async(self, test_uuid: str) -> GetTestResponse:
-        """
-        Get the current status of a test asynchronously, and questions if it is completed.
-
-        :param test_uuid: UUID of the test.
-        :type test_uuid: str
-        :return: Test response.
-        :rtype: GetTestResponse
-        """
-        logger.info("Getting test asynchronously for: %s", test_uuid)
-        test_response = await core_api_get_test.asyncio(
-            client=self.client, test_uuid=test_uuid
-        )
-        test_status = self._transform_test_status(test_response.test_status)
-        questions = None
-        if test_response.test_status == models.TestStatus.FINISHED:
-            questions = await self._get_all_questions_async(test_uuid)
-
-        logger.debug("Test status for %s: %s", test_uuid, test_status.value)
-        return GetTestResponse(
-            test_uuid=test_uuid,
-            test_name=test_response.test_name,
-            test_status=test_status,
-            test_type=test_response.test_type,
-            questions=[
-                Question.from_question_schema(question) for question in questions
-            ]
-            if questions
-            else None,
-        )
-
-    def _prepare_test_data(
-        self,
-        test_name: str,
-        test_policy: Optional[str],
-        test_system_prompt: Optional[str],
-        student_description: str,
-        test_language: str = DEFAULT_TEST_LANGUAGE,
-        n_test_questions: int = DEFAULT_NUM_QUESTIONS,
-        test_type: TestType = DEFAULT_TEST_TYPE,
-    ) -> models.TestSchema:
-        """
-        Prepare the test data for creating a test.
-
-        :param test_name: Name of the test.
-        :type test_name: str
-        :param test_policy: Policy for the test (required for safety tests).
-        :type test_policy: Optional[str]
-        :param test_system_prompt: System prompt for the test (required for jailbreak tests).
-        :type test_system_prompt: Optional[str]
-        :param student_description: Description of the student.
-        :type student_description: str
-        :param test_language: Language of the test, defaults to TEST_LANGUAGE.
-        :type test_language: str, optional
-        :param n_test_questions: Number of test questions, defaults to NUM_QUESTIONS.
-        :type n_test_questions: int, optional
-        :param test_type: Type of the test, defaults to TEST_TYPE.
-        :type test_type: TestType, optional
         :return: Prepared test data.
         :rtype: models.TestSchema
+
+        :raises ValueError: If test_policy is not provided for safety tests.
+        :raises ValueError: If test_system_prompt is not provided for jailbreak tests.
         """
-        if test_type == TestType.SAFETY and test_policy is None:
+        if test_policy is None:
+            self.logger.error("test_policy is required for safety tests")
             raise ValueError("test_policy is required for safety tests")
-        if test_type == TestType.JAILBREAK and test_system_prompt is None:
-            raise ValueError("test_system_prompt is required for jailbreak tests")
 
         return models.TestSchema(
             test_name=test_name,
-            test_type=test_type,
             test_language=test_language,
             n_test_questions=n_test_questions,
             student_description=student_description,
             test_policy=test_policy,
-            test_system_prompt=test_system_prompt,
         )
 
     def _create_test_response(
         self,
         test_uuid: str,
-        test_status: str,
-        test_type: str,
+        test_name: str,
+        test_status: models.TestStatus,
         questions: List[models.QuestionSchema],
     ) -> CreateTestResponse:
         """
@@ -442,9 +360,7 @@ class AymaraAI:
         :param test_uuid: UUID of the test.
         :type test_uuid: str
         :param test_status: Status of the test.
-        :type test_status: str
-        :param test_type: Type of the test.
-        :type test_type: str
+        :type test_status: models.TestStatus
         :param questions: List of test questions.
         :type questions: List[models.QuestionSchema]
         :return: Created test response.
@@ -452,13 +368,12 @@ class AymaraAI:
         """
         return CreateTestResponse(
             test_uuid=test_uuid,
+            test_name=test_name,
             test_status=self._transform_test_status(test_status),
-            test_type=test_type,
             questions=[
-                Question.from_question_schema(question) for question in questions
-            ]
-            if questions
-            else None,
+                QuestionResponse.from_question_schema(question)
+                for question in questions
+            ],
         )
 
     def _get_all_questions(self, test_uuid: str) -> List[models.QuestionSchema]:
@@ -499,94 +414,94 @@ class AymaraAI:
     def _create_and_wait_for_test(
         self, test_data: models.TestSchema
     ) -> CreateTestResponse:
-        """
-        Create a test and wait for it to complete.
-
-        :param test_data: Data for creating the test.
-        :type test_data: models.TestSchema
-        :return: Test response.
-        :rtype: CreateTestResponse
-        """
         start_time = time.time()
         create_response = core_api_create_test.sync(client=self.client, body=test_data)
+
         test_uuid = create_response.test_uuid
+        test_name = test_data.test_name
 
-        while True:
-            test_response = core_api_get_test.sync(
-                client=self.client, test_uuid=test_uuid
-            )
-            logger.debug(
-                "Test %s status: %s",
-                test_uuid,
-                self._transform_test_status(test_response.test_status).value,
-            )
-
-            if test_response.test_status == models.TestStatus.FAILED:
-                logger.error("Test creation failed for %s", test_uuid)
-                raise TestCreationError(f"Test creation failed for {test_uuid}")
-
-            if test_response.test_status == models.TestStatus.FINISHED:
-                logger.info("Test creation completed for %s", test_uuid)
-                questions = self._get_all_questions(test_uuid)
-                return self._create_test_response(
-                    test_uuid,
-                    test_response.test_status,
-                    test_response.test_type,
-                    questions,
+        with self.logger.progress_bar(
+            test_name,
+            test_uuid,
+            self._transform_test_status(create_response.test_status),
+        ):
+            while True:
+                test_response = core_api_get_test.sync(
+                    client=self.client, test_uuid=test_uuid
                 )
 
-            if time.time() - start_time > self.max_wait_time:
-                logger.error("Test creation timed out for %s", test_uuid)
-                raise TimeoutError("Test creation timed out")
+                self.logger.update_progress_bar(
+                    test_uuid,
+                    self._transform_test_status(test_response.test_status),
+                )
 
-            time.sleep(POLLING_INTERVAL)
+                if (
+                    test_response.test_status == models.TestStatus.FINISHED
+                    or test_response.test_status == models.TestStatus.FAILED
+                ):
+                    questions = self._get_all_questions(test_uuid)
+
+                    return self._create_test_response(
+                        test_uuid,
+                        test_name,
+                        test_response.test_status,
+                        questions,
+                    )
+
+                elapsed_time = int(time.time() - start_time)
+
+                if elapsed_time > self.max_wait_time:
+                    self.logger.error(f"Test creation timed out for {test_name}")
+                    return None
+
+                time.sleep(POLLING_INTERVAL)
 
     async def _create_and_wait_for_test_async(
         self, test_data: models.TestSchema
-    ) -> CreateTestResponse:
-        """
-        Create a test asynchronously and wait for it to complete.
-
-        :param test_data: Data for creating the test.
-        :type test_data: models.TestSchema
-        :return: Test response.
-        :rtype: CreateTestResponse
-        """
-        start_time = asyncio.get_event_loop().time()
+    ) -> Optional[CreateTestResponse]:
+        start_time = time.time()
         create_response = await core_api_create_test.asyncio(
             client=self.client, body=test_data
         )
+
         test_uuid = create_response.test_uuid
+        test_name = test_data.test_name
 
-        while True:
-            test_response = await core_api_get_test.asyncio(
-                client=self.client, test_uuid=test_uuid
-            )
-            logger.debug(
-                "Test %s status: %s",
-                test_uuid,
-                self._transform_test_status(test_response.test_status).value,
-            )
-
-            if test_response.test_status == models.TestStatus.FAILED:
-                logger.error("Test creation failed for %s", test_uuid)
-                raise TestCreationError(f"Test creation failed for {test_uuid}")
-
-            if test_response.test_status == models.TestStatus.FINISHED:
-                logger.info("Test creation completed for %s", test_uuid)
-                questions = await self._get_all_questions_async(test_uuid)
-                return self._create_test_response(
-                    test_uuid,
-                    test_response.test_status,
-                    test_response.test_type,
-                    questions,
+        with self.logger.progress_bar(
+            test_name,
+            test_uuid,
+            self._transform_test_status(create_response.test_status),
+        ):
+            while True:
+                test_response = await core_api_get_test.asyncio(
+                    client=self.client, test_uuid=test_uuid
                 )
 
-            if asyncio.get_event_loop().time() - start_time > self.max_wait_time:
-                logger.error("Test creation timed out for %s", test_uuid)
-                raise TimeoutError("Test creation timed out")
+                self.logger.update_progress_bar(
+                    test_uuid,
+                    self._transform_test_status(test_response.test_status),
+                )
 
-            await asyncio.sleep(POLLING_INTERVAL)
+                if (
+                    test_response.test_status == models.TestStatus.FINISHED
+                    or test_response.test_status == models.TestStatus.FAILED
+                ):
+                    questions = await self._get_all_questions_async(test_uuid)
+
+                    return self._create_test_response(
+                        test_uuid,
+                        test_name,
+                        test_response.test_status,
+                        questions,
+                    )
+
+                elapsed_time = int(time.time() - start_time)
+
+                if elapsed_time > self.max_wait_time:
+                    self.logger.error(f"Test creation timed out for {test_name}")
+                    return None
+
+                await asyncio.sleep(POLLING_INTERVAL)
 
     def _transform_test_status(self, api_test_status: models.TestStatus) -> Status:
         """
@@ -609,108 +524,47 @@ class AymaraAI:
     # Scores
     # ----------------
 
-    @overload
     def score_test(
         self,
         test_uuid: str,
         student_answers: List[StudentAnswer],
-        wait_for_completion: Literal[True] = True,
-    ) -> ScoreTestResponse: ...
-
-    @overload
-    def score_test(
-        self,
-        test_uuid: str,
-        student_answers: List[StudentAnswer],
-        wait_for_completion: Literal[False] = False,
-    ) -> CreateScoreNoWaitResponse: ...
-
-    def score_test(
-        self,
-        test_uuid: str,
-        student_answers: List[StudentAnswer],
-        wait_for_completion: bool = True,
-    ) -> Union[ScoreTestResponse, CreateScoreNoWaitResponse]:
+    ) -> ScoreTestResponse:
         """
-        Score a test synchronously and optionally wait for completion.
+        Score a test synchronously.
 
         :param test_uuid: UUID of the test.
         :type test_uuid: str
         :param student_answers: List of StudentAnswer objects containing student responses.
         :type student_answers: List[StudentAnswer]
-        :param wait_for_completion: Whether to wait for the score to complete, defaults to True.
-        :type wait_for_completion: bool, optional
         :return: Score response.
-        :rtype: Union[ScoreTestResponse, CreateScoreNoWaitResponse]
+        :rtype: ScoreTestResponse
         """
-        logger.info("Scoring test: %s", test_uuid)
         score_data = self._prepare_score_data(test_uuid, student_answers)
 
-        if wait_for_completion:
-            logger.info("Scoring test and waiting for completion: %s", test_uuid)
-            score_response = self._create_and_wait_for_score(score_data)
-        else:
-            logger.info("Creating score run without waiting: test_uuid=%s", test_uuid)
-            response = core_api_create_score_run.sync(
-                client=self.client, body=score_data
-            )
-            score_response = CreateScoreNoWaitResponse(
-                score_run_uuid=response.score_run_uuid
-            )
-
-        logger.info("Score run created: %s", score_response.score_run_uuid)
-        return score_response
-
-    @overload
-    async def score_test_async(
-        self,
-        test_uuid: str,
-        student_answers: List[StudentAnswer],
-        wait_for_completion: Literal[True],
-    ) -> ScoreTestResponse: ...
-
-    @overload
-    async def score_test_async(
-        self,
-        test_uuid: str,
-        student_answers: List[StudentAnswer],
-        wait_for_completion: Literal[False] = False,
-    ) -> CreateScoreNoWaitResponse: ...
+        return self._create_and_wait_for_score(score_data)
 
     async def score_test_async(
         self,
         test_uuid: str,
         student_answers: List[StudentAnswer],
-        wait_for_completion: bool = True,
-    ) -> Union[ScoreTestResponse, CreateScoreNoWaitResponse]:
+    ) -> ScoreTestResponse:
         """
-        Score a test asynchronously and optionally wait for completion.
+        Score a test asynchronously.
 
         :param test_uuid: UUID of the test.
         :type test_uuid: str
         :param student_answers: List of StudentAnswer objects containing student responses.
         :type student_answers: List[StudentAnswer]
-        :param wait_for_completion: Whether to wait for the score to complete, defaults to True.
-        :type wait_for_completion: bool, optional
         :return: Score response.
-        :rtype: Union[ScoreTestResponse, CreateScoreNoWaitResponse]
+        :rtype: ScoreTestResponse
         """
-        logger.info("Scoring test asynchronously: %s", test_uuid)
+        self.logger.info("Scoring test asynchronously: %s", test_uuid)
         score_data = self._prepare_score_data(test_uuid, student_answers)
 
-        if wait_for_completion:
-            logger.info("Scoring test and waiting for completion: %s", test_uuid)
-            score_response = await self._create_and_wait_for_score_async(score_data)
-        else:
-            logger.info("Creating score run asynchronously: %s", test_uuid)
-            response = await core_api_create_score_run.asyncio(
-                client=self.client, body=score_data
-            )
-            score_response = CreateScoreNoWaitResponse(
-                score_run_uuid=response.score_run_uuid
-            )
+        self.logger.info("Scoring test and waiting for completion: %s", test_uuid)
+        score_response = await self._create_and_wait_for_score_async(score_data)
 
-        logger.info(
+        self.logger.info(
             "Score run created asynchronously: %s", score_response.score_run_uuid
         )
         return score_response
@@ -724,7 +578,6 @@ class AymaraAI:
         :return: Score test response.
         :rtype: ScoreTestResponse
         """
-        logger.info("Getting score run for: %s", score_run_uuid)
         score_run_response = core_api_get_score_run.sync(
             client=self.client, score_run_uuid=score_run_uuid
         )
@@ -734,7 +587,6 @@ class AymaraAI:
             answers = self._get_all_score_run_answers(score_run_uuid)
         return self._create_score_run_response(
             score_run_response.test.test_uuid,
-            score_run_response.test.test_type,
             score_run_response.test.test_name,
             score_run_response.test.n_test_questions,
             score_run_uuid,
@@ -752,7 +604,7 @@ class AymaraAI:
         :return: Score test response.
         :rtype: ScoreTestResponse
         """
-        logger.info("Getting score run asynchronously for: %s", score_run_uuid)
+        self.logger.info("Getting score run asynchronously for: %s", score_run_uuid)
         score_run_response = await core_api_get_score_run.asyncio(
             client=self.client, score_run_uuid=score_run_uuid
         )
@@ -761,13 +613,43 @@ class AymaraAI:
             answers = await self._get_all_score_run_answers_async(score_run_uuid)
         return self._create_score_run_response(
             score_run_response.test.test_uuid,
-            score_run_response.test.test_type,
             score_run_response.test.test_name,
             score_run_response.test.n_test_questions,
             score_run_uuid,
             score_run_response.score_run_status,
             answers,
         )
+
+    async def score_multiple_tests_async(
+        self, score_inputs: List[ScoreTestParams]
+    ) -> List[ScoreTestResponse]:
+        """
+        Score multiple tests asynchronously and monitor their progress.
+
+        :param score_inputs: List of ScoreTestParams objects containing score run inputs.
+        :type score_inputs: List[ScoreTestParams]
+        :return: List of ScoreTestResponse objects for the scored tests.
+        :rtype: List[ScoreTestResponse]
+        """
+
+        tasks = [
+            self._create_and_wait_for_score_async(
+                self._prepare_score_data(
+                    score_input.test_uuid, score_input.student_responses
+                )
+            )
+            for score_input in score_inputs
+        ]
+        results = []
+        for task in tqdm.as_completed(
+            tasks,
+            desc="Scoring tests...",
+            unit="tests",
+            bar_format="{desc}: {percentage:3.0f}% |{bar}| {n_fmt}/{total_fmt}",
+        ):
+            result = await task
+            results.append(result)
+        return results
 
     def _prepare_score_data(
         self,
@@ -811,42 +693,45 @@ class AymaraAI:
             client=self.client, body=score_data
         )
         score_run_uuid = score_response.score_run_uuid
+        test_name = score_data.test_uuid
 
-        while True:
-            score_response = core_api_get_score_run.sync(
-                client=self.client, score_run_uuid=score_run_uuid
-            )
-            logger.debug(
-                "Score run %s status: %s",
-                score_run_uuid,
-                self._transform_score_status(score_response.score_run_status).value,
-            )
-
-            if score_response.score_run_status == models.ScoreRunStatus.FAILED:
-                logger.error("Score run failed for %s", score_run_uuid)
-                raise ScoreRunError(f"Score run failed for {score_run_uuid}")
-
-            if score_response.score_run_status == models.ScoreRunStatus.FINISHED:
-                answers = self._get_all_score_run_answers(score_run_uuid)
-                logger.info(
-                    "Score run completed for test type %s, answers: %s",
-                    score_response.test.test_type,
-                    answers,
+        with self.logger.progress_bar(
+            test_name,
+            score_run_uuid,
+            self._transform_score_status(score_response.score_run_status),
+        ):
+            while True:
+                score_response = core_api_get_score_run.sync(
+                    client=self.client, score_run_uuid=score_run_uuid
                 )
-                return self._create_score_run_response(
-                    score_response.test.test_uuid,
-                    score_response.test.test_type,
-                    score_response.test.test_name,
-                    score_response.test.n_test_questions,
+
+                self.logger.update_progress_bar(
                     score_run_uuid,
-                    score_response.score_run_status,
-                    answers,
+                    self._transform_score_status(score_response.score_run_status),
                 )
-            if time.time() - start_time > self.max_wait_time:
-                logger.error("Score run timed out for %s", score_run_uuid)
-                raise TimeoutError("Score run timed out")
 
-            time.sleep(POLLING_INTERVAL)
+                if score_response.score_run_status == models.ScoreRunStatus.FAILED:
+                    self.logger.error("Score run failed for %s", score_run_uuid)
+                    raise ScoreRunError(f"Score run failed for {score_run_uuid}")
+
+                if score_response.score_run_status == models.ScoreRunStatus.FINISHED:
+                    answers = self._get_all_score_run_answers(score_run_uuid)
+                    return self._create_score_run_response(
+                        score_response.test.test_uuid,
+                        score_response.test.test_name,
+                        score_response.test.n_test_questions,
+                        score_run_uuid,
+                        score_response.score_run_status,
+                        answers,
+                    )
+
+                elapsed_time = int(time.time() - start_time)
+
+                if elapsed_time > self.max_wait_time:
+                    self.logger.error("Score run timed out for %s", score_run_uuid)
+                    raise TimeoutError("Score run timed out")
+
+                time.sleep(POLLING_INTERVAL)
 
     async def _create_and_wait_for_score_async(
         self, score_data: models.ScoreRunSchema
@@ -859,43 +744,52 @@ class AymaraAI:
         :return: Score test response.
         :rtype: ScoreTestResponse
         """
-        start_time = asyncio.get_event_loop().time()
+        start_time = time.time()
         score_response = await core_api_create_score_run.asyncio(
             client=self.client, body=score_data
         )
         score_run_uuid = score_response.score_run_uuid
+        test_name = score_data.test_uuid
 
-        while True:
-            score_response = await core_api_get_score_run.asyncio(
-                client=self.client, score_run_uuid=score_run_uuid
-            )
-            logger.debug(
-                "Score run %s status: %s",
-                score_run_uuid,
-                self._transform_score_status(score_response.score_run_status).value,
-            )
-
-            if score_response.score_run_status == models.ScoreRunStatus.FAILED:
-                logger.error("Score run failed for %s", score_run_uuid)
-                raise ScoreRunError(f"Score run failed for {score_run_uuid}")
-
-            if score_response.score_run_status == models.ScoreRunStatus.FINISHED:
-                answers = await self._get_all_score_run_answers_async(score_run_uuid)
-                logger.info("Score run completed with %s", score_response)
-                return self._create_score_run_response(
-                    score_response.test.test_uuid,
-                    score_response.test.test_type,
-                    score_response.test.test_name,
-                    score_response.test.n_test_questions,
-                    score_run_uuid,
-                    score_response.score_run_status,
-                    answers,
+        with self.logger.progress_bar(
+            test_name,
+            score_run_uuid,
+            self._transform_score_status(score_response.score_run_status),
+        ):
+            while True:
+                score_response = await core_api_get_score_run.asyncio(
+                    client=self.client, score_run_uuid=score_run_uuid
                 )
-            if asyncio.get_event_loop().time() - start_time > self.max_wait_time:
-                logger.error("Score run timed out for %s", score_run_uuid)
-                raise TimeoutError("Score run timed out")
 
-            await asyncio.sleep(POLLING_INTERVAL)
+                self.logger.update_progress_bar(
+                    score_run_uuid,
+                    self._transform_score_status(score_response.score_run_status),
+                )
+
+                if score_response.score_run_status == models.ScoreRunStatus.FAILED:
+                    self.logger.error("Score run failed for %s", score_run_uuid)
+                    raise ScoreRunError(f"Score run failed for {score_run_uuid}")
+
+                if score_response.score_run_status == models.ScoreRunStatus.FINISHED:
+                    answers = await self._get_all_score_run_answers_async(
+                        score_run_uuid
+                    )
+                    return self._create_score_run_response(
+                        score_response.test.test_uuid,
+                        score_response.test.test_name,
+                        score_response.test.n_test_questions,
+                        score_run_uuid,
+                        score_response.score_run_status,
+                        answers,
+                    )
+
+                elapsed_time = int(time.time() - start_time)
+
+                if elapsed_time > self.max_wait_time:
+                    self.logger.error("Score run timed out for %s", score_run_uuid)
+                    raise TimeoutError("Score run timed out")
+
+                await asyncio.sleep(POLLING_INTERVAL)
 
     def _get_all_score_run_answers(
         self, score_run_uuid: str
@@ -936,7 +830,6 @@ class AymaraAI:
     def _create_score_run_response(
         self,
         test_uuid: str,
-        test_type: models.TestType,
         test_name: str,
         num_test_questions: int,
         score_run_uuid: str,
@@ -951,16 +844,13 @@ class AymaraAI:
         :return: Processed score test response.
         :rtype: ScoreTestResponse
         """
-
         return ScoreTestResponse(
             test_uuid=test_uuid,
             num_test_questions=num_test_questions,
             score_run_uuid=score_run_uuid,
             score_run_status=self._transform_score_status(score_run_status),
             test_name=test_name,
-            answers=[self._transform_answer(test_type, answer) for answer in answers]
-            if answers
-            else None,
+            answers=[self._transform_answer(answer) for answer in answers],
         )
 
     def _transform_score_status(
@@ -983,8 +873,8 @@ class AymaraAI:
         return status_mapping[api_score_status]
 
     def _transform_answer(
-        self, test_type: models.TestType, api_answer: models.AnswerSchema
-    ) -> ScoredAnswer:
+        self, api_answer: models.AnswerSchema
+    ) -> ScoredAnswerResponse:
         """
         Transform an API answer to the user-friendly Answer model.
 
@@ -995,11 +885,8 @@ class AymaraAI:
         :return: Transformed scored answer.
         :rtype: ScoredAnswer
         """
-        if not isinstance(test_type, TestType):
-            logger.warning(
-                "Unexpected test_type: %s is not of type TestType", type(test_type)
-            )
-        return ScoredAnswer(
+
+        return ScoredAnswerResponse(
             question_uuid=api_answer.question.question_uuid,
             question_text=api_answer.question.question_text,
             answer_uuid=api_answer.answer_uuid,

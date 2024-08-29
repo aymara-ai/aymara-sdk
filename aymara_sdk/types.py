@@ -5,12 +5,18 @@ Types for the SDK
 from typing import Annotated, List, Optional
 from enum import Enum
 from pydantic import BaseModel, Field
-
+import pandas as pd
 from aymara_sdk.generated.aymara_api_client.models.answer_in_schema import (
     AnswerInSchema as _AnswerInSchema,
 )
+from aymara_sdk.generated.aymara_api_client.models.test_schema import (
+    TestSchema as TestParams,
+)
+
+
 from aymara_sdk.generated.aymara_api_client.models.question_schema import QuestionSchema
-from aymara_sdk.generated.aymara_api_client.models.test_type import TestType
+
+__all__ = ["TestParams"]
 
 
 class Status(Enum):
@@ -19,61 +25,6 @@ class Status(Enum):
     FAILED = "failed"
     PENDING = "pending"
     COMPLETED = "completed"
-
-
-class Question(BaseModel):
-    """
-    Question in the test
-    """
-
-    question_text: Annotated[str, Field(..., description="Question in the test")]
-    question_uuid: Annotated[str, Field(..., description="UUID of the question")]
-
-    @classmethod
-    def from_question_schema(cls, question: QuestionSchema) -> "Question":
-        return cls(
-            question_uuid=question.question_uuid, question_text=question.question_text
-        )
-
-    def to_question_schema(self) -> QuestionSchema:
-        return QuestionSchema(
-            question_uuid=self.question_uuid, question_text=self.question_text
-        )
-
-
-class GetTestResponse(BaseModel):
-    """
-    Response for getting a test
-    """
-
-    test_uuid: Annotated[str, Field(..., description="UUID of the test")]
-    test_name: Annotated[str, Field(..., description="Name of the test")]
-    test_type: Annotated[TestType, Field(..., description="Type of the test")]
-    test_status: Annotated[Status, Field(..., description="Status of the test")]
-    questions: Annotated[
-        List[Question] | None, Field(None, description="Questions in the test")
-    ]
-
-
-class CreateTestResponse(BaseModel):
-    """
-    Create test response
-    """
-
-    test_uuid: Annotated[str, Field(..., description="UUID of the test")]
-    test_status: Annotated[Status, Field(..., description="Status of the test")]
-    test_type: Annotated[TestType, Field(..., description="Type of the test")]
-    questions: Annotated[
-        List[Question], Field(..., description="Questions in the test")
-    ]
-
-
-class CreateTestNoWaitResponse(BaseModel):
-    """
-    Create test and don't wait for completion response
-    """
-
-    test_uuid: Annotated[str, Field(..., description="UUID of the test")]
 
 
 class StudentAnswer(BaseModel):
@@ -107,7 +58,53 @@ class ScoreTestParams(BaseModel):
     ]
 
 
-class ScoredAnswer(BaseModel):
+class QuestionResponse(BaseModel):
+    """
+    Question in the test
+    """
+
+    question_text: Annotated[str, Field(..., description="Question in the test")]
+    question_uuid: Annotated[str, Field(..., description="UUID of the question")]
+
+    @classmethod
+    def from_question_schema(cls, question: QuestionSchema) -> "QuestionResponse":
+        return cls(
+            question_uuid=question.question_uuid, question_text=question.question_text
+        )
+
+    def to_question_schema(self) -> QuestionSchema:
+        return QuestionSchema(
+            question_uuid=self.question_uuid, question_text=self.question_text
+        )
+
+
+class GetTestResponse(BaseModel):
+    """
+    Response for getting a test
+    """
+
+    test_uuid: Annotated[str, Field(..., description="UUID of the test")]
+    test_name: Annotated[str, Field(..., description="Name of the test")]
+    test_status: Annotated[Status, Field(..., description="Status of the test")]
+    questions: Annotated[
+        List[QuestionResponse] | None, Field(None, description="Questions in the test")
+    ]
+
+
+class CreateTestResponse(BaseModel):
+    """
+    Create test response
+    """
+
+    test_uuid: Annotated[str, Field(..., description="UUID of the test")]
+    test_name: Annotated[str, Field(..., description="Name of the test")]
+    test_status: Annotated[Status, Field(..., description="Status of the test")]
+    questions: Annotated[
+        List[QuestionResponse], Field(..., description="Questions in the test")
+    ]
+
+
+class ScoredAnswerResponse(BaseModel):
     """
     Scored answer
     """
@@ -137,7 +134,7 @@ class ScoreTestResponse(BaseModel):
         int, Field(..., description="Number of test questions")
     ]
     answers: Annotated[
-        List[ScoredAnswer],
+        List[ScoredAnswerResponse],
         Field(None, description="List of scored answers"),
     ]
 
@@ -145,10 +142,5 @@ class ScoreTestResponse(BaseModel):
         num_unsafe_answers = len(self.answers)
         return (self.num_test_questions - num_unsafe_answers) / self.num_test_questions
 
-
-class CreateScoreNoWaitResponse(BaseModel):
-    """
-    Create score and don't wait for completion response
-    """
-
-    score_run_uuid: Annotated[str, Field(..., description="UUID of the score run")]
+    def to_dataframe(self) -> pd.DataFrame:
+        return pd.DataFrame(self.answers)
