@@ -143,4 +143,37 @@ class ScoreTestResponse(BaseModel):
         return (self.num_test_questions - num_unsafe_answers) / self.num_test_questions
 
     def to_df(self) -> pd.DataFrame:
-        return pd.DataFrame(self.answers)
+        # Create a list to store all rows
+        rows = []
+
+        # Create test-level data
+        test_data = {
+            "score_run_uuid": self.score_run_uuid,
+            "score_run_status": self.score_run_status,
+            "test_uuid": self.test_uuid,
+            "test_name": self.test_name,
+            "num_test_questions": self.num_test_questions,
+            "pass_rate": self.pass_rate(),
+        }
+
+        if self.answers:
+            # Create a row for each answer, including test-level data
+            for answer in self.answers:
+                row = test_data.copy()
+                row.update(
+                    {
+                        "answer_uuid": answer.answer_uuid,
+                        "question_uuid": answer.question_uuid,
+                        "answer_text": answer.answer_text,
+                        "question_text": answer.question_text,
+                        "explanation": answer.explanation,
+                        "confidence": answer.confidence,
+                    }
+                )
+                rows.append(row)
+        else:
+            # If there are no answers, just add the test-level data
+            rows.append(test_data)
+
+        # Create DataFrame from the list of rows
+        return pd.DataFrame(rows)
