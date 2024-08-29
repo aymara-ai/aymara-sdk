@@ -15,7 +15,7 @@ from matplotlib.ticker import FuncFormatter
 import pandas as pd
 
 
-from typing import List, Optional
+from typing import List, Optional, Union
 from aymara_sdk.errors import ScoreRunError
 from aymara_sdk.generated.aymara_api_client.api.score_runs import (
     core_api_create_score_run,
@@ -693,7 +693,7 @@ class AymaraAI:
             client=self.client, body=score_data
         )
         score_run_uuid = score_response.score_run_uuid
-        test_name = score_data.test_uuid
+        test_name = score_response.test.test_name
 
         with self.logger.progress_bar(
             test_name,
@@ -749,7 +749,7 @@ class AymaraAI:
             client=self.client, body=score_data
         )
         score_run_uuid = score_response.score_run_uuid
-        test_name = score_data.test_uuid
+        test_name = score_response.test.test_name
 
         with self.logger.progress_bar(
             test_name,
@@ -906,18 +906,22 @@ class AymaraAI:
         :param score_runs: List of test score runs to graph.
         :type score_runs: List[ScoreTestResponse]
         :return: DataFrame of pass rates per score run.
-        :rtype: pd.DataFrame 
+        :rtype: pd.DataFrame
         """
         if isinstance(score_runs, ScoreTestResponse):
             score_runs = [score_runs]
 
         return pd.DataFrame(
             data={
-                'test_name': [score.test_name for score in score_runs],
-                'pass_rate': [score.pass_rate() for score in score_runs],
-                'pass_total': [score.pass_rate() * score.num_test_questions for score in score_runs],
+                "test_name": [score.test_name for score in score_runs],
+                "pass_rate": [score.pass_rate() for score in score_runs],
+                "pass_total": [
+                    score.pass_rate() * score.num_test_questions for score in score_runs
+                ],
             },
-            index=pd.Index([score.score_run_uuid for score in score_runs], name='score_run_uuid'),
+            index=pd.Index(
+                [score.score_run_uuid for score in score_runs], name="score_run_uuid"
+            ),
         )
 
     @staticmethod
@@ -926,7 +930,7 @@ class AymaraAI:
         title: Optional[str] = None,
         ylim_min: Optional[float] = None,
         yaxis_is_percent: bool = True,
-        ylabel: str = 'Answers Passed',
+        ylabel: str = "Answers Passed",
         xaxis_is_tests: bool = True,
         xlabel: Optional[str] = None,
         xtick_rot: float = 30.0,
@@ -960,33 +964,38 @@ class AymaraAI:
             score_runs = [score_runs]
 
         pass_rates = [score.pass_rate() for score in score_runs]
-        names = [score.test_name if xaxis_is_tests else score.score_run_uuid for score in score_runs]
+        names = [
+            score.test_name if xaxis_is_tests else score.score_run_uuid
+            for score in score_runs
+        ]
 
         if ylim_min is None:
             ylim_min = math.floor(min(pass_rates) * 10) / 10
 
         fig, ax = plt.subplots()
         ax.bar(names, pass_rates, **kwargs)
-        
+
         # Title
         ax.set_title(title)
 
         # x-axis
         ax.set_xticks(range(len(names)))
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=xtick_rot, ha='right')
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=xtick_rot, ha="right")
         if xlabel is None:
-            xlabel = 'Tests' if xaxis_is_tests else 'Score Runs'
-        ax.set_xlabel(xlabel, fontweight='bold')
+            xlabel = "Tests" if xaxis_is_tests else "Score Runs"
+        ax.set_xlabel(xlabel, fontweight="bold")
         if xtick_labels_dict:
             xtick_labels = [label.get_text() for label in ax.get_xticklabels()]
             new_labels = [xtick_labels_dict.get(label, label) for label in xtick_labels]
             ax.set_xticklabels(new_labels)
 
         # y-axis
-        ax.set_ylabel(ylabel, fontweight='bold')
+        ax.set_ylabel(ylabel, fontweight="bold")
         if yaxis_is_percent:
+
             def to_percent(y, _):
-                    return f'{y * 100:.0f}%'
+                return f"{y * 100:.0f}%"
+
             ax.yaxis.set_major_formatter(FuncFormatter(to_percent))
 
         plt.tight_layout()
