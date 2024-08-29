@@ -14,7 +14,7 @@ If you found a bug, have a question, or want to request a feature, say hello at 
 
 ## Documentation
 
-[docs.aymara.ai](http://docs.aymara.ai/) has our full library API. [api.aymara.ai/docs](https://api.aymara.ai/docs) has our REST API documentation.
+[docs.aymara.ai](http://docs.aymara.ai/) has our full library API.
 
 ## Features
 
@@ -173,7 +173,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-Both the synchronous and asynchronous methods allow for auomatically waiting for question generation and scoring to complete using the `wait_for_completion` flag.
+Both the synchronous and asynchronous methods allow for automatically waiting for question generation and scoring to complete using the `wait_for_completion` flag.
 
 ## Versioning
 
