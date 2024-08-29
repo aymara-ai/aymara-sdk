@@ -142,5 +142,5 @@ class ScoreTestResponse(BaseModel):
         num_unsafe_answers = len(self.answers)
         return (self.num_test_questions - num_unsafe_answers) / self.num_test_questions
 
-    def to_dataframe(self) -> pd.DataFrame:
+    def to_df(self) -> pd.DataFrame:
         return pd.DataFrame(self.answers)

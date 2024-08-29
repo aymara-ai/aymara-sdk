@@ -21,6 +21,7 @@ from aymara_sdk.generated.aymara_api_client.api.score_runs import (
     core_api_create_score_run,
     core_api_get_score_run,
     core_api_get_score_run_answers,
+    core_api_list_score_runs,
 )
 from aymara_sdk.generated.aymara_api_client.api.tests import (
     core_api_create_test,
@@ -30,6 +31,9 @@ from aymara_sdk.generated.aymara_api_client.api.tests import (
 from aymara_sdk.generated.aymara_api_client import (
     models,
     client,
+)
+from aymara_sdk.generated.aymara_api_client.models.score_run_out_schema import (
+    ScoreRunOutSchema,
 )
 from aymara_sdk.logger import SDKLogger
 
@@ -619,6 +623,37 @@ class AymaraAI:
             score_run_response.score_run_status,
             answers,
         )
+
+    def list_score_runs(
+        self, test_uuid: str, workspace_uuid: str
+    ) -> List[ScoreRunOutSchema]:
+        """
+        List all score runs for a specific test in a workspace.
+
+        This method retrieves all score runs associated with the given test UUID and workspace UUID.
+        It handles pagination internally, fetching all available results.
+
+        :param test_uuid: The UUID of the test to list score runs for.
+        :type test_uuid: str
+        :param workspace_uuid: The UUID of the workspace containing the test.
+        :type workspace_uuid: str
+        :return: A list of ScoreRunOutSchema objects representing all score runs for the test.
+        :rtype: List[ScoreRunOutSchema]
+        """
+        score_runs = []
+        offset = 0
+        while True:
+            response = core_api_list_score_runs.sync(
+                client=self.client,
+                test_uuid=test_uuid,
+                workspace_uuid=workspace_uuid,
+                offset=offset,
+            )
+            score_runs.extend(response.items)
+            if len(score_runs) >= response.count:
+                break
+            offset += len(response.items)
+        return score_runs
 
     async def score_multiple_tests_async(
         self, score_inputs: List[ScoreTestParams]

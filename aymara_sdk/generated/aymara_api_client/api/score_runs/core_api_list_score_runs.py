@@ -11,10 +11,16 @@ from ...types import UNSET, Response, Unset
 
 def _get_kwargs(
     *,
+    test_uuid: Union[Unset, str] = UNSET,
+    workspace_uuid: Union[Unset, str] = UNSET,
     limit: Union[Unset, int] = 100,
     offset: Union[Unset, int] = 0,
 ) -> Dict[str, Any]:
     params: Dict[str, Any] = {}
+
+    params["test_uuid"] = test_uuid
+
+    params["workspace_uuid"] = workspace_uuid
 
     params["limit"] = limit
 
@@ -58,12 +64,16 @@ def _build_response(
 def sync_detailed(
     *,
     client: AuthenticatedClient,
+    test_uuid: Union[Unset, str] = UNSET,
+    workspace_uuid: Union[Unset, str] = UNSET,
     limit: Union[Unset, int] = 100,
     offset: Union[Unset, int] = 0,
 ) -> Response[PagedScoreRunOutSchema]:
     """List Score Runs
 
     Args:
+        test_uuid (Union[Unset, str]):
+        workspace_uuid (Union[Unset, str]):
         limit (Union[Unset, int]):  Default: 100.
         offset (Union[Unset, int]):  Default: 0.
 
@@ -76,6 +86,8 @@ def sync_detailed(
     """
 
     kwargs = _get_kwargs(
+        test_uuid=test_uuid,
+        workspace_uuid=workspace_uuid,
         limit=limit,
         offset=offset,
     )
@@ -90,12 +102,16 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient,
+    test_uuid: Union[Unset, str] = UNSET,
+    workspace_uuid: Union[Unset, str] = UNSET,
     limit: Union[Unset, int] = 100,
     offset: Union[Unset, int] = 0,
 ) -> Optional[PagedScoreRunOutSchema]:
     """List Score Runs
 
     Args:
+        test_uuid (Union[Unset, str]):
+        workspace_uuid (Union[Unset, str]):
         limit (Union[Unset, int]):  Default: 100.
         offset (Union[Unset, int]):  Default: 0.
 
@@ -109,6 +125,8 @@ def sync(
 
     return sync_detailed(
         client=client,
+        test_uuid=test_uuid,
+        workspace_uuid=workspace_uuid,
         limit=limit,
         offset=offset,
     ).parsed
@@ -117,12 +135,16 @@ def sync(
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
+    test_uuid: Union[Unset, str] = UNSET,
+    workspace_uuid: Union[Unset, str] = UNSET,
     limit: Union[Unset, int] = 100,
     offset: Union[Unset, int] = 0,
 ) -> Response[PagedScoreRunOutSchema]:
     """List Score Runs
 
     Args:
+        test_uuid (Union[Unset, str]):
+        workspace_uuid (Union[Unset, str]):
         limit (Union[Unset, int]):  Default: 100.
         offset (Union[Unset, int]):  Default: 0.
 
@@ -135,6 +157,8 @@ async def asyncio_detailed(
     """
 
     kwargs = _get_kwargs(
+        test_uuid=test_uuid,
+        workspace_uuid=workspace_uuid,
         limit=limit,
         offset=offset,
     )
@@ -147,12 +171,16 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient,
+    test_uuid: Union[Unset, str] = UNSET,
+    workspace_uuid: Union[Unset, str] = UNSET,
     limit: Union[Unset, int] = 100,
     offset: Union[Unset, int] = 0,
 ) -> Optional[PagedScoreRunOutSchema]:
     """List Score Runs
 
     Args:
+        test_uuid (Union[Unset, str]):
+        workspace_uuid (Union[Unset, str]):
         limit (Union[Unset, int]):  Default: 100.
         offset (Union[Unset, int]):  Default: 0.
 
@@ -167,6 +195,8 @@ async def asyncio(
     return (
         await asyncio_detailed(
             client=client,
+            test_uuid=test_uuid,
+            workspace_uuid=workspace_uuid,
             limit=limit,
             offset=offset,
         )
