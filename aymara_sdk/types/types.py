@@ -14,11 +14,11 @@ from aymara_sdk.generated.aymara_api_client.models.question_schema import Questi
 from aymara_sdk.generated.aymara_api_client.models.score_run_out_schema import (
     ScoreRunOutSchema,
 )
+from aymara_sdk.generated.aymara_api_client.models.test_out_schema import TestOutSchema
+from aymara_sdk.generated.aymara_api_client.models.test_status import TestStatus
 from aymara_sdk.generated.aymara_api_client.models.score_run_status import (
     ScoreRunStatus,
 )
-from aymara_sdk.generated.aymara_api_client.models.test_out_schema import TestOutSchema
-from aymara_sdk.generated.aymara_api_client.models.test_status import TestStatus
 
 
 class Status(Enum):
@@ -27,6 +27,35 @@ class Status(Enum):
     FAILED = "failed"
     PENDING = "pending"
     COMPLETED = "completed"
+
+    @classmethod
+    def from_api_status(cls, api_status: Union[TestStatus, ScoreRunStatus]) -> "Status":
+        """
+        Transform an API status to the user-friendly status.
+
+        :param api_status: API status (either TestStatus or ScoreRunStatus).
+        :type api_status: Union[TestStatus, ScoreRunStatus]
+        :return: Transformed status.
+        :rtype: Status
+        """
+        if isinstance(api_status, TestStatus):
+            status_mapping = {
+                TestStatus.RECORD_CREATED: Status.PENDING,
+                TestStatus.GENERATING_QUESTIONS: Status.PENDING,
+                TestStatus.FINISHED: Status.COMPLETED,
+                TestStatus.FAILED: Status.FAILED,
+            }
+        elif isinstance(api_status, ScoreRunStatus):
+            status_mapping = {
+                ScoreRunStatus.RECORD_CREATED: Status.PENDING,
+                ScoreRunStatus.SCORING: Status.PENDING,
+                ScoreRunStatus.FINISHED: Status.COMPLETED,
+                ScoreRunStatus.FAILED: Status.FAILED,
+            }
+        else:
+            raise ValueError(f"Unexpected status type: {type(api_status)}")
+
+        return status_mapping.get(api_status)
 
 
 class StudentAnswerInput(BaseModel):
@@ -106,7 +135,7 @@ class GetTestResponse(BaseTestResponse):
         return cls(
             test_uuid=test.test_uuid,
             test_name=test.test_name,
-            test_status=transform_api_status(test.test_status),
+            test_status=Status.from_api_status(test.test_status),
             questions=[
                 QuestionResponse.from_question_schema(question)
                 for question in questions
@@ -132,7 +161,7 @@ class CreateTestResponse(BaseTestResponse):
         return cls(
             test_uuid=test.test_uuid,
             test_name=test.test_name,
-            test_status=transform_api_status(test.test_status),
+            test_status=Status.from_api_status(test.test_status),
             questions=[
                 QuestionResponse.from_question_schema(question)
                 for question in questions
@@ -240,7 +269,7 @@ class GetScoreRunResponse(BaseScoreRunResponse):
     ) -> "GetScoreRunResponse":
         return cls(
             score_run_uuid=score_run.score_run_uuid,
-            score_run_status=transform_api_status(score_run.score_run_status),
+            score_run_status=Status.from_api_status(score_run.score_run_status),
             test_uuid=score_run.test.test_uuid,
             test_name=score_run.test.test_name,
             num_test_questions=score_run.test.n_test_questions,
@@ -268,7 +297,7 @@ class CreateScoreRunResponse(BaseScoreRunResponse):
     ) -> "CreateScoreRunResponse":
         return cls(
             score_run_uuid=score_run.score_run_uuid,
-            score_run_status=transform_api_status(score_run.score_run_status),
+            score_run_status=Status.from_api_status(score_run.score_run_status),
             test_uuid=score_run.test.test_uuid,
             test_name=score_run.test.test_name,
             num_test_questions=score_run.test.n_test_questions,
@@ -277,35 +306,3 @@ class CreateScoreRunResponse(BaseScoreRunResponse):
                 for answer in answers
             ],
         )
-
-
-# Utilities
-
-
-def transform_api_status(api_status: Union[TestStatus, ScoreRunStatus]) -> Status:
-    """
-    Transform an API status to the user-friendly status.
-
-    :param api_status: API status (either TestStatus or ScoreRunStatus).
-    :type api_status: Union[TestStatus, ScoreRunStatus]
-    :return: Transformed status.
-    :rtype: Status
-    """
-    if isinstance(api_status, TestStatus):
-        status_mapping = {
-            TestStatus.RECORD_CREATED: Status.PENDING,
-            TestStatus.GENERATING_QUESTIONS: Status.PENDING,
-            TestStatus.FINISHED: Status.COMPLETED,
-            TestStatus.FAILED: Status.FAILED,
-        }
-    elif isinstance(api_status, ScoreRunStatus):
-        status_mapping = {
-            ScoreRunStatus.RECORD_CREATED: Status.PENDING,
-            ScoreRunStatus.SCORING: Status.PENDING,
-            ScoreRunStatus.FINISHED: Status.COMPLETED,
-            ScoreRunStatus.FAILED: Status.FAILED,
-        }
-    else:
-        raise ValueError(f"Unexpected status type: {type(api_status)}")
-
-    return status_mapping.get(api_status)

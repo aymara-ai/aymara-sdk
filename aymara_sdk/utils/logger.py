@@ -1,13 +1,14 @@
-import time
-from tqdm.auto import tqdm
-from contextlib import contextmanager
 import logging
+import time
+from contextlib import contextmanager
 
-from aymara_sdk.types import Status
+from tqdm.auto import tqdm
+
+from ..types import Status
 
 
 class SDKLogger(logging.Logger):
-    def __init__(self, name="sdk", level=logging.INFO):
+    def __init__(self, name="sdk", level=logging.DEBUG):
         super().__init__(name, level)
 
         # Set up logging

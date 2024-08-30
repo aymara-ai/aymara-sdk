@@ -5,41 +5,32 @@ This module provides the main interface for interacting with the Aymara AI API.
 It includes functionality for creating and managing tests, scoring tests, and visualizing results.
 """
 
-import os
-from matplotlib.ticker import FuncFormatter
-import pandas as pd
-import matplotlib.pyplot as plt
+from __future__ import annotations
+
 import math
-from typing import List, Union, Optional
+import os
+from typing import List, Optional, Union
+
+import pandas as pd
+from matplotlib import pyplot as plt
+from matplotlib.ticker import FuncFormatter
+
+from aymara_sdk.core.protocols import AymaraAIProtocol
+from aymara_sdk.core.score_run import ScoreRunMixin
+from aymara_sdk.core.tests import TestMixin
 from aymara_sdk.generated.aymara_api_client import (
     client,
 )
-
-from aymara_sdk.logger import SDKLogger
-from aymara_sdk.scores_runs.async_client import ScoreRunAsyncMixin
-from aymara_sdk.scores_runs.sync_client import ScoreRunSyncMixin
-from aymara_sdk.tests.async_client import TestAsyncMixin
-from aymara_sdk.tests.sync_client import TestSyncMixin
 from aymara_sdk.types import BaseScoreRunResponse
+from aymara_sdk.utils.constants import DEFAULT_MAX_WAIT_TIME
+from aymara_sdk.utils.logger import SDKLogger
 
 
-POLLING_INTERVAL = 1  # seconds
-
-# Test Creation Defaults
-DEFAULT_MAX_WAIT_TIME: int = 120
-DEFAULT_NUM_QUESTIONS: int = 20
-DEFAULT_TEST_LANGUAGE: str = "en"
-
-# Input Limit Defaults
-DEFAULT_TEST_NAME_LEN_MIN: int = 1
-DEFAULT_TEST_NAME_LEN_MAX: int = 100
-DEFAULT_NUM_QUESTIONS_MIN: int = 1
-DEFAULT_NUM_QUESTIONS_MAX: int = 150
-DEFAULT_CHAR_TO_TOKEN_MULTIPLIER: float = 0.15
-DEFAULT_MAX_TOKENS: int = 100000
-
-
-class AymaraAI(TestSyncMixin, ScoreRunSyncMixin, TestAsyncMixin, ScoreRunAsyncMixin):
+class AymaraAI(
+    TestMixin,
+    ScoreRunMixin,
+    AymaraAIProtocol,
+):
     """
     Aymara AI SDK Client
 
@@ -51,7 +42,7 @@ class AymaraAI(TestSyncMixin, ScoreRunSyncMixin, TestAsyncMixin, ScoreRunAsyncMi
     :type api_key: str, optional
     :param base_url: Base URL for the Aymara AI API, defaults to "https://api.aymara.ai".
     :type base_url: str, optional
-    :param max_wait_time: Maximum wait time for test creation, defaults to DEFAULT_MAX_WAIT_TIME.
+    :param max_wait_time: Maximum wait time for test creation, defaults to {DEFAULT_MAX_WAIT_TIME}.
     :type max_wait_time: int, optional
     """
 
@@ -71,7 +62,7 @@ class AymaraAI(TestSyncMixin, ScoreRunSyncMixin, TestAsyncMixin, ScoreRunAsyncMi
 
         self.client = client.Client(base_url=base_url, headers={"x-api-key": api_key})
         self.max_wait_time = max_wait_time
-        self.logger.info(f"AymaraAI client initialized with base URL: {base_url}")
+        self.logger.debug(f"AymaraAI client initialized with base URL: {base_url}")
 
     def __enter__(self):
         """

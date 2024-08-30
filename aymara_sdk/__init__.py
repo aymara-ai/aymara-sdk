@@ -1,3 +1,4 @@
-from .sdk import AymaraAI
+from .core.sdk import AymaraAI
+from . import types
 
-__all__ = ["AymaraAI"]
+__all__ = ["AymaraAI", "types"]
