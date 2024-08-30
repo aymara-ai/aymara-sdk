@@ -16,7 +16,7 @@ from matplotlib import pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
 from aymara_sdk.core.protocols import AymaraAIProtocol
-from aymara_sdk.core.score_run import ScoreRunMixin
+from aymara_sdk.core.score_runs import ScoreRunMixin
 from aymara_sdk.core.tests import TestMixin
 from aymara_sdk.generated.aymara_api_client import (
     client,
