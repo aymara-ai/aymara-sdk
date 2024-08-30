@@ -2,10 +2,12 @@
 Types for the SDK
 """
 
-from typing import Annotated, List, Optional, Union
 from enum import Enum
-from pydantic import BaseModel, Field
+from typing import Annotated, List, Optional, Union
+
 import pandas as pd
+from pydantic import BaseModel, Field
+
 from aymara_sdk.generated.aymara_api_client.models.answer_in_schema import (
     AnswerInSchema,
 )
@@ -14,11 +16,11 @@ from aymara_sdk.generated.aymara_api_client.models.question_schema import Questi
 from aymara_sdk.generated.aymara_api_client.models.score_run_out_schema import (
     ScoreRunOutSchema,
 )
-from aymara_sdk.generated.aymara_api_client.models.test_out_schema import TestOutSchema
-from aymara_sdk.generated.aymara_api_client.models.test_status import TestStatus
 from aymara_sdk.generated.aymara_api_client.models.score_run_status import (
     ScoreRunStatus,
 )
+from aymara_sdk.generated.aymara_api_client.models.test_out_schema import TestOutSchema
+from aymara_sdk.generated.aymara_api_client.models.test_status import TestStatus
 
 
 class Status(Enum):
@@ -40,17 +42,17 @@ class Status(Enum):
         """
         if isinstance(api_status, TestStatus):
             status_mapping = {
-                TestStatus.RECORD_CREATED: Status.PENDING,
-                TestStatus.GENERATING_QUESTIONS: Status.PENDING,
-                TestStatus.FINISHED: Status.COMPLETED,
-                TestStatus.FAILED: Status.FAILED,
+                TestStatus.RECORD_CREATED: cls.PENDING,
+                TestStatus.GENERATING_QUESTIONS: cls.PENDING,
+                TestStatus.FINISHED: cls.COMPLETED,
+                TestStatus.FAILED: cls.FAILED,
             }
         elif isinstance(api_status, ScoreRunStatus):
             status_mapping = {
-                ScoreRunStatus.RECORD_CREATED: Status.PENDING,
-                ScoreRunStatus.SCORING: Status.PENDING,
-                ScoreRunStatus.FINISHED: Status.COMPLETED,
-                ScoreRunStatus.FAILED: Status.FAILED,
+                ScoreRunStatus.RECORD_CREATED: cls.PENDING,
+                ScoreRunStatus.SCORING: cls.PENDING,
+                ScoreRunStatus.FINISHED: cls.COMPLETED,
+                ScoreRunStatus.FAILED: cls.FAILED,
             }
         else:
             raise ValueError(f"Unexpected status type: {type(api_status)}")
@@ -109,29 +111,29 @@ class QuestionResponse(BaseModel):
         )
 
 
-class BaseTestResponse(BaseModel):
+class TestResponse(BaseModel):
     """
-    Base test response
+    Test response. May or may not have questions, depending on the test status.
     """
 
     test_uuid: Annotated[str, Field(..., description="UUID of the test")]
     test_name: Annotated[str, Field(..., description="Name of the test")]
     test_status: Annotated[Status, Field(..., description="Status of the test")]
 
-
-class GetTestResponse(BaseTestResponse):
-    """
-    Response for getting a test. May not have questions if the test is not completed.
-    """
-
     questions: Annotated[
         List[QuestionResponse] | None, Field(None, description="Questions in the test")
+    ]
+    failure_reason: Annotated[
+        Optional[str], Field(None, description="Reason for the test failure")
     ]
 
     @classmethod
     def from_test_out_schema_and_questions(
-        cls, test: TestOutSchema, questions: List[QuestionSchema]
-    ) -> "GetTestResponse":
+        cls,
+        test: TestOutSchema,
+        questions: List[QuestionSchema],
+        failure_reason: Optional[str],
+    ) -> "TestResponse":
         return cls(
             test_uuid=test.test_uuid,
             test_name=test.test_name,
@@ -142,30 +144,7 @@ class GetTestResponse(BaseTestResponse):
             ]
             if questions
             else None,
-        )
-
-
-class CreateTestResponse(BaseTestResponse):
-    """
-    Create test response. Will have test questions as we wait for the test to be completed.
-    """
-
-    questions: Annotated[
-        List[QuestionResponse], Field(..., description="Questions in the test")
-    ]
-
-    @classmethod
-    def from_test_out_schema_and_questions(
-        cls, test: TestOutSchema, questions: List[QuestionSchema]
-    ) -> "CreateTestResponse":
-        return cls(
-            test_uuid=test.test_uuid,
-            test_name=test.test_name,
-            test_status=Status.from_api_status(test.test_status),
-            questions=[
-                QuestionResponse.from_question_schema(question)
-                for question in questions
-            ],
+            failure_reason=failure_reason,
         )
 
 
@@ -195,9 +174,9 @@ class ScoredAnswerResponse(BaseModel):
         )
 
 
-class BaseScoreRunResponse(BaseModel):
+class ScoreRunResponse(BaseModel):
     """
-    Base score run response
+    Score run response. May or may not have answers, depending on the score run status.
     """
 
     score_run_uuid: Annotated[str, Field(..., description="UUID of the score run")]
@@ -208,6 +187,14 @@ class BaseScoreRunResponse(BaseModel):
     test_name: Annotated[str, Field(..., description="Name of the test")]
     num_test_questions: Annotated[
         int, Field(..., description="Number of test questions")
+    ]
+    answers: Annotated[
+        List[ScoredAnswerResponse] | None,
+        Field(None, description="List of scored answers"),
+    ]
+
+    failure_reason: Annotated[
+        Optional[str], Field(None, description="Reason for the score run failure")
     ]
 
     def pass_rate(self) -> float:
@@ -252,21 +239,13 @@ class BaseScoreRunResponse(BaseModel):
         # Create DataFrame from the list of rows
         return pd.DataFrame(rows)
 
-
-class GetScoreRunResponse(BaseScoreRunResponse):
-    """
-    Response for getting a score run. May not have answers if the score run is not completed.
-    """
-
-    answers: Annotated[
-        List[ScoredAnswerResponse] | None,
-        Field(None, description="List of scored answers"),
-    ]
-
     @classmethod
     def from_score_run_out_schema_and_answers(
-        cls, score_run: ScoreRunOutSchema, answers: List[AnswerSchema]
-    ) -> "GetScoreRunResponse":
+        cls,
+        score_run: ScoreRunOutSchema,
+        answers: List[AnswerSchema],
+        failure_reason: Optional[str],
+    ) -> "ScoreRunResponse":
         return cls(
             score_run_uuid=score_run.score_run_uuid,
             score_run_status=Status.from_api_status(score_run.score_run_status),
@@ -279,30 +258,5 @@ class GetScoreRunResponse(BaseScoreRunResponse):
             ]
             if answers
             else None,
-        )
-
-
-class CreateScoreRunResponse(BaseScoreRunResponse):
-    """
-    Response for creating a score run. Will have answers as we wait for the score run to be completed.
-    """
-
-    answers: Annotated[
-        List[ScoredAnswerResponse], Field(..., description="List of scored answers")
-    ]
-
-    @classmethod
-    def from_score_run_out_schema_and_answers(
-        cls, score_run: ScoreRunOutSchema, answers: List[AnswerSchema]
-    ) -> "CreateScoreRunResponse":
-        return cls(
-            score_run_uuid=score_run.score_run_uuid,
-            score_run_status=Status.from_api_status(score_run.score_run_status),
-            test_uuid=score_run.test.test_uuid,
-            test_name=score_run.test.test_name,
-            num_test_questions=score_run.test.n_test_questions,
-            answers=[
-                ScoredAnswerResponse.from_answer_out_schema(answer)
-                for answer in answers
-            ],
+            failure_reason=failure_reason,
         )

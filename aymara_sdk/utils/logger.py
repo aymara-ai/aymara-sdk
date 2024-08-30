@@ -48,7 +48,6 @@ class SDKLogger(logging.Logger):
         task = self.tasks[uuid]
         task["status"] = status
         task["pbar"].set_description_str(self._get_progress_description(uuid))
-
         if status == Status.FAILED:
             task["pbar"].colour = "red"
         elif status == Status.COMPLETED:

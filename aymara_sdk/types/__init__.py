@@ -1,15 +1,11 @@
 from .types import (
-    Status,
-    StudentAnswerInput,
     CreateScoreRunInput,
     QuestionResponse,
-    BaseTestResponse,
-    GetTestResponse,
-    CreateTestResponse,
     ScoredAnswerResponse,
-    BaseScoreRunResponse,
-    GetScoreRunResponse,
-    CreateScoreRunResponse,
+    ScoreRunResponse,
+    Status,
+    StudentAnswerInput,
+    TestResponse,
 )
 
 __all__ = [
@@ -18,10 +14,7 @@ __all__ = [
     "CreateScoreRunInput",
     "QuestionResponse",
     "BaseTestResponse",
-    "GetTestResponse",
-    "CreateTestResponse",
+    "TestResponse",
     "ScoredAnswerResponse",
-    "BaseScoreRunResponse",
-    "GetScoreRunResponse",
-    "CreateScoreRunResponse",
+    "ScoreRunResponse",
 ]

@@ -21,7 +21,7 @@ from aymara_sdk.core.tests import TestMixin
 from aymara_sdk.generated.aymara_api_client import (
     client,
 )
-from aymara_sdk.types import BaseScoreRunResponse
+from aymara_sdk.types.types import ScoreRunResponse
 from aymara_sdk.utils.constants import DEFAULT_MAX_WAIT_TIME
 from aymara_sdk.utils.logger import SDKLogger
 
@@ -60,7 +60,11 @@ class AymaraAI(
             self.logger.error("API key is required")
             raise ValueError("API key is required")
 
-        self.client = client.Client(base_url=base_url, headers={"x-api-key": api_key})
+        self.client = client.Client(
+            base_url=base_url,
+            headers={"x-api-key": api_key},
+            raise_on_unexpected_status=True,
+        )
         self.max_wait_time = max_wait_time
         self.logger.debug(f"AymaraAI client initialized with base URL: {base_url}")
 
@@ -111,7 +115,7 @@ class AymaraAI(
     # Utility
     @staticmethod
     def get_pass_stats(
-        score_runs: Union[List[BaseScoreRunResponse], BaseScoreRunResponse],
+        score_runs: Union[List[ScoreRunResponse], ScoreRunResponse],
     ) -> pd.DataFrame:
         """
         Create a DataFrame of pass rates and pass totals from one or more score runs.
@@ -121,7 +125,7 @@ class AymaraAI(
         :return: DataFrame of pass rates per score run.
         :rtype: pd.DataFrame
         """
-        if isinstance(score_runs, BaseScoreRunResponse):
+        if isinstance(score_runs, ScoreRunResponse):
             score_runs = [score_runs]
 
         return pd.DataFrame(
@@ -139,7 +143,7 @@ class AymaraAI(
 
     @staticmethod
     def graph_pass_rates(
-        score_runs: Union[List[BaseScoreRunResponse], BaseScoreRunResponse],
+        score_runs: Union[List[ScoreRunResponse], ScoreRunResponse],
         title: Optional[str] = None,
         ylim_min: Optional[float] = None,
         yaxis_is_percent: bool = True,
@@ -173,7 +177,7 @@ class AymaraAI(
         :type xtick_labels_dict: dict, optional
         :param kwargs: Options to pass to matplotlib.pyplot.bar.
         """
-        if isinstance(score_runs, BaseScoreRunResponse):
+        if isinstance(score_runs, ScoreRunResponse):
             score_runs = [score_runs]
 
         pass_rates = [score.pass_rate() for score in score_runs]
