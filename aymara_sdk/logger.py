@@ -1,5 +1,4 @@
 import time
-from colorama import Fore, Style
 from tqdm.auto import tqdm
 from contextlib import contextmanager
 import logging
