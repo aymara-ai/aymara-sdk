@@ -30,4 +30,4 @@ test-integration:
 
 
 generate-client:
-	openapi-python-client generate --url http://localhost:8000/openapi.json --output-path aymara_sdk/generated --overwrite
+	openapi-python-client generate --url http://localhost:8000/openapi.json --output-path aymara_sdk/generated --overwrite --config aymara_sdk/client_config.yml

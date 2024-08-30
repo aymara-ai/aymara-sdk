@@ -5,10 +5,10 @@ from typing import Coroutine, List, Union
 from aymara_sdk.core.protocols import AymaraAIProtocol
 from aymara_sdk.generated.aymara_api_client import models
 from aymara_sdk.generated.aymara_api_client.api.score_runs import (
-    core_api_create_score_run,
-    core_api_get_score_run,
-    core_api_get_score_run_answers,
-    core_api_list_score_runs,
+    create_score_run,
+    get_score_run,
+    get_score_run_answers,
+    list_score_runs,
 )
 from aymara_sdk.types.types import (
     ScoreRunResponse,
@@ -68,7 +68,10 @@ class ScoreRunMixin(AymaraAIProtocol):
             ],
         )
 
-        return self._create_and_wait_for_score_impl(score_data, is_async)
+        if is_async:
+            return self._create_and_wait_for_score_impl_async(score_data)
+        else:
+            return self._create_and_wait_for_score_impl_sync(score_data)
 
     # Get Score Run Methods
     def get_score_run(self, score_run_uuid: str) -> ScoreRunResponse:
@@ -102,7 +105,7 @@ class ScoreRunMixin(AymaraAIProtocol):
             return self._get_score_run_sync_impl(score_run_uuid)
 
     def _get_score_run_sync_impl(self, score_run_uuid: str) -> ScoreRunResponse:
-        score_response = core_api_get_score_run.sync(
+        score_response = get_score_run.sync(
             client=self.client, score_run_uuid=score_run_uuid
         )
         answers = None
@@ -114,7 +117,7 @@ class ScoreRunMixin(AymaraAIProtocol):
         )
 
     async def _get_score_run_async_impl(self, score_run_uuid: str) -> ScoreRunResponse:
-        score_response = await core_api_get_score_run.asyncio(
+        score_response = await get_score_run.asyncio(
             client=self.client, score_run_uuid=score_run_uuid
         )
         answers = None
@@ -157,7 +160,7 @@ class ScoreRunMixin(AymaraAIProtocol):
             return self._list_score_runs_sync_impl(test_uuid)
 
     def _list_score_runs_sync_impl(self, test_uuid: str) -> List[ScoreRunResponse]:
-        score_run_response = core_api_list_score_runs.sync(
+        score_run_response = list_score_runs.sync(
             client=self.client, test_uuid=test_uuid
         )
         return [
@@ -168,7 +171,7 @@ class ScoreRunMixin(AymaraAIProtocol):
     async def _list_score_runs_async_impl(
         self, test_uuid: str
     ) -> List[ScoreRunResponse]:
-        score_run_response = await core_api_list_score_runs.asyncio(
+        score_run_response = await list_score_runs.asyncio(
             client=self.client, test_uuid=test_uuid
         )
         return [
@@ -177,15 +180,11 @@ class ScoreRunMixin(AymaraAIProtocol):
         ]
 
     # Helper Methods
-    async def _create_and_wait_for_score_impl(
-        self, score_data: models.ScoreRunSchema, is_async: bool
+    def _create_and_wait_for_score_impl_sync(
+        self, score_data: models.ScoreRunSchema
     ) -> ScoreRunResponse:
         start_time = time.time()
-        score_response = (
-            await core_api_create_score_run.asyncio(client=self.client, body=score_data)
-            if is_async
-            else core_api_create_score_run.sync(client=self.client, body=score_data)
-        )
+        score_response = create_score_run.sync(client=self.client, body=score_data)
         score_run_uuid = score_response.score_run_uuid
         test_name = score_response.test.test_name
 
@@ -195,14 +194,8 @@ class ScoreRunMixin(AymaraAIProtocol):
             Status.from_api_status(score_response.score_run_status),
         ):
             while True:
-                score_response = (
-                    await core_api_get_score_run.asyncio(
-                        client=self.client, score_run_uuid=score_run_uuid
-                    )
-                    if is_async
-                    else core_api_get_score_run.sync(
-                        client=self.client, score_run_uuid=score_run_uuid
-                    )
+                score_response = get_score_run.sync(
+                    client=self.client, score_run_uuid=score_run_uuid
                 )
 
                 self.logger.update_progress_bar(
@@ -216,10 +209,55 @@ class ScoreRunMixin(AymaraAIProtocol):
                     )
 
                 if score_response.score_run_status == models.ScoreRunStatus.FINISHED:
-                    answers = (
-                        await self._get_all_score_run_answers_async(score_run_uuid)
-                        if is_async
-                        else self._get_all_score_run_answers_sync(score_run_uuid)
+                    answers = self._get_all_score_run_answers_sync(score_run_uuid)
+                    return ScoreRunResponse.from_score_run_out_schema_and_answers(
+                        score_response, answers
+                    )
+
+                elapsed_time = int(time.time() - start_time)
+
+                if elapsed_time > self.max_wait_time:
+                    score_response.score_run_status = models.ScoreRunStatus.FAILED
+                    self.logger.update_progress_bar(score_run_uuid, Status.FAILED)
+                    return ScoreRunResponse.from_score_run_out_schema_and_answers(
+                        score_response, None, "Score run creation timed out."
+                    )
+
+                time.sleep(POLLING_INTERVAL)
+
+    async def _create_and_wait_for_score_impl_async(
+        self, score_data: models.ScoreRunSchema
+    ) -> ScoreRunResponse:
+        start_time = time.time()
+        score_response = await create_score_run.asyncio(
+            client=self.client, body=score_data
+        )
+        score_run_uuid = score_response.score_run_uuid
+        test_name = score_response.test.test_name
+
+        with self.logger.progress_bar(
+            test_name,
+            score_run_uuid,
+            Status.from_api_status(score_response.score_run_status),
+        ):
+            while True:
+                score_response = await get_score_run.asyncio(
+                    client=self.client, score_run_uuid=score_run_uuid
+                )
+
+                self.logger.update_progress_bar(
+                    score_run_uuid,
+                    Status.from_api_status(score_response.score_run_status),
+                )
+
+                if score_response.score_run_status == models.ScoreRunStatus.FAILED:
+                    return ScoreRunResponse.from_score_run_out_schema_and_answers(
+                        score_response, None, "Internal server error. Please try again."
+                    )
+
+                if score_response.score_run_status == models.ScoreRunStatus.FINISHED:
+                    answers = await self._get_all_score_run_answers_async(
+                        score_run_uuid
                     )
                     return ScoreRunResponse.from_score_run_out_schema_and_answers(
                         score_response, answers
@@ -234,10 +272,7 @@ class ScoreRunMixin(AymaraAIProtocol):
                         score_response, None, "Score run creation timed out."
                     )
 
-                if is_async:
-                    await asyncio.sleep(POLLING_INTERVAL)
-                else:
-                    time.sleep(POLLING_INTERVAL)
+                await asyncio.sleep(POLLING_INTERVAL)
 
     def _get_all_score_run_answers_sync(
         self, score_run_uuid: str
@@ -245,7 +280,7 @@ class ScoreRunMixin(AymaraAIProtocol):
         answers = []
         offset = 0
         while True:
-            response = core_api_get_score_run_answers.sync(
+            response = get_score_run_answers.sync(
                 client=self.client, score_run_uuid=score_run_uuid, offset=offset
             )
             answers.extend(response.items)
@@ -260,7 +295,7 @@ class ScoreRunMixin(AymaraAIProtocol):
         answers = []
         offset = 0
         while True:
-            response = await core_api_get_score_run_answers.asyncio(
+            response = await get_score_run_answers.asyncio(
                 client=self.client, score_run_uuid=score_run_uuid, offset=offset
             )
             answers.extend(response.items)

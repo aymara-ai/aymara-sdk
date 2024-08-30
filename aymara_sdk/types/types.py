@@ -132,7 +132,7 @@ class TestResponse(BaseModel):
         cls,
         test: TestOutSchema,
         questions: List[QuestionSchema],
-        failure_reason: Optional[str],
+        failure_reason: Optional[str] = None,
     ) -> "TestResponse":
         return cls(
             test_uuid=test.test_uuid,
@@ -142,7 +142,7 @@ class TestResponse(BaseModel):
                 QuestionResponse.from_question_schema(question)
                 for question in questions
             ]
-            if questions
+            if questions is not None
             else None,
             failure_reason=failure_reason,
         )
@@ -244,7 +244,7 @@ class ScoreRunResponse(BaseModel):
         cls,
         score_run: ScoreRunOutSchema,
         answers: List[AnswerSchema],
-        failure_reason: Optional[str],
+        failure_reason: Optional[str] = None,
     ) -> "ScoreRunResponse":
         return cls(
             score_run_uuid=score_run.score_run_uuid,
@@ -256,7 +256,7 @@ class ScoreRunResponse(BaseModel):
                 ScoredAnswerResponse.from_answer_out_schema(answer)
                 for answer in answers
             ]
-            if answers
+            if answers is not None
             else None,
             failure_reason=failure_reason,
         )

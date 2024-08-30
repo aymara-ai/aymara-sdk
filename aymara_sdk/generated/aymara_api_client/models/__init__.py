@@ -3,6 +3,7 @@
 from .answer_in_schema import AnswerInSchema
 from .answer_schema import AnswerSchema
 from .input_ import Input
+from .organization_out_schema import OrganizationOutSchema
 from .paged_answer_schema import PagedAnswerSchema
 from .paged_question_schema import PagedQuestionSchema
 from .paged_score_run_out_schema import PagedScoreRunOutSchema
@@ -14,11 +15,14 @@ from .test_out_schema import TestOutSchema
 from .test_schema import TestSchema
 from .test_status import TestStatus
 from .test_type import TestType
+from .workspace_in_schema import WorkspaceInSchema
+from .workspace_out_schema import WorkspaceOutSchema
 
 __all__ = (
     "AnswerInSchema",
     "AnswerSchema",
     "Input",
+    "OrganizationOutSchema",
     "PagedAnswerSchema",
     "PagedQuestionSchema",
     "PagedScoreRunOutSchema",
@@ -30,4 +34,6 @@ __all__ = (
     "TestSchema",
     "TestStatus",
     "TestType",
+    "WorkspaceInSchema",
+    "WorkspaceOutSchema",
 )

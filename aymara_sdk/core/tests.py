@@ -1,14 +1,14 @@
 import asyncio
 import time
-from typing import Coroutine, List, Union
+from typing import Coroutine, List, Optional, Union
 
 from aymara_sdk.core.protocols import AymaraAIProtocol
 from aymara_sdk.generated.aymara_api_client import models
 from aymara_sdk.generated.aymara_api_client.api.tests import (
-    core_api_create_test,
-    core_api_get_test,
-    core_api_get_test_questions,
-    core_api_list_tests,
+    create_test,
+    get_test,
+    get_test_questions,
+    list_tests,
 )
 from aymara_sdk.types import Status, TestResponse
 from aymara_sdk.utils.constants import (
@@ -121,13 +121,16 @@ class TestMixin(AymaraAIProtocol):
             n_test_questions=n_test_questions,
         )
 
-        return self._create_and_wait_for_test_impl(test_data, is_async)
+        if is_async:
+            return self._create_and_wait_for_test_impl_async(test_data)
+        else:
+            return self._create_and_wait_for_test_impl_sync(test_data)
 
     def _validate_test_inputs(
         self,
         test_name: str,
         student_description: str,
-        test_policy: str,
+        test_policy: Optional[str],
         n_test_questions: int,
     ) -> None:
         if test_policy is None:
@@ -158,15 +161,11 @@ class TestMixin(AymaraAIProtocol):
                 f"student_description is ~{token1:,} tokens and test_policy is ~{token2:,} tokens. They are ~{total_tokens:,} tokens in total but they should be less than {DEFAULT_MAX_TOKENS:,} tokens."
             )
 
-    async def _create_and_wait_for_test_impl(
-        self, test_data: models.TestSchema, is_async: bool
+    def _create_and_wait_for_test_impl_sync(
+        self, test_data: models.TestSchema
     ) -> TestResponse:
         start_time = time.time()
-        create_response = (
-            await core_api_create_test.asyncio(client=self.client, body=test_data)
-            if is_async
-            else core_api_create_test.sync(client=self.client, body=test_data)
-        )
+        create_response = create_test.sync(client=self.client, body=test_data)
 
         test_uuid = create_response.test_uuid
         test_name = create_response.test_name
@@ -177,12 +176,53 @@ class TestMixin(AymaraAIProtocol):
             Status.from_api_status(create_response.test_status),
         ):
             while True:
-                test_response = (
-                    await core_api_get_test.asyncio(
-                        client=self.client, test_uuid=test_uuid
+                test_response = get_test.sync(client=self.client, test_uuid=test_uuid)
+
+                self.logger.update_progress_bar(
+                    test_uuid,
+                    Status.from_api_status(test_response.test_status),
+                )
+
+                if test_response.test_status == models.TestStatus.FAILED:
+                    failure_reason = "Internal server error, please try again."
+                    return TestResponse.from_test_out_schema_and_questions(
+                        test_response, None, failure_reason
                     )
-                    if is_async
-                    else core_api_get_test.sync(client=self.client, test_uuid=test_uuid)
+
+                if test_response.test_status == models.TestStatus.FINISHED:
+                    questions = self._get_all_questions_sync(test_uuid)
+                    return TestResponse.from_test_out_schema_and_questions(
+                        test_response, questions
+                    )
+
+                elapsed_time = int(time.time() - start_time)
+
+                if elapsed_time > self.max_wait_time:
+                    test_response.test_status = models.TestStatus.FAILED
+                    self.logger.update_progress_bar(test_uuid, Status.FAILED)
+                    return TestResponse.from_test_out_schema_and_questions(
+                        test_response, None, "Test creation timed out"
+                    )
+
+                time.sleep(POLLING_INTERVAL)
+
+    async def _create_and_wait_for_test_impl_async(
+        self, test_data: models.TestSchema
+    ) -> TestResponse:
+        start_time = time.time()
+        create_response = await create_test.asyncio(client=self.client, body=test_data)
+
+        test_uuid = create_response.test_uuid
+        test_name = create_response.test_name
+
+        with self.logger.progress_bar(
+            test_name,
+            test_uuid,
+            Status.from_api_status(create_response.test_status),
+        ):
+            while True:
+                test_response = await get_test.asyncio(
+                    client=self.client, test_uuid=test_uuid
                 )
 
                 self.logger.update_progress_bar(
@@ -197,11 +237,7 @@ class TestMixin(AymaraAIProtocol):
                     )
 
                 if test_response.test_status == models.TestStatus.FINISHED:
-                    questions = (
-                        await self._get_all_questions_async(test_uuid)
-                        if is_async
-                        else self._get_all_questions_sync(test_uuid)
-                    )
+                    questions = await self._get_all_questions_async(test_uuid)
                     return TestResponse.from_test_out_schema_and_questions(
                         test_response, questions
                     )
@@ -215,10 +251,7 @@ class TestMixin(AymaraAIProtocol):
                         test_response, None, "Test creation timed out"
                     )
 
-                if is_async:
-                    await asyncio.sleep(POLLING_INTERVAL)
-                else:
-                    time.sleep(POLLING_INTERVAL)
+                await asyncio.sleep(POLLING_INTERVAL)
 
     # Get Test Methods
     def get_test(self, test_uuid: str) -> TestResponse:
@@ -252,7 +285,7 @@ class TestMixin(AymaraAIProtocol):
             return self._get_test_sync_impl(test_uuid)
 
     def _get_test_sync_impl(self, test_uuid: str) -> TestResponse:
-        test_response = core_api_get_test.sync(client=self.client, test_uuid=test_uuid)
+        test_response = get_test.sync(client=self.client, test_uuid=test_uuid)
         questions = None
         if test_response.test_status == models.TestStatus.FINISHED:
             questions = self._get_all_questions_sync(test_uuid)
@@ -260,9 +293,7 @@ class TestMixin(AymaraAIProtocol):
         return TestResponse.from_test_out_schema_and_questions(test_response, questions)
 
     async def _get_test_async_impl(self, test_uuid: str) -> TestResponse:
-        test_response = await core_api_get_test.asyncio(
-            client=self.client, test_uuid=test_uuid
-        )
+        test_response = await get_test.asyncio(client=self.client, test_uuid=test_uuid)
         questions = None
         if test_response.test_status == models.TestStatus.FINISHED:
             questions = await self._get_all_questions_async(test_uuid)
@@ -283,14 +314,14 @@ class TestMixin(AymaraAIProtocol):
         return await self._list_tests_async_impl()
 
     def _list_tests_sync_impl(self) -> List[TestResponse]:
-        test_response = core_api_list_tests.sync(client=self.client)
+        test_response = list_tests.sync(client=self.client)
         return [
             TestResponse.from_test_out_schema_and_questions(test)
             for test in test_response
         ]
 
     async def _list_tests_async_impl(self) -> List[TestResponse]:
-        test_response = await core_api_list_tests.asyncio(client=self.client)
+        test_response = await list_tests.asyncio(client=self.client)
         return [
             TestResponse.from_test_out_schema_and_questions(test)
             for test in test_response
@@ -301,7 +332,7 @@ class TestMixin(AymaraAIProtocol):
         questions = []
         offset = 0
         while True:
-            response = core_api_get_test_questions.sync(
+            response = get_test_questions.sync(
                 client=self.client, test_uuid=test_uuid, offset=offset
             )
             questions.extend(response.items)
@@ -316,7 +347,7 @@ class TestMixin(AymaraAIProtocol):
         questions = []
         offset = 0
         while True:
-            response = await core_api_get_test_questions.asyncio(
+            response = await get_test_questions.asyncio(
                 client=self.client, test_uuid=test_uuid, offset=offset
             )
             questions.extend(response.items)
