@@ -1,6 +1,7 @@
 import asyncio
 import time
 from typing import Coroutine, List, Optional, Union
+import pandas as pd
 
 from aymara_sdk.core.protocols import AymaraAIProtocol
 from aymara_sdk.generated.aymara_api_client import models
@@ -301,31 +302,55 @@ class TestMixin(AymaraAIProtocol):
         return TestResponse.from_test_out_schema_and_questions(test_response, questions)
 
     # List Tests Methods
-    def list_tests(self) -> List[TestResponse]:
+    def list_tests(self, as_df=False) -> List[TestResponse]:
         """
         List all tests synchronously.
         """
-        return self._list_tests_sync_impl()
+        tests = self._list_tests_sync_impl()
 
-    async def list_tests_async(self) -> List[TestResponse]:
+        if as_df:
+            tests = self._to_df(tests)
+ 
+        return tests
+
+    async def list_tests_async(self, as_df=False) -> List[TestResponse]:
         """
         List all tests asynchronously.
         """
-        return await self._list_tests_async_impl()
+        tests = await self._list_tests_async_impl()
+        
+        if as_df:
+            tests = self._to_df(tests)
+        
+        return tests
 
     def _list_tests_sync_impl(self) -> List[TestResponse]:
         test_response = list_tests.sync(client=self.client)
+        
         return [
-            TestResponse.from_test_out_schema_and_questions(test)
+            TestResponse.from_test_out_schema_and_questions(test, None)
             for test in test_response
         ]
 
     async def _list_tests_async_impl(self) -> List[TestResponse]:
         test_response = await list_tests.asyncio(client=self.client)
         return [
-            TestResponse.from_test_out_schema_and_questions(test)
+            TestResponse.from_test_out_schema_and_questions(test, None)
             for test in test_response
         ]
+    
+    def _to_df(self, tests):
+        return pd.DataFrame(
+            [
+                {
+                    "test_uuid": test.test_uuid,
+                    "test_name": test.test_name,
+                    "test_status": test.test_status,
+                    "failure_reason": test.failure_reason,
+                }
+                for test in tests
+            ]
+        )
 
     # Helper Methods
     def _get_all_questions_sync(self, test_uuid: str) -> List[models.QuestionSchema]:
