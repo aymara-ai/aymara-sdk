@@ -67,7 +67,6 @@ class ExplanationMixin(AymaraAIProtocol):
                 score_run_uuids=score_run_uuids,
             ),
         )
-        print("SCORE RUN UUIDS", score_run_uuids)
         explanation_uuid = explanation_response.score_runs_explanation_uuid
 
         with self.logger.progress_bar(

@@ -291,15 +291,6 @@ class ScoreRunResponse(BaseModel):
         )
 
 
-class ExplanationItemType(Enum):
-    """
-    Type of the explanation item.
-    """
-
-    SCORE_RUN = "score_run"
-    OVERALL = "overall"
-
-
 class ScoreRunExplanationResponse(BaseModel):
     """
     Score run explanation item response.
