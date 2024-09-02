@@ -49,7 +49,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["aymara_sdk*", "examples*"]
+include = ["aymara_sdk*"]
 exclude = []
 
 
