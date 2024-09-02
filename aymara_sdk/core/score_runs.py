@@ -1,6 +1,6 @@
 import asyncio
 import time
-from typing import Coroutine, List, Union
+from typing import Coroutine, List, Optional, Union
 
 from aymara_sdk.core.protocols import AymaraAIProtocol
 from aymara_sdk.generated.aymara_api_client import models
@@ -129,54 +129,78 @@ class ScoreRunMixin(AymaraAIProtocol):
         )
 
     # List Score Runs Methods
-    def list_score_runs(self, test_uuid: str) -> List[ScoreRunResponse]:
+    def list_score_runs(
+        self, test_uuid: Optional[str] = None
+    ) -> List[ScoreRunResponse]:
         """
         List all score runs synchronously.
 
         :param test_uuid: UUID of the test.
-        :type test_uuid: str
+        :type test_uuid: Optional[str]
         :return: List of score run responses.
         :rtype: List[ScoreRunResponse]
         """
         return self._list_score_runs(test_uuid, is_async=False)
 
-    async def list_score_runs_async(self, test_uuid: str) -> List[ScoreRunResponse]:
+    async def list_score_runs_async(
+        self, test_uuid: Optional[str] = None
+    ) -> List[ScoreRunResponse]:
         """
         List all score runs asynchronously.
 
         :param test_uuid: UUID of the test.
-        :type test_uuid: str
+        :type test_uuid: Optional[str]
         :return: List of score run responses.
         :rtype: List[ScoreRunResponse]
         """
         return await self._list_score_runs(test_uuid, is_async=True)
 
     def _list_score_runs(
-        self, test_uuid: str, is_async: bool
+        self,
+        is_async: bool,
+        test_uuid: Optional[str] = None,
     ) -> Union[List[ScoreRunResponse], Coroutine[List[ScoreRunResponse], None, None]]:
         if is_async:
             return self._list_score_runs_async_impl(test_uuid)
         else:
             return self._list_score_runs_sync_impl(test_uuid)
 
-    def _list_score_runs_sync_impl(self, test_uuid: str) -> List[ScoreRunResponse]:
-        score_run_response = list_score_runs.sync(
-            client=self.client, test_uuid=test_uuid
-        )
+    def _list_score_runs_sync_impl(
+        self, test_uuid: Optional[str] = None
+    ) -> List[ScoreRunResponse]:
+        all_score_runs = []
+        offset = 0
+        while True:
+            score_run_response = list_score_runs.sync(
+                client=self.client, test_uuid=test_uuid, offset=offset
+            )
+            all_score_runs.extend(score_run_response.items)
+            if len(all_score_runs) >= score_run_response.count:
+                break
+            offset += len(score_run_response.items)
+
         return [
             ScoreRunResponse.from_score_run_out_schema_and_answers(score_run)
-            for score_run in score_run_response
+            for score_run in all_score_runs
         ]
 
     async def _list_score_runs_async_impl(
-        self, test_uuid: str
+        self, test_uuid: Optional[str] = None
     ) -> List[ScoreRunResponse]:
-        score_run_response = await list_score_runs.asyncio(
-            client=self.client, test_uuid=test_uuid
-        )
+        all_score_runs = []
+        offset = 0
+        while True:
+            score_run_response = await list_score_runs.asyncio(
+                client=self.client, test_uuid=test_uuid, offset=offset
+            )
+            all_score_runs.extend(score_run_response.items)
+            if len(all_score_runs) >= score_run_response.count:
+                break
+            offset += len(score_run_response.items)
+
         return [
             ScoreRunResponse.from_score_run_out_schema_and_answers(score_run)
-            for score_run in score_run_response
+            for score_run in all_score_runs
         ]
 
     # Helper Methods

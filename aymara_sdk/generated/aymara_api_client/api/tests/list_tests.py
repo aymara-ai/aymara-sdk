@@ -1,21 +1,27 @@
 from http import HTTPStatus
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.test_out_schema import TestOutSchema
+from ...models.paged_test_out_schema import PagedTestOutSchema
 from ...types import UNSET, Response, Unset
 
 
 def _get_kwargs(
     *,
     workspace_uuid: Union[Unset, str] = UNSET,
+    limit: Union[Unset, int] = 100,
+    offset: Union[Unset, int] = 0,
 ) -> Dict[str, Any]:
     params: Dict[str, Any] = {}
 
     params["workspace_uuid"] = workspace_uuid
+
+    params["limit"] = limit
+
+    params["offset"] = offset
 
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
@@ -30,14 +36,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[List["TestOutSchema"]]:
+) -> Optional[PagedTestOutSchema]:
     if response.status_code == HTTPStatus.OK:
-        response_200 = []
-        _response_200 = response.json()
-        for response_200_item_data in _response_200:
-            response_200_item = TestOutSchema.from_dict(response_200_item_data)
-
-            response_200.append(response_200_item)
+        response_200 = PagedTestOutSchema.from_dict(response.json())
 
         return response_200
     if client.raise_on_unexpected_status:
@@ -48,7 +49,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[List["TestOutSchema"]]:
+) -> Response[PagedTestOutSchema]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -61,22 +62,28 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Response[List["TestOutSchema"]]:
+    limit: Union[Unset, int] = 100,
+    offset: Union[Unset, int] = 0,
+) -> Response[PagedTestOutSchema]:
     """List Tests
 
     Args:
         workspace_uuid (Union[Unset, str]):
+        limit (Union[Unset, int]):  Default: 100.
+        offset (Union[Unset, int]):  Default: 0.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[List['TestOutSchema']]
+        Response[PagedTestOutSchema]
     """
 
     kwargs = _get_kwargs(
         workspace_uuid=workspace_uuid,
+        limit=limit,
+        offset=offset,
     )
 
     response = client.get_httpx_client().request(
@@ -90,23 +97,29 @@ def sync(
     *,
     client: AuthenticatedClient,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Optional[List["TestOutSchema"]]:
+    limit: Union[Unset, int] = 100,
+    offset: Union[Unset, int] = 0,
+) -> Optional[PagedTestOutSchema]:
     """List Tests
 
     Args:
         workspace_uuid (Union[Unset, str]):
+        limit (Union[Unset, int]):  Default: 100.
+        offset (Union[Unset, int]):  Default: 0.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        List['TestOutSchema']
+        PagedTestOutSchema
     """
 
     return sync_detailed(
         client=client,
         workspace_uuid=workspace_uuid,
+        limit=limit,
+        offset=offset,
     ).parsed
 
 
@@ -114,22 +127,28 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Response[List["TestOutSchema"]]:
+    limit: Union[Unset, int] = 100,
+    offset: Union[Unset, int] = 0,
+) -> Response[PagedTestOutSchema]:
     """List Tests
 
     Args:
         workspace_uuid (Union[Unset, str]):
+        limit (Union[Unset, int]):  Default: 100.
+        offset (Union[Unset, int]):  Default: 0.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[List['TestOutSchema']]
+        Response[PagedTestOutSchema]
     """
 
     kwargs = _get_kwargs(
         workspace_uuid=workspace_uuid,
+        limit=limit,
+        offset=offset,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -141,23 +160,29 @@ async def asyncio(
     *,
     client: AuthenticatedClient,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Optional[List["TestOutSchema"]]:
+    limit: Union[Unset, int] = 100,
+    offset: Union[Unset, int] = 0,
+) -> Optional[PagedTestOutSchema]:
     """List Tests
 
     Args:
         workspace_uuid (Union[Unset, str]):
+        limit (Union[Unset, int]):  Default: 100.
+        offset (Union[Unset, int]):  Default: 0.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        List['TestOutSchema']
+        PagedTestOutSchema
     """
 
     return (
         await asyncio_detailed(
             client=client,
             workspace_uuid=workspace_uuid,
+            limit=limit,
+            offset=offset,
         )
     ).parsed

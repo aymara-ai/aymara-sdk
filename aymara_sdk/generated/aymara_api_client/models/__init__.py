@@ -9,6 +9,7 @@ from .paged_answer_schema import PagedAnswerSchema
 from .paged_question_schema import PagedQuestionSchema
 from .paged_score_run_out_schema import PagedScoreRunOutSchema
 from .paged_score_runs_explanation_out_schema import PagedScoreRunsExplanationOutSchema
+from .paged_test_out_schema import PagedTestOutSchema
 from .question_schema import QuestionSchema
 from .score_run_explanation_out_schema import ScoreRunExplanationOutSchema
 from .score_run_out_schema import ScoreRunOutSchema
@@ -33,6 +34,7 @@ __all__ = (
     "PagedQuestionSchema",
     "PagedScoreRunOutSchema",
     "PagedScoreRunsExplanationOutSchema",
+    "PagedTestOutSchema",
     "QuestionSchema",
     "ScoreRunExplanationOutSchema",
     "ScoreRunOutSchema",

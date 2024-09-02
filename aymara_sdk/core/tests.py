@@ -1,6 +1,7 @@
 import asyncio
 import time
 from typing import Coroutine, List, Optional, Union
+
 import pandas as pd
 
 from aymara_sdk.core.protocols import AymaraAIProtocol
@@ -310,7 +311,7 @@ class TestMixin(AymaraAIProtocol):
 
         if as_df:
             tests = self._to_df(tests)
- 
+
         return tests
 
     async def list_tests_async(self, as_df=False) -> List[TestResponse]:
@@ -318,27 +319,42 @@ class TestMixin(AymaraAIProtocol):
         List all tests asynchronously.
         """
         tests = await self._list_tests_async_impl()
-        
+
         if as_df:
             tests = self._to_df(tests)
-        
+
         return tests
 
     def _list_tests_sync_impl(self) -> List[TestResponse]:
-        test_response = list_tests.sync(client=self.client)
-        
+        all_tests = []
+        offset = 0
+        while True:
+            paged_response = list_tests.sync(client=self.client, offset=offset)
+            all_tests.extend(paged_response.items)
+            if len(all_tests) >= paged_response.count:
+                break
+            offset += len(paged_response.items)
+
         return [
             TestResponse.from_test_out_schema_and_questions(test, None)
-            for test in test_response
+            for test in all_tests
         ]
 
     async def _list_tests_async_impl(self) -> List[TestResponse]:
-        test_response = await list_tests.asyncio(client=self.client)
+        all_tests = []
+        offset = 0
+        while True:
+            paged_response = await list_tests.asyncio(client=self.client, offset=offset)
+            all_tests.extend(paged_response.items)
+            if len(all_tests) >= paged_response.count:
+                break
+            offset += len(paged_response.items)
+
         return [
             TestResponse.from_test_out_schema_and_questions(test, None)
-            for test in test_response
+            for test in all_tests
         ]
-    
+
     def _to_df(self, tests):
         return pd.DataFrame(
             [

@@ -159,8 +159,9 @@ class TestResponse(BaseModel):
                     **{
                         "question_uuid": question.question_uuid,
                         "question_text": question.question_text,
-                    }
-                } for question in self.questions
+                    },
+                }
+                for question in self.questions
             ]
 
         return pd.DataFrame(rows)
@@ -260,8 +261,9 @@ class ScoreRunResponse(BaseModel):
                         "answer_text": answer.answer_text,
                         "explanation": answer.explanation,
                         "confidence": answer.confidence,
-                    }
-                } for answer in self.answers
+                    },
+                }
+                for answer in self.answers
             ]
 
         return pd.DataFrame(rows)

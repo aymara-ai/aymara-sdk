@@ -1,9 +1,10 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 from ..models.explanation_status import ExplanationStatus
+from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.score_run_explanation_out_schema import ScoreRunExplanationOutSchema
@@ -19,15 +20,15 @@ class ScoreRunsExplanationOutSchema:
         score_runs_explanation_uuid (str):
         status (ExplanationStatus):
         score_run_explanations (List['ScoreRunExplanationOutSchema']):
-        overall_improvement_advice (str):
-        overall_explanation_summary (str):
+        overall_improvement_advice (Union[None, Unset, str]):
+        overall_explanation_summary (Union[None, Unset, str]):
     """
 
     score_runs_explanation_uuid: str
     status: ExplanationStatus
     score_run_explanations: List["ScoreRunExplanationOutSchema"]
-    overall_improvement_advice: str
-    overall_explanation_summary: str
+    overall_improvement_advice: Union[None, Unset, str] = UNSET
+    overall_explanation_summary: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -40,9 +41,17 @@ class ScoreRunsExplanationOutSchema:
             score_run_explanations_item = score_run_explanations_item_data.to_dict()
             score_run_explanations.append(score_run_explanations_item)
 
-        overall_improvement_advice = self.overall_improvement_advice
+        overall_improvement_advice: Union[None, Unset, str]
+        if isinstance(self.overall_improvement_advice, Unset):
+            overall_improvement_advice = UNSET
+        else:
+            overall_improvement_advice = self.overall_improvement_advice
 
-        overall_explanation_summary = self.overall_explanation_summary
+        overall_explanation_summary: Union[None, Unset, str]
+        if isinstance(self.overall_explanation_summary, Unset):
+            overall_explanation_summary = UNSET
+        else:
+            overall_explanation_summary = self.overall_explanation_summary
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -51,10 +60,12 @@ class ScoreRunsExplanationOutSchema:
                 "score_runs_explanation_uuid": score_runs_explanation_uuid,
                 "status": status,
                 "score_run_explanations": score_run_explanations,
-                "overall_improvement_advice": overall_improvement_advice,
-                "overall_explanation_summary": overall_explanation_summary,
             }
         )
+        if overall_improvement_advice is not UNSET:
+            field_dict["overall_improvement_advice"] = overall_improvement_advice
+        if overall_explanation_summary is not UNSET:
+            field_dict["overall_explanation_summary"] = overall_explanation_summary
 
         return field_dict
 
@@ -74,9 +85,23 @@ class ScoreRunsExplanationOutSchema:
 
             score_run_explanations.append(score_run_explanations_item)
 
-        overall_improvement_advice = d.pop("overall_improvement_advice")
+        def _parse_overall_improvement_advice(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
 
-        overall_explanation_summary = d.pop("overall_explanation_summary")
+        overall_improvement_advice = _parse_overall_improvement_advice(d.pop("overall_improvement_advice", UNSET))
+
+        def _parse_overall_explanation_summary(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        overall_explanation_summary = _parse_overall_explanation_summary(d.pop("overall_explanation_summary", UNSET))
 
         score_runs_explanation_out_schema = cls(
             score_runs_explanation_uuid=score_runs_explanation_uuid,
