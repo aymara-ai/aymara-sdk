@@ -12,12 +12,21 @@ from aymara_sdk.generated.aymara_api_client.models.answer_in_schema import (
     AnswerInSchema,
 )
 from aymara_sdk.generated.aymara_api_client.models.answer_schema import AnswerSchema
+from aymara_sdk.generated.aymara_api_client.models.explanation_status import (
+    ExplanationStatus,
+)
 from aymara_sdk.generated.aymara_api_client.models.question_schema import QuestionSchema
+from aymara_sdk.generated.aymara_api_client.models.score_run_explanation_out_schema import (
+    ScoreRunExplanationOutSchema,
+)
 from aymara_sdk.generated.aymara_api_client.models.score_run_out_schema import (
     ScoreRunOutSchema,
 )
 from aymara_sdk.generated.aymara_api_client.models.score_run_status import (
     ScoreRunStatus,
+)
+from aymara_sdk.generated.aymara_api_client.models.score_runs_explanation_out_schema import (
+    ScoreRunsExplanationOutSchema,
 )
 from aymara_sdk.generated.aymara_api_client.models.test_out_schema import TestOutSchema
 from aymara_sdk.generated.aymara_api_client.models.test_status import TestStatus
@@ -31,7 +40,9 @@ class Status(Enum):
     COMPLETED = "completed"
 
     @classmethod
-    def from_api_status(cls, api_status: Union[TestStatus, ScoreRunStatus]) -> "Status":
+    def from_api_status(
+        cls, api_status: Union[TestStatus, ScoreRunStatus, ExplanationStatus]
+    ) -> "Status":
         """
         Transform an API status to the user-friendly status.
 
@@ -53,6 +64,13 @@ class Status(Enum):
                 ScoreRunStatus.SCORING: cls.PENDING,
                 ScoreRunStatus.FINISHED: cls.COMPLETED,
                 ScoreRunStatus.FAILED: cls.FAILED,
+            }
+        elif isinstance(api_status, ExplanationStatus):
+            status_mapping = {
+                ExplanationStatus.RECORD_CREATED: cls.PENDING,
+                ExplanationStatus.GENERATING: cls.PENDING,
+                ExplanationStatus.FINISHED: cls.COMPLETED,
+                ExplanationStatus.FAILED: cls.FAILED,
             }
         else:
             raise ValueError(f"Unexpected status type: {type(api_status)}")
@@ -267,5 +285,86 @@ class ScoreRunResponse(BaseModel):
             ]
             if answers is not None
             else None,
+            failure_reason=failure_reason,
+        )
+
+
+class ExplanationItemType(Enum):
+    """
+    Type of the explanation item.
+    """
+
+    SCORE_RUN = "score_run"
+    OVERALL = "overall"
+
+
+class ScoreRunExplanationResponse(BaseModel):
+    """
+    Score run explanation item response.
+    """
+
+    score_run_explanation_uuid: Annotated[
+        str, Field(..., description="UUID of the score run explanation")
+    ]
+    explanation_summary: Annotated[
+        str, Field(..., description="Summary of the explanation")
+    ]
+    improvement_advice: Annotated[str, Field(..., description="Advice for improvement")]
+    test_name: Annotated[str, Field(..., description="Name of the test")]
+    score_run_uuid: Annotated[str, Field(..., description="UUID of the score run")]
+
+    @classmethod
+    def from_score_run_explanation_out_schema(
+        cls, explanation: ScoreRunExplanationOutSchema
+    ) -> "ScoreRunExplanationResponse":
+        return cls(
+            score_run_explanation_uuid=explanation.score_run_explanation_uuid,
+            explanation_summary=explanation.explanation_summary,
+            improvement_advice=explanation.improvement_advice,
+            test_name=explanation.score_run.test.test_name,
+            score_run_uuid=explanation.score_run.score_run_uuid,
+        )
+
+
+class ScoreRunsExplanationResponse(BaseModel):
+    """
+    Score run explanation response.
+    """
+
+    score_runs_explanation_uuid: Annotated[
+        str, Field(..., description="UUID of the score run explanation")
+    ]
+    overall_explanation_summary: Annotated[
+        str, Field(..., description="Summary of the overall explanation")
+    ]
+    overall_improvement_advice: Annotated[
+        str, Field(..., description="Advice for improvement")
+    ]
+
+    score_run_explanations: Annotated[
+        List[ScoreRunExplanationResponse],
+        Field(..., description="List of score run explanations"),
+    ]
+
+    failure_reason: Annotated[
+        Optional[str], Field(None, description="Reason for the score run failure")
+    ]
+
+    @classmethod
+    def from_explanation_out_schema_and_failure_reason(
+        cls,
+        explanation: ScoreRunsExplanationOutSchema,
+        failure_reason: Optional[str] = None,
+    ) -> "ScoreRunsExplanationResponse":
+        return cls(
+            score_runs_explanation_uuid=explanation.score_runs_explanation_uuid,
+            overall_explanation_summary=explanation.overall_explanation_summary,
+            overall_improvement_advice=explanation.overall_improvement_advice,
+            score_run_explanations=[
+                ScoreRunExplanationResponse.from_score_run_explanation_out_schema(
+                    explanation
+                )
+                for explanation in explanation.score_run_explanations
+            ],
             failure_reason=failure_reason,
         )

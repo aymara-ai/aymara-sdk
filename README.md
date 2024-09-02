@@ -4,7 +4,7 @@
 
 Hi! 👋 We're [Aymara](https://aymara.ai/).
 
-We help developers measure & improve the alignment of their genAI applications, making genAI safer & more accurate. 
+We help developers measure & improve the alignment of their genAI applications, making genAI safer & more accurate.
 
 So we built this library for you.
 
@@ -19,16 +19,18 @@ If you found a bug, have a question, or want to request a feature, say hello at 
 ## Features
 
 Now
+
 - Create safety tests
 - Score test answers
 - Get and graph test scores
 - Asynchronous & synchronous test creation and scoring
 
 Upcoming
+
 - Jailbreak tests
 - Hallucination tests
 - Text-to-image tests
-- AI regulation tests 
+- AI regulation tests
 
 ## Installation
 

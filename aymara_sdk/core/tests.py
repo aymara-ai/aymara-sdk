@@ -193,7 +193,7 @@ class TestMixin(AymaraAIProtocol):
                 if test_response.test_status == models.TestStatus.FINISHED:
                     questions = self._get_all_questions_sync(test_uuid)
                     return TestResponse.from_test_out_schema_and_questions(
-                        test_response, questions
+                        test_response, questions, None
                     )
 
                 elapsed_time = int(time.time() - start_time)
@@ -240,7 +240,7 @@ class TestMixin(AymaraAIProtocol):
                 if test_response.test_status == models.TestStatus.FINISHED:
                     questions = await self._get_all_questions_async(test_uuid)
                     return TestResponse.from_test_out_schema_and_questions(
-                        test_response, questions
+                        test_response, questions, None
                     )
 
                 elapsed_time = int(time.time() - start_time)

@@ -15,6 +15,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
+from aymara_sdk.core.explanations import ExplanationMixin
 from aymara_sdk.core.protocols import AymaraAIProtocol
 from aymara_sdk.core.score_runs import ScoreRunMixin
 from aymara_sdk.core.tests import TestMixin
@@ -29,6 +30,7 @@ from aymara_sdk.utils.logger import SDKLogger
 class AymaraAI(
     TestMixin,
     ScoreRunMixin,
+    ExplanationMixin,
     AymaraAIProtocol,
 ):
     """
