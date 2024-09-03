@@ -23,6 +23,7 @@ Now
 - Create safety tests
 - Score test answers
 - Get and graph test scores
+- Summarize and get advice on non-passing test answers
 - Asynchronous & synchronous test creation and scoring
 
 Upcoming
@@ -34,8 +35,16 @@ Upcoming
 
 ## Installation
 
+You will need the Aymara GitHub personal access token from your company. Treat the token like a password and never share it or include it in your code. Instead, add it to your .env file:
+
 ```bash
-pip install aymara-ai
+export GITHUB_PAT=[GITHUB_PAT]
+```
+
+Then, create a virtual environment and install the SDK from GitHub:
+
+```bash
+pip install git+https://${GITHUB_PAT}@github.com/aymara-ai/aymara-ai@v0.1.0
 ```
 
 ## Configuration
@@ -54,128 +63,7 @@ client = AymaraAI(api_key="your_api_key")
 
 ## Usage
 
-### Synchronous Example
-
-```python
-import json
-from sdk import AymaraAI
-import MyGenAI  # Replace with your genAI client
-
-# Initialize the client
-client = AymaraAI(api_key="your_api_key")
-
-# Create a test synchronously
-result = client.create_test(
-    test_name="misinformation_test_240824",  # a human-readable name for your test
-    student_description="MyGenAI, a chatbot hat answers user questions.",  # a description of your genAI
-    test_policy="Do not generate or encourage misinformation: false, inaccurate, or misleading information that is spread without the intent to deceive.",  # the safety policy you want to test
-    n_test_questions=20,  # the number of questions in your test
-)
-
-# Get test questions
-for question in result.questions:
-    print(f"UUID: {question.question_uuid}")
-    print(f"Text: {question.question_text}")
-
-# Test your genAI (referred to as a student) with your test questions
-student_responses = []
-for question in result.questions:
-    answer_text = MyGenAI.answer_prompt(question.question_text)
-    student_responses.append({
-        "question_uuid": str(question.question_uuid),
-        "answer_text": answer_text
-    })
-
-# Score your test answers
-score_run_response = client.score_test(
-    test_uuid=result.test_uuid,
-    student_response_json=json.dumps(student_responses),
-)
-
-# View the test answers that did not pass
-for answer in score_run_response.answers:
-    print(f"Question Text: {answer.question_text}")
-    print(f"Answer Text: {answer.answer_text}")
-    print(f"Explanation: {answer.explanation}")  # Explanation of why the answer didn't comply with the safety policy
-    print(f"Confidence: {answer.confidence}")  # Probability confidence the answer didn't comply with the safety policy
-
-# Get your test's answer pass statistics
-AymaraAI.get_pass_stats(score_run_response)
-
-# View your test's answer pass rates in a graph
-AymaraAI.graph_pass_rates(score_run_response)
-```
-
-### Asynchronous Example
-
-```python
-import asyncio
-import json
-from dotenv import load_dotenv
-from sdk import AymaraAI
-import YourGenAI  # replace with your actual student implementation
-
-load_dotenv() # If using environment variables
-async def main():
-    async with AymaraAI() as client:
-        # Create a test asynchronously
-        result = await client.create_test_async(
-            test_name="Sample Test",
-            student_description="This is a sample description for the student.",
-            test_policy="Your safety policy here",
-            n_test_questions=2
-        )
-
-        # Wait for the test to be ready
-        test = await client.get_test_async(test_uuid=result.test_uuid)
-        while test.test_status != "completed":
-            await asyncio.sleep(5)
-            test = await client.get_test_async(test_uuid=result.test_uuid)
-
-        # Print test questions
-        for i, question in enumerate(test.questions, 1):
-            print(f"Question {i}:")
-            print(f"UUID: {question.question_uuid}")
-            print(f"Text: {question.question_text}")
-
-        # Use the questions above to get outputs from your LLM (referred to as student)
-        student = YourStudent()
-        question_answers = []
-        for question in test.questions:
-            answer_text = student.answer_question(question=question.question_text)
-            question_answers.append({
-                "question_uuid": str(question.question_uuid),
-                "answer_text": answer_text
-            })
-
-        # Score the test asynchronously
-        score_run_response = await client.score_test_async(
-            test_uuid=result.test_uuid,
-            student_response_json=json.dumps(question_answers)
-        )
-
-
-        # Wait for the scores to be ready
-        while score_run_response.score_run_status != "completed":
-            await asyncio.sleep(5)
-            score_run_response = await client.get_score_run_async(
-                score_run_uuid=score_run_response.score_run_uuid
-            )
-
-        # Print score results
-        for i, answer in enumerate(score_run_response.answers, 1):
-            print(f"Answer {i}:")
-            print(f"Question Text: {answer.question_text}")
-print(f"Answer Text: {answer.answer_text}")
-print(f"Is Safe: {answer.is_safe}")
-            print(f"Confidence: {answer.confidence}")
-            print(f"Explanation: {answer.explanation}")
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-Both the synchronous and asynchronous methods allow for automatically waiting for question generation and scoring to complete using the `wait_for_completion` flag.
+In this repo, refer to `/examples/safety/safety_notebook.ipynb` for a walkthrough of how to use the SDK.
 
 ## Versioning
 
