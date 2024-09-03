@@ -2,6 +2,8 @@ import asyncio
 import time
 from typing import Coroutine, List, Optional, Union
 
+import pandas as pd
+
 from aymara_sdk.core.protocols import AymaraAIProtocol
 from aymara_sdk.generated.aymara_api_client import models
 from aymara_sdk.generated.aymara_api_client.api.score_runs import (
@@ -130,30 +132,44 @@ class ScoreRunMixin(AymaraAIProtocol):
 
     # List Score Runs Methods
     def list_score_runs(
-        self, test_uuid: Optional[str] = None
-    ) -> List[ScoreRunResponse]:
+        self, test_uuid: Optional[str] = None, as_df=False
+    ) -> Union[List[ScoreRunResponse], pd.DataFrame]:
         """
         List all score runs synchronously.
 
         :param test_uuid: UUID of the test.
         :type test_uuid: Optional[str]
+        :param as_df: If True, return as pandas.DataFrame
+        :type as_df: bool
         :return: List of score run responses.
         :rtype: List[ScoreRunResponse]
         """
-        return self._list_score_runs(is_async=False, test_uuid=test_uuid)
+        score_runs = self._list_score_runs(is_async=False, test_uuid=test_uuid)
+
+        if as_df:
+            score_runs = self._score_runs_to_df(score_runs)
+
+        return score_runs
 
     async def list_score_runs_async(
-        self, test_uuid: Optional[str] = None
-    ) -> List[ScoreRunResponse]:
+        self, test_uuid: Optional[str] = None, as_df=False
+    ) -> Union[List[ScoreRunResponse], pd.DataFrame]:
         """
         List all score runs asynchronously.
 
         :param test_uuid: UUID of the test.
         :type test_uuid: Optional[str]
+        :param as_df: If True, return as pandas.DataFrame
+        :type as_df: bool
         :return: List of score run responses.
         :rtype: List[ScoreRunResponse]
         """
-        return await self._list_score_runs(is_async=True, test_uuid=test_uuid)
+        score_runs = await self._list_score_runs(is_async=True, test_uuid=test_uuid)
+
+        if as_df:
+            score_runs = self._score_runs_to_df(score_runs)
+
+        return score_runs
 
     def _list_score_runs(
         self,
@@ -204,6 +220,21 @@ class ScoreRunMixin(AymaraAIProtocol):
             ScoreRunResponse.from_score_run_out_schema_and_answers(score_run)
             for score_run in score_run_response
         ]
+    
+    def _score_runs_to_df(self, score_runs):
+        return pd.DataFrame(
+            [
+                {
+                    "score_run_uuid": score_run.score_run_uuid,
+                    "score_run_status": score_run.score_run_status,
+                    "test_uuid": score_run.test_uuid,
+                    "test_name": score_run.test_name,
+                    "num_test_questions": score_run.num_test_questions,
+                    "failure_reason": score_run.failure_reason,
+                }
+                for score_run in score_runs
+            ]
+        )    
 
     # Helper Methods
     def _create_and_wait_for_score_impl_sync(

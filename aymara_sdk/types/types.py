@@ -244,27 +244,20 @@ class ScoreRunResponse(BaseModel):
 
     def to_scores_df(self) -> pd.DataFrame:
         """Create a scores DataFrame."""
-
-        rows = []
-        if self.answers:
-            rows = [
-                {
-                    **{
-                        "score_run_uuid": self.score_run_uuid,
-                        "test_uuid": self.test_uuid,
-                        "test_name": self.test_name,
-                    },
-                    **{
-                        "question_uuid": answer.question_uuid,
-                        "answer_uuid": answer.answer_uuid,
-                        "question_text": answer.question_text,
-                        "answer_text": answer.answer_text,
-                        "explanation": answer.explanation,
-                        "confidence": answer.confidence,
-                    },
-                }
-                for answer in self.answers
-            ]
+        rows = [
+            {
+                "score_run_uuid": self.score_run_uuid,
+                "test_uuid": self.test_uuid,
+                "test_name": self.test_name,
+                "question_uuid": answer.question_uuid,
+                "answer_uuid": answer.answer_uuid,
+                "question_text": answer.question_text,
+                "answer_text": answer.answer_text,
+                "explanation": answer.explanation,
+                "confidence": answer.confidence,
+            }
+            for answer in self.answers
+        ] if self.answers else []
 
         return pd.DataFrame(rows)
 
@@ -318,7 +311,6 @@ class ScoreRunExplanationResponse(BaseModel):
             score_run_uuid=explanation.score_run.score_run_uuid,
         )
 
-
 class ScoreRunsExplanationResponse(BaseModel):
     """
     Score run explanation response.
@@ -342,6 +334,29 @@ class ScoreRunsExplanationResponse(BaseModel):
     failure_reason: Annotated[
         Optional[str], Field(None, description="Reason for the score run failure")
     ]
+
+    def to_df(self) -> pd.DataFrame:
+        """Create a scores DataFrame."""
+        rows = [
+            {
+                "score_run_uuid": None,
+                "explanation_uuid": self.score_runs_explanation_uuid,
+                "test_name": "Overall",
+                "explanation_summary": self.overall_explanation_summary,
+                "improvement_advice": self.overall_improvement_advice,
+            }
+        ] + [
+            {
+                "score_run_uuid": explanation.score_run_uuid,
+                "explanation_uuid": explanation.score_run_explanation_uuid,
+                "test_name": explanation.test_name,
+                "explanation_summary": explanation.explanation_summary,
+                "improvement_advice": explanation.improvement_advice,
+            }
+            for explanation in self.score_run_explanations
+        ]
+
+        return pd.DataFrame(rows)
 
     @classmethod
     def from_explanation_out_schema_and_failure_reason(

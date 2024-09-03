@@ -303,25 +303,25 @@ class TestMixin(AymaraAIProtocol):
         return TestResponse.from_test_out_schema_and_questions(test_response, questions)
 
     # List Tests Methods
-    def list_tests(self, as_df=False) -> List[TestResponse]:
+    def list_tests(self, as_df=False) -> Union[List[TestResponse], pd.DataFrame]:
         """
         List all tests synchronously.
         """
         tests = self._list_tests_sync_impl()
 
         if as_df:
-            tests = self._to_df(tests)
+            tests = self._tests_to_df(tests)
 
         return tests
 
-    async def list_tests_async(self, as_df=False) -> List[TestResponse]:
+    async def list_tests_async(self, as_df=False) -> Union[List[TestResponse], pd.DataFrame]:
         """
         List all tests asynchronously.
         """
         tests = await self._list_tests_async_impl()
 
         if as_df:
-            tests = self._to_df(tests)
+            tests = self._tests_to_df(tests)
 
         return tests
 
@@ -353,7 +353,7 @@ class TestMixin(AymaraAIProtocol):
             TestResponse.from_test_out_schema_and_questions(test) for test in all_tests
         ]
 
-    def _to_df(self, tests):
+    def _tests_to_df(self, tests):
         return pd.DataFrame(
             [
                 {

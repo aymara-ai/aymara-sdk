@@ -12,7 +12,7 @@ from aymara_sdk.generated.aymara_api_client.api.score_runs import (
 from aymara_sdk.generated.aymara_api_client.models.score_runs_explanation_in_schema import (
     ScoreRunsExplanationInSchema,
 )
-from aymara_sdk.types import Status
+from aymara_sdk.types import Status, ScoreRunResponse
 from aymara_sdk.types.types import (
     ScoreRunsExplanationResponse,
 )
@@ -21,29 +21,31 @@ from aymara_sdk.utils.constants import POLLING_INTERVAL
 
 class ExplanationMixin(AymaraAIProtocol):
     def create_explanation(
-        self, score_run_uuids: List[str]
+        self, score_runs: Union[List[ScoreRunResponse], List[str]]
     ) -> ScoreRunsExplanationResponse:
         """
         Create explanations for a list of score runs and wait for completion synchronously.
 
-        :param score_run_uuids: List of score run UUIDs to create explanations for.
-        :type score_run_uuids: List[str]
+        :param score_runs: List of score runs or their UUIDs for which to explain their unsafe or incorrect answers.
+        :type score_run_uuids: Union[List[ScoreRunResponse], List[str]]
         :return: Explanation response.
         :rtype: ScoreRunsExplanationResponse
         """
+        score_run_uuids = self._score_runs_to_score_run_uuids(score_runs)
         return self._create_explanation(score_run_uuids, is_async=False)
 
     async def create_explanation_async(
-        self, score_run_uuids: List[str]
+        self, score_runs: List[str]
     ) -> ScoreRunsExplanationResponse:
         """
         Create explanations for a list of score runs and wait for completion asynchronously.
 
-        :param score_run_uuids: List of score run UUIDs to create explanations for.
-        :type score_run_uuids: List[str]
+        :param score_runs: List of score runs or their UUIDs for which to explain their unsafe or incorrect answers.
+        :type score_run_uuids: Union[List[ScoreRunResponse], List[str]]
         :return: Explanation response.
         :rtype: ScoreRunsExplanationResponse
         """
+        score_run_uuids = self._score_runs_to_score_run_uuids(score_runs)
         return await self._create_explanation(score_run_uuids, is_async=True)
 
     def _create_explanation(
@@ -156,6 +158,12 @@ class ExplanationMixin(AymaraAIProtocol):
                     )
 
                 await asyncio.sleep(POLLING_INTERVAL)
+
+    def _score_runs_to_score_run_uuids(self, score_runs):
+        if isinstance(score_runs[0], ScoreRunResponse):
+            return [score_run.score_run_uuid for score_run in score_runs]
+        else:
+            return score_runs
 
     # Get Explanation Methods
     def get_explanation(self, explanation_uuid: str) -> ScoreRunsExplanationResponse:
