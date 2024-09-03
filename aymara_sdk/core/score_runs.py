@@ -181,7 +181,7 @@ class ScoreRunMixin(AymaraAIProtocol):
 
         return [
             ScoreRunResponse.from_score_run_out_schema_and_answers(score_run)
-            for score_run in all_score_runs
+            for score_run in score_run_response.items
         ]
 
     async def _list_score_runs_async_impl(
@@ -200,7 +200,7 @@ class ScoreRunMixin(AymaraAIProtocol):
 
         return [
             ScoreRunResponse.from_score_run_out_schema_and_answers(score_run)
-            for score_run in all_score_runs
+            for score_run in score_run_response
         ]
 
     # Helper Methods

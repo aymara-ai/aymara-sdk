@@ -336,8 +336,8 @@ class TestMixin(AymaraAIProtocol):
             offset += len(paged_response.items)
 
         return [
-            TestResponse.from_test_out_schema_and_questions(test, None)
-            for test in all_tests
+            TestResponse.from_test_out_schema_and_questions(test)
+            for test in test_response
         ]
 
     async def _list_tests_async_impl(self) -> List[TestResponse]:
@@ -351,8 +351,8 @@ class TestMixin(AymaraAIProtocol):
             offset += len(paged_response.items)
 
         return [
-            TestResponse.from_test_out_schema_and_questions(test, None)
-            for test in all_tests
+            TestResponse.from_test_out_schema_and_questions(test)
+            for test in test_response
         ]
 
     def _to_df(self, tests):
