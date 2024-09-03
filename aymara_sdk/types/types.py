@@ -170,7 +170,7 @@ class TestResponse(BaseModel):
     def from_test_out_schema_and_questions(
         cls,
         test: TestOutSchema,
-        questions: List[QuestionSchema],
+        questions: List[QuestionSchema] | None = None,
         failure_reason: Optional[str] = None,
     ) -> "TestResponse":
         return cls(
