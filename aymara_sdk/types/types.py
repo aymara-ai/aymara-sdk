@@ -272,7 +272,7 @@ class ScoreRunResponse(BaseModel):
     def from_score_run_out_schema_and_answers(
         cls,
         score_run: ScoreRunOutSchema,
-        answers: List[AnswerSchema],
+        answers: List[AnswerSchema] | None = None,
         failure_reason: Optional[str] = None,
     ) -> "ScoreRunResponse":
         return cls(

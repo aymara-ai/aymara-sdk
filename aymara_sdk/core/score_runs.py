@@ -140,7 +140,7 @@ class ScoreRunMixin(AymaraAIProtocol):
         :return: List of score run responses.
         :rtype: List[ScoreRunResponse]
         """
-        return self._list_score_runs(test_uuid, is_async=False)
+        return self._list_score_runs(is_async=False, test_uuid=test_uuid)
 
     async def list_score_runs_async(
         self, test_uuid: Optional[str] = None
@@ -153,7 +153,7 @@ class ScoreRunMixin(AymaraAIProtocol):
         :return: List of score run responses.
         :rtype: List[ScoreRunResponse]
         """
-        return await self._list_score_runs(test_uuid, is_async=True)
+        return await self._list_score_runs(is_async=True, test_uuid=test_uuid)
 
     def _list_score_runs(
         self,
@@ -180,8 +180,10 @@ class ScoreRunMixin(AymaraAIProtocol):
             offset += len(score_run_response.items)
 
         return [
-            ScoreRunResponse.from_score_run_out_schema_and_answers(score_run)
-            for score_run in score_run_response.items
+            ScoreRunResponse.from_score_run_out_schema_and_answers(
+                score_run,
+            )
+            for score_run in all_score_runs
         ]
 
     async def _list_score_runs_async_impl(
