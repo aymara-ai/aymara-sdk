@@ -54,7 +54,7 @@ where = ["."]
 include = ["aymara_sdk*"]
 exclude = []
 
-[tool.setuptools.package_data]
+[tool.setuptools.package-data]
 "*" = ["*.py", "*.ipynb"]
 
 
