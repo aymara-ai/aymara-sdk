@@ -54,6 +54,9 @@ where = ["."]
 include = ["aymara_sdk*"]
 exclude = []
 
+[tool.setuptools.package_data]
+"*" = ["*.py", "*.ipynb"]
+
 
 [tool.pytest.ini_options]
 norecursedirs = ["aymara_sdk/*"]
