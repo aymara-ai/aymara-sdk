@@ -1,0 +1,19 @@
+{
+  "configurations": [
+    {
+      "type": "aws-sam",
+      "request": "direct-invoke",
+      "name": "source:conf.setup (python3.12)",
+      "invokeTarget": {
+        "target": "code",
+        "projectRoot": "${workspaceFolder}/docs/source",
+        "lambdaHandler": "conf.setup"
+      },
+      "lambda": {
+        "runtime": "python3.12",
+        "payload": {},
+        "environmentVariables": {}
+      }
+    }
+  ]
+}

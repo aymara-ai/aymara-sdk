@@ -5,47 +5,51 @@
 # pylint: skip-file
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../..'))
+
+sys.path.insert(0, os.path.abspath("../.."))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'aymara-ai'
-copyright = '2024, Aymara'
-author = 'Aymara'
+project = "aymara-ai"
+copyright = "2024, Aymara"
+author = "Aymara"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode',
-    'myst_parser',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
+    "myst_nb",
 ]
-
-templates_path = ['_templates']
-exclude_patterns = []
-
-
-def setup(app):
-    app.add_config_value('myst_config_overrides', {}, 'env')
-
-
-myst_config_overrides = {
-    "README.md": {
-        "heading_anchors": 2,
-    }
-}
 
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
+html_theme = "sphinx_rtd_theme"
+html_static_path = ["_static"]
 
 
-source_suffix = {
-    '.rst': 'restructuredtext',
-    '.md': 'markdown',
-}
+source_suffix = [".rst", ".md", ".ipynb"]
+
+
+def setup(app):
+    app.connect("include-read", on_include_read)
+
+
+def on_include_read(app, path, docname, source):
+    print("path: ", path)
+    print("docname: ", docname)
+    print("source: ", source)
+    new_source = []
+    in_sphinx_ignore = False
+    for line in source[0].splitlines():
+        if "<!-- sphinx-ignore-start -->" in line:
+            in_sphinx_ignore = True
+        elif "<!-- sphinx-ignore-end -->" in line:
+            in_sphinx_ignore = False
+        elif not in_sphinx_ignore:
+            new_source.append(line)
+    source[0] = "\n".join(new_source)

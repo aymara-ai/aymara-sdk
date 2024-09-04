@@ -8,13 +8,17 @@ We help developers measure & improve the alignment of their genAI applications, 
 
 So we built this library for you.
 
-Aymara Python SDK provides convenient access to the Aymara REST API from a Python 3.7+ application. The SDK includes [type definitions](https://github.com/aymara-ai/aymara-ai/blob/main/aymara_sdk/types.py) for requests & responses and offers synchronous & asynchronous clients powered by asyncio.
+Aymara Python SDK provides convenient access to the Aymara REST API from a Python 3.7+ application. The SDK includes [type definitions](https://github.com/aymara-ai/aymara-ai/blob/main/aymara_sdk/types/types.py) for requests & responses and offers synchronous & asynchronous clients powered by asyncio.
 
 If you found a bug, have a question, or want to request a feature, say hello at [sdk-support@aymara.ai](mailto:sdk-support@aymara.ai) or [open an issue](https://github.com/aymara-ai/aymara-ai/issues/new) on our GitHub repo.
+
+<!-- sphinx-ignore-start -->
 
 ## Documentation
 
 [docs.aymara.ai](http://docs.aymara.ai/) has our full library API.
+
+<!-- sphinx-ignore-end -->
 
 ## Features
 
@@ -35,7 +39,7 @@ Upcoming
 
 ## Installation
 
-You will need the Aymara GitHub personal access token from your company. Treat the token like a password and never share it or include it in your code. Instead, add it to your .env file:
+You will need the Aymara GitHub personal access token from your company. Treat the token like a password and never share it or include it in your code. Instead, add it to your env variables:
 
 ```bash
 export GITHUB_PAT=[GITHUB_PAT]
@@ -49,10 +53,10 @@ pip install git+https://${GITHUB_PAT}@github.com/aymara-ai/aymara-ai@v0.1.0
 
 ## Configuration
 
-The SDK needs to know who you are. Create an `.env` file in your project root with your Aymara API key:
+The SDK needs to know who you are. Create an env variable with your Aymara API key:
 
 ```bash
-AYMARA_API_KEY=your_api_key
+export AYMARA_API_KEY=[AYMARA_API_KEY]
 ```
 
 Or supply your key directly to the client:
@@ -61,9 +65,13 @@ Or supply your key directly to the client:
 client = AymaraAI(api_key="your_api_key")
 ```
 
+<!-- sphinx-ignore-start -->
+
 ## Usage
 
 In this repo, refer to `/examples/safety/safety_notebook.ipynb` for a walkthrough of how to use the SDK.
+
+<!-- sphinx-ignore-end -->
 
 ## Versioning
 
