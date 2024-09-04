@@ -10,13 +10,13 @@ So we built this library for you.
 
 Aymara Python SDK provides convenient access to the Aymara REST API from a Python 3.7+ application. The SDK includes [type definitions](https://github.com/aymara-ai/aymara-ai/blob/main/aymara_sdk/types/types.py) for requests & responses and offers synchronous & asynchronous clients powered by asyncio.
 
-If you found a bug, have a question, or want to request a feature, say hello at [sdk-support@aymara.ai](mailto:sdk-support@aymara.ai) or [open an issue](https://github.com/aymara-ai/aymara-ai/issues/new) on our GitHub repo.
+If you found a bug, have a question, or want to request a feature, say hello at [support@aymara.ai](mailto:support@aymara.ai) or [open an issue](https://github.com/aymara-ai/aymara-ai/issues/new) on our GitHub repo.
 
 <!-- sphinx-ignore-start -->
 
 ## Documentation
 
-[docs.aymara.ai](http://docs.aymara.ai/) has our full library API.
+[docs.aymara.ai/sdk_reference](https://docs.aymara.ai/sdk_reference.html) has our full library API.
 
 <!-- sphinx-ignore-end -->
 
