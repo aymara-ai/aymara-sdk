@@ -35,11 +35,14 @@ html_theme_options = {
     "home_page_in_toc": True,
     "path_to_docs": "docs",
     "navigation_with_keys": False,
+    "logo": {
+        "image_light": "_static/logo-wide-black.png",
+        "image_dark": "_static/logo-wide-white.png",
+    },
 }
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
-html_logo = "_static/logo-wide.png"
-html_favicon = "_static/logo-square.svg"
+html_favicon = "_static/logo-square.png"
 
 source_suffix = [".rst", ".md", ".ipynb"]
 

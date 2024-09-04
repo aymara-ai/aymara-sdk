@@ -1,10 +1,12 @@
-# Aymara AI Documentation
+```{include} readme.md
+
+```
 
 ```{toctree}
 :maxdepth: 2
 :caption: Contents:
 
-readme
+
 safety_notebook
 sdk_reference
 ```
