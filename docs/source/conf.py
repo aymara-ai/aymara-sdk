@@ -28,9 +28,25 @@ extensions = [
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_book_theme"
+html_theme_options = {
+    "github_url": "https://github.com/aymara-ai/aymara-ai",
+    "repository_url": "https://github.com/aymara-ai/aymara-ai",
+    "repository_branch": "main",
+    "home_page_in_toc": True,
+    "path_to_docs": "docs",
+    "show_navbar_depth": 1,
+    "use_edit_page_button": True,
+    "use_repository_button": True,
+    "use_download_button": True,
+    "launch_buttons": {
+        "binderhub_url": "https://mybinder.org",
+        "notebook_interface": "classic",
+    },
+    "navigation_with_keys": False,
+}
 html_static_path = ["_static"]
-
+html_css_files = ["custom.css"]
 
 source_suffix = [".rst", ".md", ".ipynb"]
 
