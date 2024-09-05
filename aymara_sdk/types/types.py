@@ -130,6 +130,8 @@ class QuestionResponse(BaseModel):
 
 
 class TestResponse(BaseModel):
+    __test__ = False
+
     """
     Test response. May or may not have questions, depending on the test status.
     """
@@ -244,20 +246,24 @@ class ScoreRunResponse(BaseModel):
 
     def to_scores_df(self) -> pd.DataFrame:
         """Create a scores DataFrame."""
-        rows = [
-            {
-                "score_run_uuid": self.score_run_uuid,
-                "test_uuid": self.test_uuid,
-                "test_name": self.test_name,
-                "question_uuid": answer.question_uuid,
-                "answer_uuid": answer.answer_uuid,
-                "question_text": answer.question_text,
-                "answer_text": answer.answer_text,
-                "explanation": answer.explanation,
-                "confidence": answer.confidence,
-            }
-            for answer in self.answers
-        ] if self.answers else []
+        rows = (
+            [
+                {
+                    "score_run_uuid": self.score_run_uuid,
+                    "test_uuid": self.test_uuid,
+                    "test_name": self.test_name,
+                    "question_uuid": answer.question_uuid,
+                    "answer_uuid": answer.answer_uuid,
+                    "question_text": answer.question_text,
+                    "answer_text": answer.answer_text,
+                    "explanation": answer.explanation,
+                    "confidence": answer.confidence,
+                }
+                for answer in self.answers
+            ]
+            if self.answers
+            else []
+        )
 
         return pd.DataFrame(rows)
 
@@ -310,6 +316,7 @@ class ScoreRunExplanationResponse(BaseModel):
             test_name=explanation.score_run.test.test_name,
             score_run_uuid=explanation.score_run.score_run_uuid,
         )
+
 
 class ScoreRunsExplanationResponse(BaseModel):
     """

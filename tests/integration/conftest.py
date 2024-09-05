@@ -1,7 +1,9 @@
 import os
+
 import pytest
-from aymara_sdk.sdk import AymaraAI
 from dotenv import load_dotenv
+
+from aymara_sdk import AymaraAI
 
 load_dotenv(override=True)
 

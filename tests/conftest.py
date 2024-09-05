@@ -1,5 +1,6 @@
 import pytest
-from aymara_sdk.sdk import AymaraAI
+
+from aymara_sdk.core.sdk import AymaraAI
 
 API_KEY = "test_api_key"
 
@@ -10,5 +11,5 @@ def api_key():
 
 
 @pytest.fixture(scope="session")
-def aymara_client(api_key):
+def aymara_client(api_key) -> AymaraAI:
     return AymaraAI(api_key=api_key)

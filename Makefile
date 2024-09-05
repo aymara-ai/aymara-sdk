@@ -20,10 +20,10 @@ help:
 
 .PHONY: test
 test:
-	@pytest
+	@pytest $(test) -s
 
 test-unit:
-	@pytest tests/unit/ $(ARGS)
+	@pytest tests/unit/ $(ARGS) $(test)
 
 test-integration:
 	@pytest tests/integration/ $(ARGS) -s $(test)

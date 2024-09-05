@@ -205,7 +205,7 @@ class ScoreRunMixin(AymaraAIProtocol):
     async def _list_score_runs_async_impl(
         self, test_uuid: Optional[str] = None
     ) -> List[ScoreRunResponse]:
-        all_score_runs = []
+        all_score_runs: List[ScoreRunResponse] = []
         offset = 0
         while True:
             score_run_response = await list_score_runs.asyncio(
@@ -217,10 +217,12 @@ class ScoreRunMixin(AymaraAIProtocol):
             offset += len(score_run_response.items)
 
         return [
-            ScoreRunResponse.from_score_run_out_schema_and_answers(score_run)
-            for score_run in score_run_response
+            ScoreRunResponse.from_score_run_out_schema_and_answers(
+                score_run,
+            )
+            for score_run in all_score_runs
         ]
-    
+
     def _score_runs_to_df(self, score_runs):
         return pd.DataFrame(
             [
@@ -234,7 +236,7 @@ class ScoreRunMixin(AymaraAIProtocol):
                 }
                 for score_run in score_runs
             ]
-        )    
+        )
 
     # Helper Methods
     def _create_and_wait_for_score_impl_sync(
