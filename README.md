@@ -2,13 +2,13 @@
 
 <!-- sphinx-doc-begin -->
 
-Hi! 👋 We're [Aymara](https://aymara.ai/).
+Hi! 👋 We're [Aymara](https://www.aymara.ai/).
 
 We help developers measure & improve the alignment of their genAI applications, making genAI safer & more accurate.
 
 So we built this library for you.
 
-Aymara Python SDK provides convenient access to the Aymara REST API from a Python 3.7+ application. The SDK includes [type definitions](https://github.com/aymara-ai/aymara-ai/blob/main/aymara_sdk/types/types.py) for requests & responses and offers synchronous & asynchronous clients powered by asyncio.
+Aymara Python SDK provides convenient access to the Aymara REST API from Python 3.11+. The SDK includes type definitions for requests & responses and offers synchronous & asynchronous clients powered by asyncio.
 
 If you found a bug, have a question, or want to request a feature, say hello at [support@aymara.ai](mailto:support@aymara.ai) or [open an issue](https://github.com/aymara-ai/aymara-ai/issues/new) on our GitHub repo.
 
@@ -69,7 +69,7 @@ client = AymaraAI(api_key="your_api_key")
 
 ## Usage
 
-In this repo, refer to `/examples/safety/safety_notebook.ipynb` for a walkthrough of how to use the SDK.
+Refer to [this notebook](https://docs.aymara.ai/safety_notebook.html) for a walkthrough of how to use the SDK.
 
 <!-- sphinx-ignore-end -->
 
@@ -85,4 +85,4 @@ We take backwards-compatibility seriously and will ensure to give you a smooth u
 
 ## Requirements
 
-Python 3.7 or higher.
+Python 3.11 or higher.
