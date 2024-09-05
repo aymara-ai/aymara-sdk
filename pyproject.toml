@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aymara-ai"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Python SDK for using Aymara to test your AI alignment."
 authors = [
     {name = "Aymara AI", email = "contact@aymara.ai"},

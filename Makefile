@@ -6,6 +6,7 @@ DOCS_DIR = docs
 # Default target
 .PHONY: docs
 docs:
+	@rm -rf $(DOCS_DIR)/build
 	@$(MAKE) -C $(DOCS_DIR) html
 
 # Other common targets
