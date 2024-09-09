@@ -141,7 +141,8 @@ class TestResponse(BaseModel):
     test_status: Annotated[Status, Field(..., description="Status of the test")]
 
     questions: Annotated[
-        List[QuestionResponse] | None, Field(None, description="Questions in the test")
+        Optional[List[QuestionResponse]],
+        Field(None, description="Questions in the test"),
     ]
     failure_reason: Annotated[
         Optional[str], Field(None, description="Reason for the test failure")
@@ -172,7 +173,7 @@ class TestResponse(BaseModel):
     def from_test_out_schema_and_questions(
         cls,
         test: TestOutSchema,
-        questions: List[QuestionSchema] | None = None,
+        questions: Optional[List[QuestionSchema]] = None,
         failure_reason: Optional[str] = None,
     ) -> "TestResponse":
         return cls(
@@ -230,7 +231,7 @@ class ScoreRunResponse(BaseModel):
         int, Field(..., description="Number of test questions")
     ]
     answers: Annotated[
-        List[ScoredAnswerResponse] | None,
+        Optional[List[ScoredAnswerResponse]],
         Field(None, description="List of scored answers"),
     ]
 
@@ -271,7 +272,7 @@ class ScoreRunResponse(BaseModel):
     def from_score_run_out_schema_and_answers(
         cls,
         score_run: ScoreRunOutSchema,
-        answers: List[AnswerSchema] | None = None,
+        answers: Optional[List[AnswerSchema]] = None,
         failure_reason: Optional[str] = None,
     ) -> "ScoreRunResponse":
         return cls(

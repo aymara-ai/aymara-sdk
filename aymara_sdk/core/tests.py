@@ -14,6 +14,7 @@ from aymara_sdk.generated.aymara_api_client.api.tests import (
 )
 from aymara_sdk.types import Status, TestResponse
 from aymara_sdk.utils.constants import (
+    AYMARA_TEST_POLICY_PREFIX,
     DEFAULT_CHAR_TO_TOKEN_MULTIPLIER,
     DEFAULT_MAX_TOKENS,
     DEFAULT_NUM_QUESTIONS,
@@ -23,6 +24,7 @@ from aymara_sdk.utils.constants import (
     DEFAULT_TEST_NAME_LEN_MAX,
     DEFAULT_TEST_NAME_LEN_MIN,
     POLLING_INTERVAL,
+    AymaraTestPolicy,
 )
 
 
@@ -32,7 +34,7 @@ class TestMixin(AymaraAIProtocol):
         self,
         test_name: str,
         student_description: str,
-        test_policy: str,
+        test_policy: Union[str, AymaraTestPolicy],
         test_language: str = DEFAULT_TEST_LANGUAGE,
         n_test_questions: int = DEFAULT_NUM_QUESTIONS,
     ) -> TestResponse:
@@ -69,7 +71,7 @@ class TestMixin(AymaraAIProtocol):
         self,
         test_name: str,
         student_description: str,
-        test_policy: str,
+        test_policy: Union[str, AymaraTestPolicy],
         test_language: str = DEFAULT_TEST_LANGUAGE,
         n_test_questions: int = DEFAULT_NUM_QUESTIONS,
     ) -> TestResponse:
@@ -106,11 +108,15 @@ class TestMixin(AymaraAIProtocol):
         self,
         test_name: str,
         student_description: str,
-        test_policy: str,
+        test_policy: Union[str, AymaraTestPolicy],
         test_language: str,
         n_test_questions: int,
         is_async: bool,
     ) -> Union[TestResponse, Coroutine[TestResponse, None, None]]:
+        # Convert AymaraTestPolicy to string and prefix with "aymara_test_policy:"
+        if isinstance(test_policy, AymaraTestPolicy):
+            test_policy = f"{AYMARA_TEST_POLICY_PREFIX}{test_policy.value}"
+
         self._validate_test_inputs(
             test_name, student_description, test_policy, n_test_questions
         )
@@ -314,7 +320,9 @@ class TestMixin(AymaraAIProtocol):
 
         return tests
 
-    async def list_tests_async(self, as_df=False) -> Union[List[TestResponse], pd.DataFrame]:
+    async def list_tests_async(
+        self, as_df=False
+    ) -> Union[List[TestResponse], pd.DataFrame]:
         """
         List all tests asynchronously.
         """
