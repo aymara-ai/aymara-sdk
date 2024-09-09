@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from aymara_sdk.generated.aymara_api_client import models
-from aymara_sdk.types.types import ScoreRunsExplanationResponse
+from aymara_sdk.types.types import ScoreRunsExplanationResponse, Status
 
 
 def test_create_explanation(aymara_client):
@@ -65,8 +65,9 @@ def test_create_explanation(aymara_client):
 
         assert isinstance(result, ScoreRunsExplanationResponse)
         assert result.score_runs_explanation_uuid == "exp123"
-        assert result.status == models.ExplanationStatus.FINISHED
-        assert result.explanation == "Explanation text"
+        assert result.score_run_explanation_status == Status.COMPLETED
+        assert result.overall_explanation_summary == "Overall explanation summary"
+        assert result.overall_improvement_advice == "Overall improvement advice"
 
 
 @pytest.mark.asyncio
@@ -78,20 +79,60 @@ async def test_create_explanation_async(aymara_client):
     ) as mock_get_explanation:
         mock_create_explanation.return_value = models.ScoreRunsExplanationOutSchema(
             score_runs_explanation_uuid="exp123",
-            status=models.ExplanationStatus.CREATED,
+            status=models.ExplanationStatus.RECORD_CREATED,
+            score_run_explanations=[
+                models.ScoreRunExplanationOutSchema(
+                    score_run_explanation_uuid="exp123",
+                    explanation_summary="Explanation summary",
+                    improvement_advice="Improvement advice",
+                    score_run=models.ScoreRunOutSchema(
+                        score_run_uuid="score123",
+                        score_run_status=models.ScoreRunStatus.RECORD_CREATED,
+                        test=models.TestOutSchema(
+                            test_name="Test 1",
+                            test_uuid="test123",
+                            test_status=models.TestStatus.RECORD_CREATED,
+                            test_type=models.TestType.SAFETY,
+                            n_test_questions=10,
+                            organization_name="Organization 1",
+                        ),
+                    ),
+                )
+            ],
         )
         mock_get_explanation.return_value = models.ScoreRunsExplanationOutSchema(
             score_runs_explanation_uuid="exp123",
             status=models.ExplanationStatus.FINISHED,
-            explanation="Explanation text",
+            overall_explanation_summary="Overall explanation summary",
+            overall_improvement_advice="Overall improvement advice",
+            score_run_explanations=[
+                models.ScoreRunExplanationOutSchema(
+                    score_run_explanation_uuid="exp123",
+                    explanation_summary="Explanation summary",
+                    improvement_advice="Improvement advice",
+                    score_run=models.ScoreRunOutSchema(
+                        score_run_uuid="score123",
+                        score_run_status=models.ScoreRunStatus.RECORD_CREATED,
+                        test=models.TestOutSchema(
+                            test_name="Test 1",
+                            test_uuid="test123",
+                            test_status=models.TestStatus.RECORD_CREATED,
+                            test_type=models.TestType.SAFETY,
+                            n_test_questions=10,
+                            organization_name="Organization 1",
+                        ),
+                    ),
+                )
+            ],
         )
 
         result = await aymara_client.create_explanation_async(["score123"])
 
         assert isinstance(result, ScoreRunsExplanationResponse)
         assert result.score_runs_explanation_uuid == "exp123"
-        assert result.status == models.ExplanationStatus.FINISHED
-        assert result.explanation == "Explanation text"
+        assert result.score_run_explanation_status == Status.COMPLETED
+        assert result.overall_explanation_summary == "Overall explanation summary"
+        assert result.overall_improvement_advice == "Overall improvement advice"
 
 
 def test_get_explanation(aymara_client):
@@ -101,15 +142,36 @@ def test_get_explanation(aymara_client):
         mock_get_explanation.return_value = models.ScoreRunsExplanationOutSchema(
             score_runs_explanation_uuid="exp123",
             status=models.ExplanationStatus.FINISHED,
-            explanation="Explanation text",
+            overall_explanation_summary="Overall explanation summary",
+            overall_improvement_advice="Overall improvement advice",
+            score_run_explanations=[
+                models.ScoreRunExplanationOutSchema(
+                    score_run_explanation_uuid="exp123",
+                    explanation_summary="Explanation summary",
+                    improvement_advice="Improvement advice",
+                    score_run=models.ScoreRunOutSchema(
+                        score_run_uuid="score123",
+                        score_run_status=models.ScoreRunStatus.RECORD_CREATED,
+                        test=models.TestOutSchema(
+                            test_name="Test 1",
+                            test_uuid="test123",
+                            test_status=models.TestStatus.RECORD_CREATED,
+                            test_type=models.TestType.SAFETY,
+                            n_test_questions=10,
+                            organization_name="Organization 1",
+                        ),
+                    ),
+                )
+            ],
         )
 
         result = aymara_client.get_explanation("exp123")
 
         assert isinstance(result, ScoreRunsExplanationResponse)
         assert result.score_runs_explanation_uuid == "exp123"
-        assert result.status == models.ExplanationStatus.FINISHED
-        assert result.explanation == "Explanation text"
+        assert result.score_run_explanation_status == Status.COMPLETED
+        assert result.overall_explanation_summary == "Overall explanation summary"
+        assert result.overall_improvement_advice == "Overall improvement advice"
 
 
 @pytest.mark.asyncio
@@ -120,15 +182,36 @@ async def test_get_explanation_async(aymara_client):
         mock_get_explanation.return_value = models.ScoreRunsExplanationOutSchema(
             score_runs_explanation_uuid="exp123",
             status=models.ExplanationStatus.FINISHED,
-            explanation="Explanation text",
+            overall_explanation_summary="Overall explanation summary",
+            overall_improvement_advice="Overall improvement advice",
+            score_run_explanations=[
+                models.ScoreRunExplanationOutSchema(
+                    score_run_explanation_uuid="exp123",
+                    explanation_summary="Explanation summary",
+                    improvement_advice="Improvement advice",
+                    score_run=models.ScoreRunOutSchema(
+                        score_run_uuid="score123",
+                        score_run_status=models.ScoreRunStatus.RECORD_CREATED,
+                        test=models.TestOutSchema(
+                            test_name="Test 1",
+                            test_uuid="test123",
+                            test_status=models.TestStatus.RECORD_CREATED,
+                            test_type=models.TestType.SAFETY,
+                            n_test_questions=10,
+                            organization_name="Organization 1",
+                        ),
+                    ),
+                )
+            ],
         )
 
         result = await aymara_client.get_explanation_async("exp123")
 
         assert isinstance(result, ScoreRunsExplanationResponse)
         assert result.score_runs_explanation_uuid == "exp123"
-        assert result.status == models.ExplanationStatus.FINISHED
-        assert result.explanation == "Explanation text"
+        assert result.score_run_explanation_status == Status.COMPLETED
+        assert result.overall_explanation_summary == "Overall explanation summary"
+        assert result.overall_improvement_advice == "Overall improvement advice"
 
 
 def test_list_explanations(aymara_client):
@@ -139,12 +222,52 @@ def test_list_explanations(aymara_client):
             models.ScoreRunsExplanationOutSchema(
                 score_runs_explanation_uuid="exp1",
                 status=models.ExplanationStatus.FINISHED,
-                explanation="Explanation 1",
+                overall_explanation_summary="Overall explanation summary",
+                overall_improvement_advice="Overall improvement advice",
+                score_run_explanations=[
+                    models.ScoreRunExplanationOutSchema(
+                        score_run_explanation_uuid="exp1",
+                        explanation_summary="Explanation summary",
+                        improvement_advice="Improvement advice",
+                        score_run=models.ScoreRunOutSchema(
+                            score_run_uuid="score1",
+                            score_run_status=models.ScoreRunStatus.RECORD_CREATED,
+                            test=models.TestOutSchema(
+                                test_name="Test 1",
+                                test_uuid="test1",
+                                test_status=models.TestStatus.RECORD_CREATED,
+                                test_type=models.TestType.SAFETY,
+                                n_test_questions=10,
+                                organization_name="Organization 1",
+                            ),
+                        ),
+                    )
+                ],
             ),
             models.ScoreRunsExplanationOutSchema(
                 score_runs_explanation_uuid="exp2",
                 status=models.ExplanationStatus.FINISHED,
-                explanation="Explanation 2",
+                overall_explanation_summary="Overall explanation summary",
+                overall_improvement_advice="Overall improvement advice",
+                score_run_explanations=[
+                    models.ScoreRunExplanationOutSchema(
+                        score_run_explanation_uuid="exp2",
+                        explanation_summary="Explanation summary",
+                        improvement_advice="Improvement advice",
+                        score_run=models.ScoreRunOutSchema(
+                            score_run_uuid="score2",
+                            score_run_status=models.ScoreRunStatus.RECORD_CREATED,
+                            test=models.TestOutSchema(
+                                test_name="Test 2",
+                                test_uuid="test2",
+                                test_status=models.TestStatus.RECORD_CREATED,
+                                test_type=models.TestType.SAFETY,
+                                n_test_questions=10,
+                                organization_name="Organization 2",
+                            ),
+                        ),
+                    )
+                ],
             ),
         ]
 
@@ -164,12 +287,52 @@ async def test_list_explanations_async(aymara_client):
             models.ScoreRunsExplanationOutSchema(
                 score_runs_explanation_uuid="exp1",
                 status=models.ExplanationStatus.FINISHED,
-                explanation="Explanation 1",
+                overall_explanation_summary="Overall explanation summary",
+                overall_improvement_advice="Overall improvement advice",
+                score_run_explanations=[
+                    models.ScoreRunExplanationOutSchema(
+                        score_run_explanation_uuid="exp1",
+                        explanation_summary="Explanation summary",
+                        improvement_advice="Improvement advice",
+                        score_run=models.ScoreRunOutSchema(
+                            score_run_uuid="score1",
+                            score_run_status=models.ScoreRunStatus.RECORD_CREATED,
+                            test=models.TestOutSchema(
+                                test_name="Test 1",
+                                test_uuid="test1",
+                                test_status=models.TestStatus.RECORD_CREATED,
+                                test_type=models.TestType.SAFETY,
+                                n_test_questions=10,
+                                organization_name="Organization 1",
+                            ),
+                        ),
+                    )
+                ],
             ),
             models.ScoreRunsExplanationOutSchema(
                 score_runs_explanation_uuid="exp2",
                 status=models.ExplanationStatus.FINISHED,
-                explanation="Explanation 2",
+                overall_explanation_summary="Overall explanation summary",
+                overall_improvement_advice="Overall improvement advice",
+                score_run_explanations=[
+                    models.ScoreRunExplanationOutSchema(
+                        score_run_explanation_uuid="exp2",
+                        explanation_summary="Explanation summary",
+                        improvement_advice="Improvement advice",
+                        score_run=models.ScoreRunOutSchema(
+                            score_run_uuid="score2",
+                            score_run_status=models.ScoreRunStatus.RECORD_CREATED,
+                            test=models.TestOutSchema(
+                                test_name="Test 2",
+                                test_uuid="test2",
+                                test_status=models.TestStatus.RECORD_CREATED,
+                                test_type=models.TestType.SAFETY,
+                                n_test_questions=10,
+                                organization_name="Organization 2",
+                            ),
+                        ),
+                    )
+                ],
             ),
         ]
 
@@ -181,10 +344,5 @@ async def test_list_explanations_async(aymara_client):
 
 
 def test_create_explanation_validation(aymara_client):
-    with pytest.raises(
-        ValueError, match="At least one score run UUID must be provided"
-    ):
+    with pytest.raises(ValueError, match="At least one score run must be provided"):
         aymara_client.create_explanation([])
-
-
-# Add more tests for edge cases and error handling

@@ -12,7 +12,7 @@ from aymara_sdk.generated.aymara_api_client.api.score_runs import (
 from aymara_sdk.generated.aymara_api_client.models.score_runs_explanation_in_schema import (
     ScoreRunsExplanationInSchema,
 )
-from aymara_sdk.types import Status, ScoreRunResponse
+from aymara_sdk.types import ScoreRunResponse, Status
 from aymara_sdk.types.types import (
     ScoreRunsExplanationResponse,
 )
@@ -31,11 +31,10 @@ class ExplanationMixin(AymaraAIProtocol):
         :return: Explanation response.
         :rtype: ScoreRunsExplanationResponse
         """
-        score_run_uuids = self._score_runs_to_score_run_uuids(score_runs)
-        return self._create_explanation(score_run_uuids, is_async=False)
+        return self._create_explanation(score_runs, is_async=False)
 
     async def create_explanation_async(
-        self, score_runs: List[str]
+        self, score_runs: Union[List[ScoreRunResponse], List[str]]
     ) -> ScoreRunsExplanationResponse:
         """
         Create explanations for a list of score runs and wait for completion asynchronously.
@@ -45,15 +44,19 @@ class ExplanationMixin(AymaraAIProtocol):
         :return: Explanation response.
         :rtype: ScoreRunsExplanationResponse
         """
-        score_run_uuids = self._score_runs_to_score_run_uuids(score_runs)
-        return await self._create_explanation(score_run_uuids, is_async=True)
+        return await self._create_explanation(score_runs, is_async=True)
 
     def _create_explanation(
-        self, score_run_uuids: List[str], is_async: bool
+        self, score_runs: Union[List[ScoreRunResponse], List[str]], is_async: bool
     ) -> Union[
         ScoreRunsExplanationResponse,
         Coroutine[ScoreRunsExplanationResponse, None, None],
     ]:
+        if len(score_runs) == 0:
+            raise ValueError("At least one score run must be provided")
+
+        score_run_uuids = self._score_runs_to_score_run_uuids(score_runs)
+
         if is_async:
             return self._create_explanation_async_impl(score_run_uuids)
         else:

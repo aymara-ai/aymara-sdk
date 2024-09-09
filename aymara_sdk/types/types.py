@@ -327,6 +327,11 @@ class ScoreRunsExplanationResponse(BaseModel):
     score_runs_explanation_uuid: Annotated[
         str, Field(..., description="UUID of the score run explanation")
     ]
+
+    score_run_explanation_status: Annotated[
+        Status, Field(..., description="Status of the score run explanation")
+    ]
+
     overall_explanation_summary: Annotated[
         str, Field(..., description="Summary of the overall explanation")
     ]
@@ -374,6 +379,7 @@ class ScoreRunsExplanationResponse(BaseModel):
     ) -> "ScoreRunsExplanationResponse":
         return cls(
             score_runs_explanation_uuid=explanation.score_runs_explanation_uuid,
+            score_run_explanation_status=Status.from_api_status(explanation.status),
             overall_explanation_summary=explanation.overall_explanation_summary,
             overall_improvement_advice=explanation.overall_improvement_advice,
             score_run_explanations=[
