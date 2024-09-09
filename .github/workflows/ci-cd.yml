@@ -1,0 +1,75 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to test (e.g., v0.1.1)"
+        required: false
+        type: string
+      create_release:
+        description: "Create a release"
+        required: false
+        type: boolean
+        default: false
+      api_test_env:
+        description: "API test environment"
+        required: false
+        type: choice
+        options:
+          - production
+          - staging
+        default: "production"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run tests
+        env:
+          PROD_TESTING_API_KEY: ${{ secrets.PROD_TESTING_API_KEY }}
+          STAGING_TESTING_API_KEY: ${{ secrets.STAGING_TESTING_API_KEY }}
+          API_TEST_ENV: ${{ github.event.inputs.api_test_env }}
+        run: pytest
+
+  create_release_candidate:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create Release Candidate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version=$(date +'%Y.%m.%d')-rc.${{ github.run_number }}
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git tag -a v$version -m "Release Candidate $version"
+          git push origin v$version
+
+  create_release:
+    needs: test
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.create_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version=$(git describe --tags --abbrev=0)
+          gh release create $version --generate-notes
