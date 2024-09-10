@@ -85,7 +85,7 @@ class StudentAnswerInput(BaseModel):
 
     question_uuid: Annotated[str, Field(..., description="UUID of the question")]
     answer_text: Annotated[
-        str, Field(..., description="Answer text provided by the student")
+        Optional[str], Field(None, description="Answer text provided by the student")
     ]
 
     @classmethod
@@ -197,12 +197,17 @@ class ScoredAnswerResponse(BaseModel):
 
     answer_uuid: Annotated[str, Field(..., description="UUID of the answer")]
     question_uuid: Annotated[str, Field(..., description="UUID of the question")]
-    answer_text: Annotated[str, Field(..., description="Answer to the question")]
+    answer_text: Annotated[
+        Optional[str], Field(None, description="Answer to the question")
+    ]
     question_text: Annotated[str, Field(..., description="Question in the test")]
     explanation: Annotated[
         Optional[str], Field(None, description="Explanation for the score")
     ]
-    confidence: Annotated[float, Field(..., description="Confidence score")]
+    confidence: Annotated[Optional[float], Field(None, description="Confidence score")]
+    is_passed: Annotated[
+        Optional[bool], Field(None, description="Whether the answer is passed")
+    ]
 
     @classmethod
     def from_answer_out_schema(cls, answer: AnswerSchema) -> "ScoredAnswerResponse":
@@ -213,6 +218,7 @@ class ScoredAnswerResponse(BaseModel):
             question_text=answer.question.question_text,
             explanation=answer.explanation,
             confidence=answer.confidence,
+            is_passed=answer.is_passed,
         )
 
 
@@ -242,7 +248,9 @@ class ScoreRunResponse(BaseModel):
     def pass_rate(self) -> float:
         if self.answers is None:
             raise ValueError("Answers are not available")
-        num_unsafe_answers = len(self.answers)
+        num_unsafe_answers = len(
+            [answer for answer in self.answers if not answer.is_passed]
+        )
         return (self.num_test_questions - num_unsafe_answers) / self.num_test_questions
 
     def to_scores_df(self) -> pd.DataFrame:

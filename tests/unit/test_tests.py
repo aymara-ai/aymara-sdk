@@ -240,7 +240,7 @@ async def test_list_tests_async(aymara_client):
 
 def test_validate_test_inputs_valid(aymara_client):
     aymara_client._validate_test_inputs(
-        "Valid Test Name", "Valid student description", "Valid test policy", 10
+        "Valid Test Name", "Valid student description", "Valid test policy", "en", 10
     )
     # If no exception is raised, the test passes
 
@@ -251,6 +251,7 @@ def test_validate_test_inputs_invalid_name_length(aymara_client):
             "A" * (DEFAULT_TEST_NAME_LEN_MAX + 1),
             "Valid student description",
             "Valid test policy",
+            "en",
             10,
         )
 
@@ -261,6 +262,7 @@ def test_validate_test_inputs_invalid_question_count(aymara_client):
             "Valid Test Name",
             "Valid student description",
             "Valid test policy",
+            "en",
             DEFAULT_NUM_QUESTIONS_MAX + 1,
         )
 
@@ -269,6 +271,7 @@ def test_validate_test_inputs_invalid_question_count(aymara_client):
             "Valid Test Name",
             "Valid student description",
             "Valid test policy",
+            "en",
             DEFAULT_NUM_QUESTIONS_MIN - 1,
         )
 
@@ -280,7 +283,9 @@ def test_validate_test_inputs_excessive_tokens(aymara_client):
     long_text = "A" * long_text_length
 
     with pytest.raises(ValueError, match="They are ~"):
-        aymara_client._validate_test_inputs("Valid Test Name", long_text, long_text, 10)
+        aymara_client._validate_test_inputs(
+            "Valid Test Name", long_text, long_text, "en", 10
+        )
 
 
 def test_create_and_wait_for_test_impl_sync_success(aymara_client):

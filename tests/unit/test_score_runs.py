@@ -50,6 +50,7 @@ def test_score_test(aymara_client):
                     ),
                     explanation="Explanation 1",
                     confidence=0.5,
+                    is_passed=True,
                 )
             ],
             count=1,
@@ -109,6 +110,7 @@ async def test_score_test_async(aymara_client):
                     ),
                     explanation="Explanation 1",
                     confidence=0.5,
+                    is_passed=False,
                 )
             ],
             count=1,
@@ -153,6 +155,7 @@ def test_get_score_run(aymara_client):
                     ),
                     explanation="Explanation 1",
                     confidence=0.5,
+                    is_passed=False,
                 )
             ],
             count=1,
@@ -196,6 +199,7 @@ async def test_get_score_run_async(aymara_client):
                     ),
                     explanation="Explanation 1",
                     confidence=0.5,
+                    is_passed=True,
                 )
             ],
             count=1,
@@ -824,3 +828,31 @@ async def test_get_all_score_run_answers_async(aymara_client):
         assert len(result) == 2
         assert all(isinstance(item, models.AnswerSchema) for item in result)
         assert mock_get_answers.call_count == 2
+
+
+def test_validate_student_answers(aymara_client):
+    # Test with valid input
+    valid_answers = [
+        StudentAnswerInput(question_uuid="q1", answer_text="Answer 1"),
+        StudentAnswerInput(question_uuid="q2", answer_text="Answer 2"),
+    ]
+    aymara_client._validate_student_answers(
+        valid_answers
+    )  # Should not raise an exception
+
+    # Test with empty list
+    with pytest.raises(ValueError, match="Student answers cannot be empty."):
+        aymara_client._validate_student_answers([])
+
+    # Test with invalid input type
+    invalid_answers = [
+        StudentAnswerInput(question_uuid="q1", answer_text="Answer 1"),
+        {
+            "question_uuid": "q2",
+            "answer_text": "Answer 2",
+        },  # Not a StudentAnswerInput object
+    ]
+    with pytest.raises(
+        ValueError, match="All items in student answers must be StudentAnswerInput."
+    ):
+        aymara_client._validate_student_answers(invalid_answers)

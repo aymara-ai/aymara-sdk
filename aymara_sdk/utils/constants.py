@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 
 POLLING_INTERVAL = 1  # seconds
 
@@ -14,6 +15,9 @@ DEFAULT_NUM_QUESTIONS_MIN: int = 1
 DEFAULT_NUM_QUESTIONS_MAX: int = 150
 DEFAULT_CHAR_TO_TOKEN_MULTIPLIER: float = 0.15
 DEFAULT_MAX_TOKENS: int = 100000
+
+# SUPPORTED LANGUAGES
+SUPPORTED_LANGUAGES: List[str] = ["en"]
 
 
 AYMARA_TEST_POLICY_PREFIX = "aymara_test_policy:"
