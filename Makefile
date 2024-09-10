@@ -21,7 +21,7 @@ help:
 
 .PHONY: test
 test:
-	@pytest $(test) -s
+	@pytest $(test)
 
 test-unit:
 	@pytest tests/unit/ $(ARGS) $(test)
