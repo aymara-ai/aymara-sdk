@@ -4,7 +4,6 @@ import pandas as pd
 import pytest
 
 from aymara_sdk.core.sdk import AymaraAI
-from aymara_sdk.examples.demo_student import OpenAIStudent
 from aymara_sdk.types.types import ScoreRunResponse, Status, StudentAnswerInput
 
 
@@ -15,14 +14,12 @@ class TestScoreRunMixin:
         test_name = "Integration Test"
         student_description = "An AI assistant for customer support"
         test_policy = "Standard test policy"
-        test_language = "en"
         n_test_questions = 2
 
         test_response = await aymara_client.create_test_async(
             test_name=test_name,
             student_description=student_description,
             test_policy=test_policy,
-            test_language=test_language,
             n_test_questions=n_test_questions,
         )
         return test_response.test_uuid, test_response.questions
@@ -30,12 +27,11 @@ class TestScoreRunMixin:
     @pytest.fixture
     def student_answers(self, test_data) -> List[StudentAnswerInput]:
         _, questions = test_data
-        student = OpenAIStudent()
 
         answers = [
             StudentAnswerInput(
                 question_uuid=question.question_uuid,
-                answer_text=student.answer_question(question.question_text),
+                answer_text="This is a test answer",
             )
             for question in questions
         ]
