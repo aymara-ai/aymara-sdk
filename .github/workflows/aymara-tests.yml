@@ -15,7 +15,7 @@ jobs:
     env:
       PROD_TESTING_API_KEY: ${{ secrets.PROD_TESTING_API_KEY }}
       STAGING_TESTING_API_KEY: ${{ secrets.STAGING_TESTING_API_KEY }}
-      API_TEST_ENV: ${{ vars.API_TEST_ENV }}
+      API_TEST_ENV: ${{ github.event.client_payload.env || vars.API_TEST_ENV }}
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
