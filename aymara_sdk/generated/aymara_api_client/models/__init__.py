@@ -2,6 +2,7 @@
 
 from .answer_in_schema import AnswerInSchema
 from .answer_schema import AnswerSchema
+from .error_schema import ErrorSchema
 from .explanation_status import ExplanationStatus
 from .input_ import Input
 from .organization_out_schema import OrganizationOutSchema
@@ -27,6 +28,7 @@ from .workspace_out_schema import WorkspaceOutSchema
 __all__ = (
     "AnswerInSchema",
     "AnswerSchema",
+    "ErrorSchema",
     "ExplanationStatus",
     "Input",
     "OrganizationOutSchema",

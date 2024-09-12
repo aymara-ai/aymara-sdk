@@ -17,25 +17,31 @@ class AnswerSchema:
     """
     Attributes:
         answer_uuid (str):
-        answer_text (str):
         question (QuestionSchema):
+        answer_text (Union[None, Unset, str]):
         explanation (Union[None, Unset, str]):
         confidence (Union[None, Unset, float]):
+        is_passed (Union[None, Unset, bool]):
     """
 
     answer_uuid: str
-    answer_text: str
     question: "QuestionSchema"
+    answer_text: Union[None, Unset, str] = UNSET
     explanation: Union[None, Unset, str] = UNSET
     confidence: Union[None, Unset, float] = UNSET
+    is_passed: Union[None, Unset, bool] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         answer_uuid = self.answer_uuid
 
-        answer_text = self.answer_text
-
         question = self.question.to_dict()
+
+        answer_text: Union[None, Unset, str]
+        if isinstance(self.answer_text, Unset):
+            answer_text = UNSET
+        else:
+            answer_text = self.answer_text
 
         explanation: Union[None, Unset, str]
         if isinstance(self.explanation, Unset):
@@ -49,19 +55,28 @@ class AnswerSchema:
         else:
             confidence = self.confidence
 
+        is_passed: Union[None, Unset, bool]
+        if isinstance(self.is_passed, Unset):
+            is_passed = UNSET
+        else:
+            is_passed = self.is_passed
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "answer_uuid": answer_uuid,
-                "answer_text": answer_text,
                 "question": question,
             }
         )
+        if answer_text is not UNSET:
+            field_dict["answer_text"] = answer_text
         if explanation is not UNSET:
             field_dict["explanation"] = explanation
         if confidence is not UNSET:
             field_dict["confidence"] = confidence
+        if is_passed is not UNSET:
+            field_dict["is_passed"] = is_passed
 
         return field_dict
 
@@ -72,9 +87,16 @@ class AnswerSchema:
         d = src_dict.copy()
         answer_uuid = d.pop("answer_uuid")
 
-        answer_text = d.pop("answer_text")
-
         question = QuestionSchema.from_dict(d.pop("question"))
+
+        def _parse_answer_text(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        answer_text = _parse_answer_text(d.pop("answer_text", UNSET))
 
         def _parse_explanation(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -94,12 +116,22 @@ class AnswerSchema:
 
         confidence = _parse_confidence(d.pop("confidence", UNSET))
 
+        def _parse_is_passed(data: object) -> Union[None, Unset, bool]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, bool], data)
+
+        is_passed = _parse_is_passed(d.pop("is_passed", UNSET))
+
         answer_schema = cls(
             answer_uuid=answer_uuid,
-            answer_text=answer_text,
             question=question,
+            answer_text=answer_text,
             explanation=explanation,
             confidence=confidence,
+            is_passed=is_passed,
         )
 
         answer_schema.additional_properties = d

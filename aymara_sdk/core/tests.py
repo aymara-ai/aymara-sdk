@@ -24,6 +24,7 @@ from aymara_sdk.utils.constants import (
     DEFAULT_TEST_NAME_LEN_MAX,
     DEFAULT_TEST_NAME_LEN_MIN,
     POLLING_INTERVAL,
+    SUPPORTED_LANGUAGES,
     AymaraTestPolicy,
 )
 
@@ -118,7 +119,7 @@ class TestMixin(AymaraAIProtocol):
             test_policy = f"{AYMARA_TEST_POLICY_PREFIX}{test_policy.value}"
 
         self._validate_test_inputs(
-            test_name, student_description, test_policy, n_test_questions
+            test_name, student_description, test_policy, test_language, n_test_questions
         )
 
         test_data = models.TestSchema(
@@ -139,8 +140,15 @@ class TestMixin(AymaraAIProtocol):
         test_name: str,
         student_description: str,
         test_policy: Optional[str],
+        test_language: str,
         n_test_questions: int,
     ) -> None:
+        if not student_description:
+            raise ValueError("student_description is required")
+
+        if test_language not in SUPPORTED_LANGUAGES:
+            raise ValueError(f"test_language must be one of {SUPPORTED_LANGUAGES}")
+
         if test_policy is None:
             raise ValueError("test_policy is required for safety tests")
 

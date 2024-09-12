@@ -21,13 +21,13 @@ help:
 
 .PHONY: test
 test:
-	@pytest $(test) -s
+	@pytest $(case) -s
 
 test-unit:
-	@pytest tests/unit/ $(ARGS) $(test)
+	@pytest tests/unit/ $(case)
 
 test-integration:
-	@pytest tests/integration/ $(ARGS) -s $(test)
+	@pytest tests/integration/ -s $(case)
 
 
 generate-client:

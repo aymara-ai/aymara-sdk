@@ -62,6 +62,8 @@ class ScoreRunMixin(AymaraAIProtocol):
         student_answers: List[StudentAnswerInput],
         is_async: bool,
     ) -> Union[ScoreRunResponse, Coroutine[ScoreRunResponse, None, None]]:
+        self._validate_student_answers(student_answers)
+
         score_data = models.ScoreRunSchema(
             test_uuid=test_uuid,
             answers=[
@@ -244,6 +246,10 @@ class ScoreRunMixin(AymaraAIProtocol):
     ) -> ScoreRunResponse:
         start_time = time.time()
         score_response = create_score_run.sync(client=self.client, body=score_data)
+
+        if isinstance(score_response, models.ErrorSchema):
+            raise ValueError(score_response.detail)
+
         score_run_uuid = score_response.score_run_uuid
         test_name = score_response.test.test_name
 
@@ -362,3 +368,11 @@ class ScoreRunMixin(AymaraAIProtocol):
                 break
             offset += len(response.items)
         return answers
+
+    def _validate_student_answers(self, student_answers: List[StudentAnswerInput]):
+        if not student_answers:
+            raise ValueError("Student answers cannot be empty.")
+        if not all(
+            isinstance(answer, StudentAnswerInput) for answer in student_answers
+        ):
+            raise ValueError("All items in student answers must be StudentAnswerInput.")

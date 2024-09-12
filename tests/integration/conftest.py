@@ -8,7 +8,7 @@ from aymara_sdk import AymaraAI
 load_dotenv(override=True)
 
 # Read environment variables
-ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
+ENVIRONMENT = os.getenv("API_TEST_ENV", "production")
 
 
 @pytest.fixture

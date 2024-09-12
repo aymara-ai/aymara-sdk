@@ -65,7 +65,6 @@ class AymaraAI(
         self.client = client.Client(
             base_url=base_url,
             headers={"x-api-key": api_key},
-            raise_on_unexpected_status=True,
         )
         self.max_wait_time = max_wait_time
         self.logger.debug(f"AymaraAI client initialized with base URL: {base_url}")
@@ -192,6 +191,7 @@ class AymaraAI(
             ylim_min = math.floor(min(pass_rates) * 10) / 10
 
         fig, ax = plt.subplots()
+
         ax.bar(names, pass_rates, **kwargs)
 
         # Title
@@ -210,6 +210,7 @@ class AymaraAI(
 
         # y-axis
         ax.set_ylabel(ylabel, fontweight="bold")
+        ax.set_ylim(bottom=ylim_min)
         if yaxis_is_percent:
 
             def to_percent(y, _):
