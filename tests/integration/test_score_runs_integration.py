@@ -239,10 +239,7 @@ class TestScoreRunMixin:
         assert response.score_run_status == Status.COMPLETED
 
     def test_get_non_existent_score_run(self, aymara_client: AymaraAI):
-        with pytest.raises(
-            Exception
-        ) as exc_info:  # Replace with the specific exception if known
-            print(exc_info)
+        with pytest.raises(Exception):
             aymara_client.get_score_run("non-existent-uuid")
 
     def test_list_score_runs_with_non_existent_test(self, aymara_client: AymaraAI):
