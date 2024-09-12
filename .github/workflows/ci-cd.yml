@@ -58,33 +58,3 @@ jobs:
           STAGING_TESTING_API_KEY: ${{ secrets.STAGING_TESTING_API_KEY }}
           API_TEST_ENV: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}
         run: pytest
-
-  create_release_candidate:
-    needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Create Release Candidate
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          version=$(date +'%Y.%m.%d')-rc.${{ github.run_number }}
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git tag -a v$version -m "Release Candidate $version"
-          git push origin v$version
-
-  create_release:
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.create_release == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Create Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          version=$(git describe --tags --abbrev=0)
-          gh release create $version --generate-notes
