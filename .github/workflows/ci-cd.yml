@@ -11,11 +11,6 @@ on:
         description: "Version to test (e.g., v0.1.1)"
         required: false
         type: string
-      create_release:
-        description: "Create a release"
-        required: false
-        type: boolean
-        default: false
       api_test_env:
         description: "API test environment"
         required: false
