@@ -1,5 +1,4 @@
-name: CI/CD Pipeline
-
+name: Test
 on:
   push:
     branches: [main]
@@ -21,11 +20,6 @@ on:
           - production
           - staging
         default: "production"
-      skip_tests:
-        description: "Skip tests"
-        required: false
-        type: boolean
-        default: false
 
 permissions:
   contents: write
@@ -38,9 +32,7 @@ concurrency:
 jobs:
   test:
     if: >
-      github.event_name != 'workflow_dispatch' ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.skip_tests != 'true') ||
-      github.event_name == 'repository_dispatch'
+      github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
