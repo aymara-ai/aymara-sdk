@@ -85,4 +85,4 @@ We take backwards-compatibility seriously and will ensure to give you a smooth u
 
 ## Requirements
 
-Python 3.11 or higher.
+Python 3.9 or higher.
