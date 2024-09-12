@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
   repository_dispatch:
-    types: [run-staging-tests]
+    types: [run-tests]
   workflow_dispatch:
     inputs:
       version:
@@ -56,5 +56,5 @@ jobs:
         env:
           PROD_TESTING_API_KEY: ${{ secrets.PROD_TESTING_API_KEY }}
           STAGING_TESTING_API_KEY: ${{ secrets.STAGING_TESTING_API_KEY }}
-          API_TEST_ENV: ${{ github.event.inputs.api_test_env || (github.event_name == 'repository_dispatch' && 'staging') || vars.API_TEST_ENV }}
+          API_TEST_ENV: ${{ github.event.inputs.api_test_env || (github.event_name == 'repository_dispatch' && github.event.client_payload.environment) || vars.API_TEST_ENV }}
         run: pytest
