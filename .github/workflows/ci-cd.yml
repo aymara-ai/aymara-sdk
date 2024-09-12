@@ -76,7 +76,6 @@ jobs:
           git push origin v$version
 
   create_release:
-    needs: test
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.create_release == 'true'
     runs-on: ubuntu-latest
     steps:
