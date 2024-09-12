@@ -46,7 +46,7 @@ jobs:
         env:
           PROD_TESTING_API_KEY: ${{ secrets.PROD_TESTING_API_KEY }}
           STAGING_TESTING_API_KEY: ${{ secrets.STAGING_TESTING_API_KEY }}
-          API_TEST_ENV: ${{ github.event.inputs.api_test_env }}
+          API_TEST_ENV: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}
         run: pytest
 
   create_release_candidate:
