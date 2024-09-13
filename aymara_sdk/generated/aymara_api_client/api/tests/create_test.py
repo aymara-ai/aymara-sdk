@@ -5,6 +5,7 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
+from ...models.error_schema import ErrorSchema
 from ...models.test_out_schema import TestOutSchema
 from ...models.test_schema import TestSchema
 from ...types import UNSET, Response, Unset
@@ -38,18 +39,26 @@ def _get_kwargs(
     return _kwargs
 
 
-def _parse_response(*, client: Union[AuthenticatedClient, Client], response: httpx.Response) -> Optional[TestOutSchema]:
-    if response.status_code == HTTPStatus.OK:
-        response_200 = TestOutSchema.from_dict(response.json())
+def _parse_response(
+    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
+) -> Optional[Union[ErrorSchema, TestOutSchema]]:
+    if response.status_code == HTTPStatus.CREATED:
+        response_201 = TestOutSchema.from_dict(response.json())
 
-        return response_200
+        return response_201
+    if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
+        response_500 = ErrorSchema.from_dict(response.json())
+
+        return response_500
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
     else:
         return None
 
 
-def _build_response(*, client: Union[AuthenticatedClient, Client], response: httpx.Response) -> Response[TestOutSchema]:
+def _build_response(
+    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
+) -> Response[Union[ErrorSchema, TestOutSchema]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -63,7 +72,7 @@ def sync_detailed(
     client: AuthenticatedClient,
     body: TestSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Response[TestOutSchema]:
+) -> Response[Union[ErrorSchema, TestOutSchema]]:
     """Create Test
 
     Args:
@@ -75,7 +84,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[TestOutSchema]
+        Response[Union[ErrorSchema, TestOutSchema]]
     """
 
     kwargs = _get_kwargs(
@@ -95,7 +104,7 @@ def sync(
     client: AuthenticatedClient,
     body: TestSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Optional[TestOutSchema]:
+) -> Optional[Union[ErrorSchema, TestOutSchema]]:
     """Create Test
 
     Args:
@@ -107,7 +116,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        TestOutSchema
+        Union[ErrorSchema, TestOutSchema]
     """
 
     return sync_detailed(
@@ -122,7 +131,7 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     body: TestSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Response[TestOutSchema]:
+) -> Response[Union[ErrorSchema, TestOutSchema]]:
     """Create Test
 
     Args:
@@ -134,7 +143,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[TestOutSchema]
+        Response[Union[ErrorSchema, TestOutSchema]]
     """
 
     kwargs = _get_kwargs(
@@ -152,7 +161,7 @@ async def asyncio(
     client: AuthenticatedClient,
     body: TestSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Optional[TestOutSchema]:
+) -> Optional[Union[ErrorSchema, TestOutSchema]]:
     """Create Test
 
     Args:
@@ -164,7 +173,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        TestOutSchema
+        Union[ErrorSchema, TestOutSchema]
     """
 
     return (

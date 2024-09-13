@@ -6,23 +6,23 @@ import pytest
 from aymara_sdk.generated.aymara_api_client import models
 from aymara_sdk.types.types import Status, TestResponse
 from aymara_sdk.utils.constants import (
-    AYMARA_TEST_POLICY_PREFIX,
     DEFAULT_CHAR_TO_TOKEN_MULTIPLIER,
     DEFAULT_MAX_TOKENS,
     DEFAULT_NUM_QUESTIONS_MAX,
     DEFAULT_NUM_QUESTIONS_MIN,
     DEFAULT_TEST_NAME_LEN_MAX,
-    AymaraTestPolicy,
 )
 
 
 def test_create_test(aymara_client):
-    with patch("aymara_sdk.core.tests.create_test.sync") as mock_create_test, patch(
-        "aymara_sdk.core.tests.get_test.sync"
+    with patch(
+        "aymara_sdk.core.tests.create_test.sync_detailed"
+    ) as mock_create_test, patch(
+        "aymara_sdk.core.tests.get_test.sync_detailed"
     ) as mock_get_test, patch(
-        "aymara_sdk.core.tests.get_test_questions.sync"
+        "aymara_sdk.core.tests.get_test_questions.sync_detailed"
     ) as mock_get_questions:
-        mock_create_test.return_value = models.TestOutSchema(
+        mock_create_test.return_value.parsed = models.TestOutSchema(
             test_uuid="test123",
             test_name="Test 1",
             test_status=models.TestStatus.RECORD_CREATED,
@@ -30,7 +30,8 @@ def test_create_test(aymara_client):
             organization_name="Test Organization",
             n_test_questions=10,
         )
-        mock_get_test.return_value = models.TestOutSchema(
+        mock_create_test.return_value.status_code = 200
+        mock_get_test.return_value.parsed = models.TestOutSchema(
             test_uuid="test123",
             test_name="Test 1",
             test_status=models.TestStatus.FINISHED,
@@ -38,12 +39,14 @@ def test_create_test(aymara_client):
             organization_name="Test Organization",
             n_test_questions=10,
         )
-        mock_get_questions.return_value = models.PagedQuestionSchema(
+        mock_get_test.return_value.status_code = 200
+        mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
             items=[
                 models.QuestionSchema(question_uuid="q1", question_text="Question 1")
             ],
             count=1,
         )
+        mock_get_questions.return_value.status_code = 200
 
         result = aymara_client.create_test(
             "Test 1", "Student description", "Test policy"
@@ -58,12 +61,14 @@ def test_create_test(aymara_client):
 
 @pytest.mark.asyncio
 async def test_create_test_async(aymara_client):
-    with patch("aymara_sdk.core.tests.create_test.asyncio") as mock_create_test, patch(
-        "aymara_sdk.core.tests.get_test.asyncio"
+    with patch(
+        "aymara_sdk.core.tests.create_test.asyncio_detailed"
+    ) as mock_create_test, patch(
+        "aymara_sdk.core.tests.get_test.asyncio_detailed"
     ) as mock_get_test, patch(
-        "aymara_sdk.core.tests.get_test_questions.asyncio"
+        "aymara_sdk.core.tests.get_test_questions.asyncio_detailed"
     ) as mock_get_questions:
-        mock_create_test.return_value = models.TestOutSchema(
+        mock_create_test.return_value.parsed = models.TestOutSchema(
             test_uuid="test123",
             test_name="Test 1",
             test_status=models.TestStatus.RECORD_CREATED,
@@ -71,7 +76,8 @@ async def test_create_test_async(aymara_client):
             organization_name="Test Organization",
             n_test_questions=10,
         )
-        mock_get_test.return_value = models.TestOutSchema(
+        mock_create_test.return_value.status_code = 200
+        mock_get_test.return_value.parsed = models.TestOutSchema(
             test_uuid="test123",
             test_name="Test 1",
             test_status=models.TestStatus.FINISHED,
@@ -79,12 +85,14 @@ async def test_create_test_async(aymara_client):
             organization_name="Test Organization",
             n_test_questions=10,
         )
-        mock_get_questions.return_value = models.PagedQuestionSchema(
+        mock_get_test.return_value.status_code = 200
+        mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
             items=[
                 models.QuestionSchema(question_uuid="q1", question_text="Question 1")
             ],
             count=1,
         )
+        mock_get_questions.return_value.status_code = 200
 
         result = await aymara_client.create_test_async(
             "Test 1", "Student description", "Test policy"
@@ -111,10 +119,10 @@ def test_create_test_validation(aymara_client):
 
 
 def test_get_test(aymara_client):
-    with patch("aymara_sdk.core.tests.get_test.sync") as mock_get_test, patch(
-        "aymara_sdk.core.tests.get_test_questions.sync"
+    with patch("aymara_sdk.core.tests.get_test.sync_detailed") as mock_get_test, patch(
+        "aymara_sdk.core.tests.get_test_questions.sync_detailed"
     ) as mock_get_questions:
-        mock_get_test.return_value = models.TestOutSchema(
+        mock_get_test.return_value.parsed = models.TestOutSchema(
             test_uuid="test123",
             test_name="Test 1",
             test_status=models.TestStatus.FINISHED,
@@ -122,12 +130,14 @@ def test_get_test(aymara_client):
             organization_name="Test Organization",
             n_test_questions=10,
         )
-        mock_get_questions.return_value = models.PagedQuestionSchema(
+        mock_get_test.return_value.status_code = 200
+        mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
             items=[
                 models.QuestionSchema(question_uuid="q1", question_text="Question 1")
             ],
             count=1,
         )
+        mock_get_questions.return_value.status_code = 200
 
         result = aymara_client.get_test("test123")
 
@@ -140,10 +150,12 @@ def test_get_test(aymara_client):
 
 @pytest.mark.asyncio
 async def test_get_test_async(aymara_client):
-    with patch("aymara_sdk.core.tests.get_test.asyncio") as mock_get_test, patch(
-        "aymara_sdk.core.tests.get_test_questions.asyncio"
+    with patch(
+        "aymara_sdk.core.tests.get_test.asyncio_detailed"
+    ) as mock_get_test, patch(
+        "aymara_sdk.core.tests.get_test_questions.asyncio_detailed"
     ) as mock_get_questions:
-        mock_get_test.return_value = models.TestOutSchema(
+        mock_get_test.return_value.parsed = models.TestOutSchema(
             test_uuid="test123",
             test_name="Test 1",
             test_status=models.TestStatus.FINISHED,
@@ -151,12 +163,14 @@ async def test_get_test_async(aymara_client):
             organization_name="Test Organization",
             n_test_questions=10,
         )
-        mock_get_questions.return_value = models.PagedQuestionSchema(
+        mock_get_test.return_value.status_code = 200
+        mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
             items=[
                 models.QuestionSchema(question_uuid="q1", question_text="Question 1")
             ],
             count=1,
         )
+        mock_get_questions.return_value.status_code = 200
 
         result = await aymara_client.get_test_async("test123")
 
@@ -168,8 +182,8 @@ async def test_get_test_async(aymara_client):
 
 
 def test_list_tests(aymara_client):
-    with patch("aymara_sdk.core.tests.list_tests.sync") as mock_list_tests:
-        mock_list_tests.return_value = models.PagedTestOutSchema(
+    with patch("aymara_sdk.core.tests.list_tests.sync_detailed") as mock_list_tests:
+        mock_list_tests.return_value.parsed = models.PagedTestOutSchema(
             items=[
                 models.TestOutSchema(
                     test_uuid="test1",
@@ -190,6 +204,7 @@ def test_list_tests(aymara_client):
             ],
             count=2,
         )
+        mock_list_tests.return_value.status_code = 200
 
         result = aymara_client.list_tests()
 
@@ -204,8 +219,8 @@ def test_list_tests(aymara_client):
 
 @pytest.mark.asyncio
 async def test_list_tests_async(aymara_client):
-    with patch("aymara_sdk.core.tests.list_tests.asyncio") as mock_list_tests:
-        mock_list_tests.return_value = models.PagedTestOutSchema(
+    with patch("aymara_sdk.core.tests.list_tests.asyncio_detailed") as mock_list_tests:
+        mock_list_tests.return_value.parsed = models.PagedTestOutSchema(
             items=[
                 models.TestOutSchema(
                     test_uuid="test1",
@@ -226,6 +241,7 @@ async def test_list_tests_async(aymara_client):
             ],
             count=2,
         )
+        mock_list_tests.return_value.status_code = 200
 
         result = await aymara_client.list_tests_async()
 
@@ -297,38 +313,40 @@ def test_create_and_wait_for_test_impl_sync_success(aymara_client):
         n_test_questions=10,
     )
 
-    mock_create = MagicMock(
-        return_value=models.TestOutSchema(
-            test_uuid="test123",
-            test_name="Test 1",
-            test_status=models.TestStatus.RECORD_CREATED,
-            test_type=models.TestType.SAFETY,
-            organization_name="Test Organization",
-            n_test_questions=10,
-        )
+    mock_create = MagicMock()
+    mock_create.return_value.parsed = models.TestOutSchema(
+        test_uuid="test123",
+        test_name="Test 1",
+        test_status=models.TestStatus.RECORD_CREATED,
+        test_type=models.TestType.SAFETY,
+        organization_name="Test Organization",
+        n_test_questions=10,
     )
-    mock_get = MagicMock(
-        return_value=models.TestOutSchema(
-            test_uuid="test123",
-            test_name="Test 1",
-            test_status=models.TestStatus.FINISHED,
-            test_type=models.TestType.SAFETY,
-            organization_name="Test Organization",
-            n_test_questions=10,
-        )
-    )
-    mock_get_questions = MagicMock(
-        return_value=models.PagedQuestionSchema(
-            items=[
-                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
-            ],
-            count=1,
-        )
-    )
+    mock_create.return_value.status_code = 200
 
-    with patch("aymara_sdk.core.tests.create_test.sync", mock_create), patch(
-        "aymara_sdk.core.tests.get_test.sync", mock_get
-    ), patch("aymara_sdk.core.tests.get_test_questions.sync", mock_get_questions):
+    mock_get = MagicMock()
+    mock_get.return_value.parsed = models.TestOutSchema(
+        test_uuid="test123",
+        test_name="Test 1",
+        test_status=models.TestStatus.FINISHED,
+        test_type=models.TestType.SAFETY,
+        organization_name="Test Organization",
+        n_test_questions=10,
+    )
+    mock_get.return_value.status_code = 200
+
+    mock_get_questions = MagicMock()
+    mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
+        items=[models.QuestionSchema(question_uuid="q1", question_text="Question 1")],
+        count=1,
+    )
+    mock_get_questions.return_value.status_code = 200
+
+    with patch("aymara_sdk.core.tests.create_test.sync_detailed", mock_create), patch(
+        "aymara_sdk.core.tests.get_test.sync_detailed", mock_get
+    ), patch(
+        "aymara_sdk.core.tests.get_test_questions.sync_detailed", mock_get_questions
+    ):
         result = aymara_client._create_and_wait_for_test_impl_sync(test_data)
 
         assert isinstance(result, TestResponse)
@@ -347,38 +365,40 @@ async def test_create_and_wait_for_test_impl_async_success(aymara_client):
         n_test_questions=10,
     )
 
-    mock_create = AsyncMock(
-        return_value=models.TestOutSchema(
-            test_uuid="test123",
-            test_name="Test 1",
-            test_status=models.TestStatus.RECORD_CREATED,
-            test_type=models.TestType.SAFETY,
-            organization_name="Test Organization",
-            n_test_questions=10,
-        )
+    mock_create = AsyncMock()
+    mock_create.return_value.parsed = models.TestOutSchema(
+        test_uuid="test123",
+        test_name="Test 1",
+        test_status=models.TestStatus.RECORD_CREATED,
+        test_type=models.TestType.SAFETY,
+        organization_name="Test Organization",
+        n_test_questions=10,
     )
-    mock_get = AsyncMock(
-        return_value=models.TestOutSchema(
-            test_uuid="test123",
-            test_name="Test 1",
-            test_status=models.TestStatus.FINISHED,
-            test_type=models.TestType.SAFETY,
-            organization_name="Test Organization",
-            n_test_questions=10,
-        )
-    )
-    mock_get_questions = AsyncMock(
-        return_value=models.PagedQuestionSchema(
-            items=[
-                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
-            ],
-            count=1,
-        )
-    )
+    mock_create.return_value.status_code = 200
 
-    with patch("aymara_sdk.core.tests.create_test.asyncio", mock_create), patch(
-        "aymara_sdk.core.tests.get_test.asyncio", mock_get
-    ), patch("aymara_sdk.core.tests.get_test_questions.asyncio", mock_get_questions):
+    mock_get = AsyncMock()
+    mock_get.return_value.parsed = models.TestOutSchema(
+        test_uuid="test123",
+        test_name="Test 1",
+        test_status=models.TestStatus.FINISHED,
+        test_type=models.TestType.SAFETY,
+        organization_name="Test Organization",
+        n_test_questions=10,
+    )
+    mock_get.return_value.status_code = 200
+
+    mock_get_questions = AsyncMock()
+    mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
+        items=[models.QuestionSchema(question_uuid="q1", question_text="Question 1")],
+        count=1,
+    )
+    mock_get_questions.return_value.status_code = 200
+
+    with patch(
+        "aymara_sdk.core.tests.create_test.asyncio_detailed", mock_create
+    ), patch("aymara_sdk.core.tests.get_test.asyncio_detailed", mock_get), patch(
+        "aymara_sdk.core.tests.get_test_questions.asyncio_detailed", mock_get_questions
+    ):
         result = await aymara_client._create_and_wait_for_test_impl_async(test_data)
 
         assert isinstance(result, TestResponse)
@@ -396,29 +416,30 @@ def test_create_and_wait_for_test_impl_failure_sync(aymara_client):
         n_test_questions=10,
     )
 
-    mock_create = MagicMock(
-        return_value=models.TestOutSchema(
-            test_uuid="test123",
-            test_name="Test 1",
-            test_status=models.TestStatus.RECORD_CREATED,
-            organization_name="Test Organization",
-            n_test_questions=10,
-            test_type=models.TestType.SAFETY,
-        )
+    mock_create = MagicMock()
+    mock_create.return_value.parsed = models.TestOutSchema(
+        test_uuid="test123",
+        test_name="Test 1",
+        test_status=models.TestStatus.RECORD_CREATED,
+        test_type=models.TestType.SAFETY,
+        organization_name="Test Organization",
+        n_test_questions=10,
     )
-    mock_get = MagicMock(
-        return_value=models.TestOutSchema(
-            test_uuid="test123",
-            test_name="Test 1",
-            test_status=models.TestStatus.FAILED,
-            organization_name="Test Organization",
-            n_test_questions=10,
-            test_type=models.TestType.SAFETY,
-        )
-    )
+    mock_create.return_value.status_code = 200
 
-    with patch("aymara_sdk.core.tests.create_test.sync", mock_create), patch(
-        "aymara_sdk.core.tests.get_test.sync", mock_get
+    mock_get = MagicMock()
+    mock_get.return_value.parsed = models.TestOutSchema(
+        test_uuid="test123",
+        test_name="Test 1",
+        test_status=models.TestStatus.FAILED,
+        test_type=models.TestType.SAFETY,
+        organization_name="Test Organization",
+        n_test_questions=10,
+    )
+    mock_get.return_value.status_code = 200
+
+    with patch("aymara_sdk.core.tests.create_test.sync_detailed", mock_create), patch(
+        "aymara_sdk.core.tests.get_test.sync_detailed", mock_get
     ):
         result = aymara_client._create_and_wait_for_test_impl_sync(test_data)
 
@@ -438,30 +459,31 @@ async def test_create_and_wait_for_test_impl_failure_async(aymara_client):
         n_test_questions=10,
     )
 
-    mock_create = AsyncMock(
-        return_value=models.TestOutSchema(
-            test_uuid="test123",
-            test_name="Test 1",
-            test_status=models.TestStatus.RECORD_CREATED,
-            test_type=models.TestType.SAFETY,
-            organization_name="Test Organization",
-            n_test_questions=10,
-        )
+    mock_create = AsyncMock()
+    mock_create.return_value.parsed = models.TestOutSchema(
+        test_uuid="test123",
+        test_name="Test 1",
+        test_status=models.TestStatus.RECORD_CREATED,
+        test_type=models.TestType.SAFETY,
+        organization_name="Test Organization",
+        n_test_questions=10,
     )
-    mock_get = AsyncMock(
-        return_value=models.TestOutSchema(
-            test_uuid="test123",
-            test_name="Test 1",
-            test_status=models.TestStatus.FAILED,
-            test_type=models.TestType.SAFETY,
-            organization_name="Test Organization",
-            n_test_questions=10,
-        )
-    )
+    mock_create.return_value.status_code = 200
 
-    with patch("aymara_sdk.core.tests.create_test.asyncio", mock_create), patch(
-        "aymara_sdk.core.tests.get_test.asyncio", mock_get
-    ):
+    mock_get = AsyncMock()
+    mock_get.return_value.parsed = models.TestOutSchema(
+        test_uuid="test123",
+        test_name="Test 1",
+        test_status=models.TestStatus.FAILED,
+        test_type=models.TestType.SAFETY,
+        organization_name="Test Organization",
+        n_test_questions=10,
+    )
+    mock_get.return_value.status_code = 200
+
+    with patch(
+        "aymara_sdk.core.tests.create_test.asyncio_detailed", mock_create
+    ), patch("aymara_sdk.core.tests.get_test.asyncio_detailed", mock_get):
         result = await aymara_client._create_and_wait_for_test_impl_async(test_data)
 
         assert isinstance(result, TestResponse)
@@ -479,26 +501,34 @@ def test_create_and_wait_for_test_impl_timeout_sync(aymara_client):
         n_test_questions=10,
     )
 
-    mock_create = MagicMock(
-        return_value=models.TestOutSchema(
-            test_uuid="test123",
-            test_name="Test 1",
-            test_status=models.TestStatus.RECORD_CREATED,
-            test_type=models.TestType.SAFETY,
-            organization_name="Test Organization",
-            n_test_questions=10,
-        )
+    mock_create = MagicMock()
+    mock_create.return_value.parsed = models.TestOutSchema(
+        test_uuid="test123",
+        test_name="Test 1",
+        test_status=models.TestStatus.RECORD_CREATED,
+        test_type=models.TestType.SAFETY,
+        organization_name="Test Organization",
+        n_test_questions=10,
     )
-    mock_get = MagicMock(
-        return_value=models.TestOutSchema(
-            test_uuid="test123",
-            test_name="Test 1",
-            test_status=models.TestStatus.RECORD_CREATED,
-            test_type=models.TestType.SAFETY,
-            organization_name="Test Organization",
-            n_test_questions=10,
-        )
+    mock_create.return_value.status_code = 200
+
+    mock_get = MagicMock()
+    mock_get.return_value.parsed = models.TestOutSchema(
+        test_uuid="test123",
+        test_name="Test 1",
+        test_status=models.TestStatus.GENERATING_QUESTIONS,
+        test_type=models.TestType.SAFETY,
+        organization_name="Test Organization",
+        n_test_questions=10,
     )
+    mock_get.return_value.status_code = 200
+
+    mock_get_questions = MagicMock()
+    mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
+        items=[models.QuestionSchema(question_uuid="q1", question_text="Question 1")],
+        count=1,
+    )
+    mock_get_questions.return_value.status_code = 200
 
     start_time = 0
 
@@ -507,11 +537,11 @@ def test_create_and_wait_for_test_impl_timeout_sync(aymara_client):
         start_time += aymara_client.max_wait_time + 1
         return start_time
 
-    with patch("aymara_sdk.core.tests.create_test.sync", mock_create), patch(
-        "aymara_sdk.core.tests.get_test.sync", mock_get
+    with patch("aymara_sdk.core.tests.create_test.sync_detailed", mock_create), patch(
+        "aymara_sdk.core.tests.get_test.sync_detailed", mock_get
     ), patch("time.time", side_effect=mock_time), patch(
         "time.sleep", return_value=None
-    ):  # Add this line to mock sleep
+    ):
         result = aymara_client._create_and_wait_for_test_impl_sync(test_data)
 
         assert isinstance(result, TestResponse)
@@ -530,26 +560,34 @@ async def test_create_and_wait_for_test_impl_timeout_async(aymara_client):
         n_test_questions=10,
     )
 
-    mock_create = AsyncMock(
-        return_value=models.TestOutSchema(
-            test_uuid="test123",
-            test_name="Test 1",
-            test_status=models.TestStatus.RECORD_CREATED,
-            test_type=models.TestType.SAFETY,
-            organization_name="Test Organization",
-            n_test_questions=10,
-        )
+    mock_create = AsyncMock()
+    mock_create.return_value.parsed = models.TestOutSchema(
+        test_uuid="test123",
+        test_name="Test 1",
+        test_status=models.TestStatus.RECORD_CREATED,
+        test_type=models.TestType.SAFETY,
+        organization_name="Test Organization",
+        n_test_questions=10,
     )
-    mock_get = AsyncMock(
-        return_value=models.TestOutSchema(
-            test_uuid="test123",
-            test_name="Test 1",
-            test_status=models.TestStatus.RECORD_CREATED,
-            test_type=models.TestType.SAFETY,
-            organization_name="Test Organization",
-            n_test_questions=10,
-        )
+    mock_create.return_value.status_code = 200
+
+    mock_get = AsyncMock()
+    mock_get.return_value.parsed = models.TestOutSchema(
+        test_uuid="test123",
+        test_name="Test 1",
+        test_status=models.TestStatus.GENERATING_QUESTIONS,
+        test_type=models.TestType.SAFETY,
+        organization_name="Test Organization",
+        n_test_questions=10,
     )
+    mock_get.return_value.status_code = 200
+
+    mock_get_questions = AsyncMock()
+    mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
+        items=[models.QuestionSchema(question_uuid="q1", question_text="Question 1")],
+        count=1,
+    )
+    mock_get_questions.return_value.status_code = 200
 
     start_time = 0
 
@@ -558,10 +596,12 @@ async def test_create_and_wait_for_test_impl_timeout_async(aymara_client):
         start_time += aymara_client.max_wait_time + 1
         return start_time
 
-    with patch("aymara_sdk.core.tests.create_test.asyncio", mock_create), patch(
-        "aymara_sdk.core.tests.get_test.asyncio", mock_get
+    with patch(
+        "aymara_sdk.core.tests.create_test.asyncio_detailed", mock_create
+    ), patch("aymara_sdk.core.tests.get_test.asyncio_detailed", mock_get), patch(
+        "aymara_sdk.core.tests.get_test_questions.asyncio_detailed", mock_get_questions
     ), patch("time.time", side_effect=mock_time), patch(
-        "asyncio.sleep", return_value=None
+        "time.sleep", return_value=None
     ):
         result = await aymara_client._create_and_wait_for_test_impl_async(test_data)
 
@@ -572,16 +612,16 @@ async def test_create_and_wait_for_test_impl_timeout_async(aymara_client):
 
 
 def test_get_all_questions_single_page_sync(aymara_client):
-    mock_get_questions = MagicMock(
-        return_value=models.PagedQuestionSchema(
-            items=[
-                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
-            ],
-            count=1,
-        )
+    mock_get_questions = MagicMock()
+    mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
+        items=[models.QuestionSchema(question_uuid="q1", question_text="Question 1")],
+        count=1,
     )
+    mock_get_questions.return_value.status_code = 200
 
-    with patch("aymara_sdk.core.tests.get_test_questions.sync", mock_get_questions):
+    with patch(
+        "aymara_sdk.core.tests.get_test_questions.sync_detailed", mock_get_questions
+    ):
         result = aymara_client._get_all_questions_sync("test123")
 
         assert len(result) == 1
@@ -591,16 +631,16 @@ def test_get_all_questions_single_page_sync(aymara_client):
 
 @pytest.mark.asyncio
 async def test_get_all_questions_single_page_async(aymara_client):
-    mock_get_questions = AsyncMock(
-        return_value=models.PagedQuestionSchema(
-            items=[
-                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
-            ],
-            count=1,
-        )
+    mock_get_questions = AsyncMock()
+    mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
+        items=[models.QuestionSchema(question_uuid="q1", question_text="Question 1")],
+        count=1,
     )
+    mock_get_questions.return_value.status_code = 200
 
-    with patch("aymara_sdk.core.tests.get_test_questions.asyncio", mock_get_questions):
+    with patch(
+        "aymara_sdk.core.tests.get_test_questions.asyncio_detailed", mock_get_questions
+    ):
         result = await aymara_client._get_all_questions_async("test123")
 
         assert len(result) == 1
@@ -609,9 +649,10 @@ async def test_get_all_questions_single_page_async(aymara_client):
 
 
 def test_get_all_questions_multiple_pages_sync(aymara_client):
-    mock_get_questions = MagicMock(
-        side_effect=[
-            models.PagedQuestionSchema(
+    mock_get_questions = MagicMock()
+    mock_get_questions.side_effect = [
+        MagicMock(
+            parsed=models.PagedQuestionSchema(
                 items=[
                     models.QuestionSchema(
                         question_uuid="q1", question_text="Question 1"
@@ -622,7 +663,10 @@ def test_get_all_questions_multiple_pages_sync(aymara_client):
                 ],
                 count=3,
             ),
-            models.PagedQuestionSchema(
+            status_code=200,
+        ),
+        MagicMock(
+            parsed=models.PagedQuestionSchema(
                 items=[
                     models.QuestionSchema(
                         question_uuid="q3", question_text="Question 3"
@@ -630,10 +674,13 @@ def test_get_all_questions_multiple_pages_sync(aymara_client):
                 ],
                 count=3,
             ),
-        ]
-    )
+            status_code=200,
+        ),
+    ]
 
-    with patch("aymara_sdk.core.tests.get_test_questions.sync", mock_get_questions):
+    with patch(
+        "aymara_sdk.core.tests.get_test_questions.sync_detailed", mock_get_questions
+    ):
         result = aymara_client._get_all_questions_sync("test123")
 
         assert len(result) == 3
@@ -645,9 +692,10 @@ def test_get_all_questions_multiple_pages_sync(aymara_client):
 
 @pytest.mark.asyncio
 async def test_get_all_questions_multiple_pages_async(aymara_client):
-    mock_get_questions = AsyncMock(
-        side_effect=[
-            models.PagedQuestionSchema(
+    mock_get_questions = AsyncMock()
+    mock_get_questions.side_effect = [
+        MagicMock(
+            parsed=models.PagedQuestionSchema(
                 items=[
                     models.QuestionSchema(
                         question_uuid="q1", question_text="Question 1"
@@ -658,7 +706,10 @@ async def test_get_all_questions_multiple_pages_async(aymara_client):
                 ],
                 count=3,
             ),
-            models.PagedQuestionSchema(
+            status_code=200,
+        ),
+        MagicMock(
+            parsed=models.PagedQuestionSchema(
                 items=[
                     models.QuestionSchema(
                         question_uuid="q3", question_text="Question 3"
@@ -666,10 +717,13 @@ async def test_get_all_questions_multiple_pages_async(aymara_client):
                 ],
                 count=3,
             ),
-        ]
-    )
+            status_code=200,
+        ),
+    ]
 
-    with patch("aymara_sdk.core.tests.get_test_questions.asyncio", mock_get_questions):
+    with patch(
+        "aymara_sdk.core.tests.get_test_questions.asyncio_detailed", mock_get_questions
+    ):
         result = await aymara_client._get_all_questions_async("test123")
 
         assert len(result) == 3
@@ -679,127 +733,30 @@ async def test_get_all_questions_multiple_pages_async(aymara_client):
         assert mock_get_questions.call_count == 2
 
 
-def test_tests_to_df(aymara_client):
-    tests = [
-        TestResponse(
-            test_uuid="test1", test_name="Test 1", test_status=Status.COMPLETED
-        ),
-        TestResponse(
-            test_uuid="test2",
-            test_name="Test 2",
-            test_status=Status.FAILED,
-            failure_reason="Error",
-        ),
-    ]
-
-    df = aymara_client._tests_to_df(tests)
-
-    assert isinstance(df, pd.DataFrame)
-    assert len(df) == 2
-    assert list(df.columns) == [
-        "test_uuid",
-        "test_name",
-        "test_status",
-        "failure_reason",
-    ]
-    assert df.iloc[0]["test_uuid"] == "test1"
-    assert df.iloc[1]["failure_reason"] == "Error"
-
-
-def test_create_test_with_aymara_test_policy(aymara_client):
-    with patch("aymara_sdk.core.tests.create_test.sync") as mock_create_test, patch(
-        "aymara_sdk.core.tests.get_test.sync"
-    ) as mock_get_test, patch(
-        "aymara_sdk.core.tests.get_test_questions.sync"
-    ) as mock_get_questions:
-        mock_create_test.return_value = models.TestOutSchema(
-            test_uuid="test123",
-            test_name="Test 1",
-            test_status=models.TestStatus.RECORD_CREATED,
-            test_type=models.TestType.SAFETY,
-            organization_name="Test Organization",
-            n_test_questions=10,
-        )
-        mock_get_test.return_value = models.TestOutSchema(
-            test_uuid="test123",
-            test_name="Test 1",
-            test_status=models.TestStatus.FINISHED,
-            test_type=models.TestType.SAFETY,
-            organization_name="Test Organization",
-            n_test_questions=10,
-        )
-        mock_get_questions.return_value = models.PagedQuestionSchema(
-            items=[
-                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
-            ],
-            count=1,
-        )
-
-        result = aymara_client.create_test(
-            "Test 1", "Student description", AymaraTestPolicy.HATE_OFFENSIVE_SPEECH
-        )
-
-        assert isinstance(result, TestResponse)
-        assert result.test_uuid == "test123"
-        assert result.test_name == "Test 1"
-        assert result.test_status == Status.COMPLETED
-        assert len(result.questions) == 1
-
-        # Check if the test policy was correctly prefixed
-        _, kwargs = mock_create_test.call_args
-        assert (
-            kwargs["body"].test_policy
-            == f"{AYMARA_TEST_POLICY_PREFIX}{AymaraTestPolicy.HATE_OFFENSIVE_SPEECH.value}"
-        )
-
-
-def test_get_test_not_found(aymara_client):
-    with patch(
-        "aymara_sdk.core.tests.get_test.sync", side_effect=Exception("Test not found")
-    ):
-        with pytest.raises(Exception, match="Test not found"):
-            aymara_client.get_test("non_existent_test")
-
-
-@pytest.mark.asyncio
-async def test_get_test_async_api_error(aymara_client):
-    with patch(
-        "aymara_sdk.core.tests.get_test.asyncio", side_effect=Exception("API Error")
-    ):
-        with pytest.raises(Exception, match="API Error"):
-            await aymara_client.get_test_async("test123")
-
-
 def test_list_tests_pagination(aymara_client):
-    with patch("aymara_sdk.core.tests.list_tests.sync") as mock_list_tests:
-        mock_list_tests.side_effect = [
-            models.PagedTestOutSchema(
-                items=[
-                    models.TestOutSchema(
-                        test_uuid="test1",
-                        test_name="Test 1",
-                        test_status=models.TestStatus.FINISHED,
-                        test_type=models.TestType.SAFETY,
-                        organization_name="Test Organization",
-                        n_test_questions=10,
-                    )
-                ],
-                count=2,
-            ),
-            models.PagedTestOutSchema(
-                items=[
-                    models.TestOutSchema(
-                        test_uuid="test2",
-                        test_name="Test 2",
-                        test_status=models.TestStatus.FINISHED,
-                        test_type=models.TestType.SAFETY,
-                        organization_name="Test Organization",
-                        n_test_questions=10,
-                    )
-                ],
-                count=2,
-            ),
-        ]
+    with patch("aymara_sdk.core.tests.list_tests.sync_detailed") as mock_list_tests:
+        mock_list_tests.return_value.parsed = models.PagedTestOutSchema(
+            items=[
+                models.TestOutSchema(
+                    test_uuid="test1",
+                    test_name="Test 1",
+                    test_status=models.TestStatus.FINISHED,
+                    test_type=models.TestType.SAFETY,
+                    organization_name="Test Organization",
+                    n_test_questions=10,
+                ),
+                models.TestOutSchema(
+                    test_uuid="test2",
+                    test_name="Test 2",
+                    test_status=models.TestStatus.FINISHED,
+                    test_type=models.TestType.SAFETY,
+                    organization_name="Test Organization",
+                    n_test_questions=10,
+                ),
+            ],
+            count=2,
+        )
+        mock_list_tests.return_value.status_code = 200
 
         result = aymara_client.list_tests()
 
@@ -814,12 +771,14 @@ def test_logger_progress_bar(aymara_client):
     mock_logger = MagicMock()
     aymara_client.logger = mock_logger
 
-    with patch("aymara_sdk.core.tests.create_test.sync") as mock_create_test, patch(
-        "aymara_sdk.core.tests.get_test.sync"
+    with patch(
+        "aymara_sdk.core.tests.create_test.sync_detailed"
+    ) as mock_create_test, patch(
+        "aymara_sdk.core.tests.get_test.sync_detailed"
     ) as mock_get_test, patch(
-        "aymara_sdk.core.tests.get_test_questions.sync"
+        "aymara_sdk.core.tests.get_test_questions.sync_detailed"
     ) as mock_get_questions:
-        mock_create_test.return_value = models.TestOutSchema(
+        mock_create_test.return_value.parsed = models.TestOutSchema(
             test_uuid="test123",
             test_name="Test 1",
             test_status=models.TestStatus.RECORD_CREATED,
@@ -827,30 +786,38 @@ def test_logger_progress_bar(aymara_client):
             organization_name="Test Organization",
             n_test_questions=10,
         )
+        mock_create_test.return_value.status_code = 200
         mock_get_test.side_effect = [
-            models.TestOutSchema(
-                test_uuid="test123",
-                test_name="Test 1",
-                test_status=models.TestStatus.RECORD_CREATED,
-                test_type=models.TestType.SAFETY,
-                organization_name="Test Organization",
-                n_test_questions=10,
+            MagicMock(
+                parsed=models.TestOutSchema(
+                    test_uuid="test123",
+                    test_name="Test 1",
+                    test_status=models.TestStatus.RECORD_CREATED,
+                    test_type=models.TestType.SAFETY,
+                    organization_name="Test Organization",
+                    n_test_questions=10,
+                ),
+                status_code=200,
             ),
-            models.TestOutSchema(
-                test_uuid="test123",
-                test_name="Test 1",
-                test_status=models.TestStatus.FINISHED,
-                test_type=models.TestType.SAFETY,
-                organization_name="Test Organization",
-                n_test_questions=10,
+            MagicMock(
+                parsed=models.TestOutSchema(
+                    test_uuid="test123",
+                    test_name="Test 1",
+                    test_status=models.TestStatus.FINISHED,
+                    test_type=models.TestType.SAFETY,
+                    organization_name="Test Organization",
+                    n_test_questions=10,
+                ),
+                status_code=200,
             ),
         ]
-        mock_get_questions.return_value = models.PagedQuestionSchema(
+        mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
             items=[
                 models.QuestionSchema(question_uuid="q1", question_text="Question 1")
             ],
             count=1,
         )
+        mock_get_questions.return_value.status_code = 200
 
         aymara_client.create_test("Test 1", "Student description", "Test policy")
 
@@ -865,12 +832,14 @@ def test_logger_progress_bar(aymara_client):
 def test_max_wait_time_exceeded(aymara_client):
     aymara_client.max_wait_time = 1  # Set a short timeout for testing
 
-    with patch("aymara_sdk.core.tests.create_test.sync") as mock_create_test, patch(
-        "aymara_sdk.core.tests.get_test.sync"
+    with patch(
+        "aymara_sdk.core.tests.create_test.sync_detailed"
+    ) as mock_create_test, patch(
+        "aymara_sdk.core.tests.get_test.sync_detailed"
     ) as mock_get_test, patch("time.sleep", return_value=None), patch(
         "time.time", side_effect=[0, 2]
     ):  # Simulate time passing
-        mock_create_test.return_value = models.TestOutSchema(
+        mock_create_test.return_value.parsed = models.TestOutSchema(
             test_uuid="test123",
             test_name="Test 1",
             test_status=models.TestStatus.RECORD_CREATED,
@@ -878,7 +847,8 @@ def test_max_wait_time_exceeded(aymara_client):
             organization_name="Test Organization",
             n_test_questions=10,
         )
-        mock_get_test.return_value = models.TestOutSchema(
+        mock_create_test.return_value.status_code = 200
+        mock_get_test.return_value.parsed = models.TestOutSchema(
             test_uuid="test123",
             test_name="Test 1",
             test_status=models.TestStatus.RECORD_CREATED,
@@ -886,6 +856,7 @@ def test_max_wait_time_exceeded(aymara_client):
             organization_name="Test Organization",
             n_test_questions=10,
         )
+        mock_get_test.return_value.status_code = 200
 
         result = aymara_client.create_test(
             "Test 1", "Student description", "Test policy"
@@ -906,10 +877,10 @@ def test_max_wait_time_exceeded(aymara_client):
     ],
 )
 def test_status_handling(aymara_client, test_status, expected_status):
-    with patch("aymara_sdk.core.tests.get_test.sync") as mock_get_test, patch(
-        "aymara_sdk.core.tests.get_test_questions.sync"
+    with patch("aymara_sdk.core.tests.get_test.sync_detailed") as mock_get_test, patch(
+        "aymara_sdk.core.tests.get_test_questions.sync_detailed"
     ) as mock_get_test_questions:
-        mock_get_test.return_value = models.TestOutSchema(
+        mock_get_test.return_value.parsed = models.TestOutSchema(
             test_uuid="test123",
             test_name="Test 1",
             test_status=test_status,
@@ -917,9 +888,11 @@ def test_status_handling(aymara_client, test_status, expected_status):
             organization_name="Test Organization",
             n_test_questions=10,
         )
+        mock_get_test.return_value.status_code = 200
 
         # Mock the get_test_questions.sync method
-        mock_get_test_questions.return_value = MagicMock(items=[], count=0)
+        mock_get_test_questions.return_value.parsed = MagicMock(items=[], count=0)
+        mock_get_test_questions.return_value.status_code = 200
 
         result = aymara_client.get_test("test123")
 
@@ -933,3 +906,28 @@ def test_status_handling(aymara_client, test_status, expected_status):
             )
         else:
             mock_get_test_questions.assert_not_called()
+
+
+def test_delete_test(aymara_client):
+    with patch("aymara_sdk.core.tests.delete_test.sync_detailed") as mock_delete_test:
+        mock_delete_test.return_value.status_code = 204  # No Content
+
+        aymara_client.delete_test("test123")
+
+        mock_delete_test.assert_called_once_with(
+            client=aymara_client.client, test_uuid="test123"
+        )
+
+
+@pytest.mark.asyncio
+async def test_delete_test_async(aymara_client):
+    with patch(
+        "aymara_sdk.core.tests.delete_test.asyncio_detailed"
+    ) as mock_delete_test_async:
+        mock_delete_test_async.return_value.status_code = 204  # No Content
+
+        await aymara_client.delete_test_async("test123")
+
+        mock_delete_test_async.assert_called_once_with(
+            client=aymara_client.client, test_uuid="test123"
+        )

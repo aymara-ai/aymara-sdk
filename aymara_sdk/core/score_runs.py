@@ -8,6 +8,7 @@ from aymara_sdk.core.protocols import AymaraAIProtocol
 from aymara_sdk.generated.aymara_api_client import models
 from aymara_sdk.generated.aymara_api_client.api.score_runs import (
     create_score_run,
+    delete_score_run,
     get_score_run,
     get_score_run_answers,
     list_score_runs,
@@ -109,9 +110,14 @@ class ScoreRunMixin(AymaraAIProtocol):
             return self._get_score_run_sync_impl(score_run_uuid)
 
     def _get_score_run_sync_impl(self, score_run_uuid: str) -> ScoreRunResponse:
-        score_response = get_score_run.sync(
+        response = get_score_run.sync_detailed(
             client=self.client, score_run_uuid=score_run_uuid
         )
+
+        if response.status_code == 404:
+            raise ValueError(f"Score run with UUID {score_run_uuid} not found")
+
+        score_response = response.parsed
         answers = None
         if score_response.score_run_status == models.ScoreRunStatus.FINISHED:
             answers = self._get_all_score_run_answers_sync(score_run_uuid)
@@ -121,9 +127,14 @@ class ScoreRunMixin(AymaraAIProtocol):
         )
 
     async def _get_score_run_async_impl(self, score_run_uuid: str) -> ScoreRunResponse:
-        score_response = await get_score_run.asyncio(
+        response = await get_score_run.asyncio_detailed(
             client=self.client, score_run_uuid=score_run_uuid
         )
+
+        if response.status_code == 404:
+            raise ValueError(f"Score run with UUID {score_run_uuid} not found")
+
+        score_response = response.parsed
         answers = None
         if score_response.score_run_status == models.ScoreRunStatus.FINISHED:
             answers = await self._get_all_score_run_answers_async(score_run_uuid)
@@ -189,13 +200,14 @@ class ScoreRunMixin(AymaraAIProtocol):
         all_score_runs = []
         offset = 0
         while True:
-            score_run_response = list_score_runs.sync(
+            response = list_score_runs.sync_detailed(
                 client=self.client, test_uuid=test_uuid, offset=offset
             )
-            all_score_runs.extend(score_run_response.items)
-            if len(all_score_runs) >= score_run_response.count:
+            paged_response = response.parsed
+            all_score_runs.extend(paged_response.items)
+            if len(all_score_runs) >= paged_response.count:
                 break
-            offset += len(score_run_response.items)
+            offset += len(paged_response.items)
 
         return [
             ScoreRunResponse.from_score_run_out_schema_and_answers(
@@ -210,13 +222,14 @@ class ScoreRunMixin(AymaraAIProtocol):
         all_score_runs: List[ScoreRunResponse] = []
         offset = 0
         while True:
-            score_run_response = await list_score_runs.asyncio(
+            response = await list_score_runs.asyncio_detailed(
                 client=self.client, test_uuid=test_uuid, offset=offset
             )
-            all_score_runs.extend(score_run_response.items)
-            if len(all_score_runs) >= score_run_response.count:
+            paged_response = response.parsed
+            all_score_runs.extend(paged_response.items)
+            if len(all_score_runs) >= paged_response.count:
                 break
-            offset += len(score_run_response.items)
+            offset += len(paged_response.items)
 
         return [
             ScoreRunResponse.from_score_run_out_schema_and_answers(
@@ -245,11 +258,14 @@ class ScoreRunMixin(AymaraAIProtocol):
         self, score_data: models.ScoreRunSchema
     ) -> ScoreRunResponse:
         start_time = time.time()
-        score_response = create_score_run.sync(client=self.client, body=score_data)
+        response = create_score_run.sync_detailed(client=self.client, body=score_data)
 
-        if isinstance(score_response, models.ErrorSchema):
-            raise ValueError(score_response.detail)
-
+        if response.status_code == 404:
+            raise ValueError("Failed to create score run")
+        elif response.status_code == 422:
+            message = response.parsed.detail
+            raise ValueError(message)
+        score_response = response.parsed
         score_run_uuid = score_response.score_run_uuid
         test_name = score_response.test.test_name
 
@@ -259,9 +275,14 @@ class ScoreRunMixin(AymaraAIProtocol):
             Status.from_api_status(score_response.score_run_status),
         ):
             while True:
-                score_response = get_score_run.sync(
+                response = get_score_run.sync_detailed(
                     client=self.client, score_run_uuid=score_run_uuid
                 )
+
+                if response.status_code == 404:
+                    raise ValueError(f"Score run with UUID {score_run_uuid} not found")
+
+                score_response = response.parsed
 
                 self.logger.update_progress_bar(
                     score_run_uuid,
@@ -294,9 +315,17 @@ class ScoreRunMixin(AymaraAIProtocol):
         self, score_data: models.ScoreRunSchema
     ) -> ScoreRunResponse:
         start_time = time.time()
-        score_response = await create_score_run.asyncio(
+        response = await create_score_run.asyncio_detailed(
             client=self.client, body=score_data
         )
+
+        if response.status_code == 404:
+            raise ValueError("Failed to create score run")
+        elif response.status_code == 422:
+            message = response.parsed.detail
+            raise ValueError(message)
+
+        score_response = response.parsed
         score_run_uuid = score_response.score_run_uuid
         test_name = score_response.test.test_name
 
@@ -306,9 +335,14 @@ class ScoreRunMixin(AymaraAIProtocol):
             Status.from_api_status(score_response.score_run_status),
         ):
             while True:
-                score_response = await get_score_run.asyncio(
+                response = await get_score_run.asyncio_detailed(
                     client=self.client, score_run_uuid=score_run_uuid
                 )
+
+                if response.status_code == 404:
+                    raise ValueError(f"Score run with UUID {score_run_uuid} not found")
+
+                score_response = response.parsed
 
                 self.logger.update_progress_bar(
                     score_run_uuid,
@@ -345,13 +379,18 @@ class ScoreRunMixin(AymaraAIProtocol):
         answers = []
         offset = 0
         while True:
-            response = get_score_run_answers.sync(
+            response = get_score_run_answers.sync_detailed(
                 client=self.client, score_run_uuid=score_run_uuid, offset=offset
             )
-            answers.extend(response.items)
-            if len(answers) >= response.count:
+
+            if response.status_code == 404:
+                raise ValueError(f"Score run with UUID {score_run_uuid} not found")
+
+            paged_response = response.parsed
+            answers.extend(paged_response.items)
+            if len(answers) >= paged_response.count:
                 break
-            offset += len(response.items)
+            offset += len(paged_response.items)
         return answers
 
     async def _get_all_score_run_answers_async(
@@ -360,13 +399,17 @@ class ScoreRunMixin(AymaraAIProtocol):
         answers = []
         offset = 0
         while True:
-            response = await get_score_run_answers.asyncio(
+            response = await get_score_run_answers.asyncio_detailed(
                 client=self.client, score_run_uuid=score_run_uuid, offset=offset
             )
-            answers.extend(response.items)
-            if len(answers) >= response.count:
+            if response.status_code == 404:
+                raise ValueError(f"Score run with UUID {score_run_uuid} not found")
+
+            paged_response = response.parsed
+            answers.extend(paged_response.items)
+            if len(answers) >= paged_response.count:
                 break
-            offset += len(response.items)
+            offset += len(paged_response.items)
         return answers
 
     def _validate_student_answers(self, student_answers: List[StudentAnswerInput]):
@@ -376,3 +419,31 @@ class ScoreRunMixin(AymaraAIProtocol):
             isinstance(answer, StudentAnswerInput) for answer in student_answers
         ):
             raise ValueError("All items in student answers must be StudentAnswerInput.")
+
+    def delete_score_run(self, score_run_uuid: str) -> None:
+        """
+        Delete a score run synchronously.
+
+        :param score_run_uuid: UUID of the score run.
+        :type score_run_uuid: str
+        """
+        response = delete_score_run.sync_detailed(
+            client=self.client, score_run_uuid=score_run_uuid
+        )
+
+        if response.status_code == 404:
+            raise ValueError(f"Score run with UUID {score_run_uuid} not found")
+
+    async def delete_score_run_async(self, score_run_uuid: str) -> None:
+        """
+        Delete a score run asynchronously.
+
+        :param score_run_uuid: UUID of the score run.
+        :type score_run_uuid: str
+        """
+        response = await delete_score_run.asyncio_detailed(
+            client=self.client, score_run_uuid=score_run_uuid
+        )
+
+        if response.status_code == 404:
+            raise ValueError(f"Score run with UUID {score_run_uuid} not found")

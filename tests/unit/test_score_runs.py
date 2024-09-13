@@ -9,13 +9,13 @@ from aymara_sdk.types.types import ScoreRunResponse, Status, StudentAnswerInput
 
 def test_score_test(aymara_client):
     with patch(
-        "aymara_sdk.core.score_runs.create_score_run.sync"
+        "aymara_sdk.core.score_runs.create_score_run.sync_detailed"
     ) as mock_create_score_run, patch(
-        "aymara_sdk.core.score_runs.get_score_run.sync"
+        "aymara_sdk.core.score_runs.get_score_run.sync_detailed"
     ) as mock_get_score_run, patch(
-        "aymara_sdk.core.score_runs.get_score_run_answers.sync"
+        "aymara_sdk.core.score_runs.get_score_run_answers.sync_detailed"
     ) as mock_get_answers:
-        mock_create_score_run.return_value = models.ScoreRunOutSchema(
+        mock_create_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
             score_run_status=models.ScoreRunStatus.RECORD_CREATED,
             test=models.TestOutSchema(
@@ -27,7 +27,7 @@ def test_score_test(aymara_client):
                 n_test_questions=10,
             ),
         )
-        mock_get_score_run.return_value = models.ScoreRunOutSchema(
+        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
             score_run_status=models.ScoreRunStatus.FINISHED,
             test=models.TestOutSchema(
@@ -39,7 +39,7 @@ def test_score_test(aymara_client):
                 n_test_questions=10,
             ),
         )
-        mock_get_answers.return_value = models.PagedAnswerSchema(
+        mock_get_answers.return_value.parsed = models.PagedAnswerSchema(
             items=[
                 models.AnswerSchema(
                     answer_uuid="a1",
@@ -69,13 +69,13 @@ def test_score_test(aymara_client):
 @pytest.mark.asyncio
 async def test_score_test_async(aymara_client):
     with patch(
-        "aymara_sdk.core.score_runs.create_score_run.asyncio"
+        "aymara_sdk.core.score_runs.create_score_run.asyncio_detailed"
     ) as mock_create_score_run, patch(
-        "aymara_sdk.core.score_runs.get_score_run.asyncio"
+        "aymara_sdk.core.score_runs.get_score_run.asyncio_detailed"
     ) as mock_get_score_run, patch(
-        "aymara_sdk.core.score_runs.get_score_run_answers.asyncio"
+        "aymara_sdk.core.score_runs.get_score_run_answers.asyncio_detailed"
     ) as mock_get_answers:
-        mock_create_score_run.return_value = models.ScoreRunOutSchema(
+        mock_create_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
             score_run_status=models.ScoreRunStatus.RECORD_CREATED,
             test=models.TestOutSchema(
@@ -87,7 +87,7 @@ async def test_score_test_async(aymara_client):
                 n_test_questions=10,
             ),
         )
-        mock_get_score_run.return_value = models.ScoreRunOutSchema(
+        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
             score_run_status=models.ScoreRunStatus.FINISHED,
             test=models.TestOutSchema(
@@ -99,7 +99,7 @@ async def test_score_test_async(aymara_client):
                 n_test_questions=10,
             ),
         )
-        mock_get_answers.return_value = models.PagedAnswerSchema(
+        mock_get_answers.return_value.parsed = models.PagedAnswerSchema(
             items=[
                 models.AnswerSchema(
                     answer_uuid="a1",
@@ -117,7 +117,7 @@ async def test_score_test_async(aymara_client):
         )
 
         result = await aymara_client.score_test_async(
-            "test123", [StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")]
+            "test123", [StudentAnswerInput(question_uuid="q1", answer_text="Anser 1")]
         )
 
         assert isinstance(result, ScoreRunResponse)
@@ -128,11 +128,11 @@ async def test_score_test_async(aymara_client):
 
 def test_get_score_run(aymara_client):
     with patch(
-        "aymara_sdk.core.score_runs.get_score_run.sync"
+        "aymara_sdk.core.score_runs.get_score_run.sync_detailed"
     ) as mock_get_score_run, patch(
-        "aymara_sdk.core.score_runs.get_score_run_answers.sync"
+        "aymara_sdk.core.score_runs.get_score_run_answers.sync_detailed"
     ) as mock_get_answers:
-        mock_get_score_run.return_value = models.ScoreRunOutSchema(
+        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
             score_run_status=models.ScoreRunStatus.FINISHED,
             test=models.TestOutSchema(
@@ -144,7 +144,7 @@ def test_get_score_run(aymara_client):
                 n_test_questions=10,
             ),
         )
-        mock_get_answers.return_value = models.PagedAnswerSchema(
+        mock_get_answers.return_value.parsed = models.PagedAnswerSchema(
             items=[
                 models.AnswerSchema(
                     answer_uuid="a1",
@@ -172,11 +172,11 @@ def test_get_score_run(aymara_client):
 @pytest.mark.asyncio
 async def test_get_score_run_async(aymara_client):
     with patch(
-        "aymara_sdk.core.score_runs.get_score_run.asyncio"
+        "aymara_sdk.core.score_runs.get_score_run.asyncio_detailed"
     ) as mock_get_score_run, patch(
-        "aymara_sdk.core.score_runs.get_score_run_answers.asyncio"
+        "aymara_sdk.core.score_runs.get_score_run_answers.asyncio_detailed"
     ) as mock_get_answers:
-        mock_get_score_run.return_value = models.ScoreRunOutSchema(
+        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
             score_run_status=models.ScoreRunStatus.FINISHED,
             test=models.TestOutSchema(
@@ -188,7 +188,7 @@ async def test_get_score_run_async(aymara_client):
                 n_test_questions=10,
             ),
         )
-        mock_get_answers.return_value = models.PagedAnswerSchema(
+        mock_get_answers.return_value.parsed = models.PagedAnswerSchema(
             items=[
                 models.AnswerSchema(
                     answer_uuid="a1",
@@ -215,9 +215,9 @@ async def test_get_score_run_async(aymara_client):
 
 def test_list_score_runs(aymara_client):
     with patch(
-        "aymara_sdk.core.score_runs.list_score_runs.sync"
+        "aymara_sdk.core.score_runs.list_score_runs.sync_detailed"
     ) as mock_list_score_runs:
-        mock_list_score_runs.return_value = models.PagedScoreRunOutSchema(
+        mock_list_score_runs.return_value.parsed = models.PagedScoreRunOutSchema(
             items=[
                 models.ScoreRunOutSchema(
                     score_run_uuid="score1",
@@ -261,9 +261,9 @@ def test_list_score_runs(aymara_client):
 @pytest.mark.asyncio
 async def test_list_score_runs_async(aymara_client):
     with patch(
-        "aymara_sdk.core.score_runs.list_score_runs.asyncio"
+        "aymara_sdk.core.score_runs.list_score_runs.asyncio_detailed"
     ) as mock_list_score_runs:
-        mock_list_score_runs.return_value = models.PagedScoreRunOutSchema(
+        mock_list_score_runs.return_value.parsed = models.PagedScoreRunOutSchema(
             items=[
                 models.ScoreRunOutSchema(
                     score_run_uuid="score1",
@@ -306,11 +306,11 @@ async def test_list_score_runs_async(aymara_client):
 
 def test_score_test_failed(aymara_client):
     with patch(
-        "aymara_sdk.core.score_runs.create_score_run.sync"
+        "aymara_sdk.core.score_runs.create_score_run.sync_detailed"
     ) as mock_create_score_run, patch(
-        "aymara_sdk.core.score_runs.get_score_run.sync"
+        "aymara_sdk.core.score_runs.get_score_run.sync_detailed"
     ) as mock_get_score_run:
-        mock_create_score_run.return_value = models.ScoreRunOutSchema(
+        mock_create_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
             score_run_status=models.ScoreRunStatus.RECORD_CREATED,
             test=models.TestOutSchema(
@@ -322,7 +322,7 @@ def test_score_test_failed(aymara_client):
                 n_test_questions=10,
             ),
         )
-        mock_get_score_run.return_value = models.ScoreRunOutSchema(
+        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
             score_run_status=models.ScoreRunStatus.FAILED,
             test=models.TestOutSchema(
@@ -354,13 +354,13 @@ def test_score_test_timeout(aymara_client):
         return start_time
 
     with patch(
-        "aymara_sdk.core.score_runs.create_score_run.sync"
+        "aymara_sdk.core.score_runs.create_score_run.sync_detailed"
     ) as mock_create_score_run, patch(
-        "aymara_sdk.core.score_runs.get_score_run.sync"
+        "aymara_sdk.core.score_runs.get_score_run.sync_detailed"
     ) as mock_get_score_run, patch("time.sleep", side_effect=lambda x: None), patch(
         "time.time", side_effect=mock_time
     ):
-        mock_create_score_run.return_value = models.ScoreRunOutSchema(
+        mock_create_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
             score_run_status=models.ScoreRunStatus.RECORD_CREATED,
             test=models.TestOutSchema(
@@ -372,7 +372,7 @@ def test_score_test_timeout(aymara_client):
                 n_test_questions=10,
             ),
         )
-        mock_get_score_run.return_value = models.ScoreRunOutSchema(
+        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
             score_run_status=models.ScoreRunStatus.SCORING,
             test=models.TestOutSchema(
@@ -398,11 +398,11 @@ def test_score_test_timeout(aymara_client):
 @pytest.mark.asyncio
 async def test_score_test_async_failed(aymara_client):
     with patch(
-        "aymara_sdk.core.score_runs.create_score_run.asyncio"
+        "aymara_sdk.core.score_runs.create_score_run.asyncio_detailed"
     ) as mock_create_score_run, patch(
-        "aymara_sdk.core.score_runs.get_score_run.asyncio"
+        "aymara_sdk.core.score_runs.get_score_run.asyncio_detailed"
     ) as mock_get_score_run:
-        mock_create_score_run.return_value = models.ScoreRunOutSchema(
+        mock_create_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
             score_run_status=models.ScoreRunStatus.RECORD_CREATED,
             test=models.TestOutSchema(
@@ -414,7 +414,7 @@ async def test_score_test_async_failed(aymara_client):
                 n_test_questions=10,
             ),
         )
-        mock_get_score_run.return_value = models.ScoreRunOutSchema(
+        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
             score_run_status=models.ScoreRunStatus.FAILED,
             test=models.TestOutSchema(
@@ -447,13 +447,13 @@ async def test_score_test_async_timeout(aymara_client):
         return start_time
 
     with patch(
-        "aymara_sdk.core.score_runs.create_score_run.asyncio"
+        "aymara_sdk.core.score_runs.create_score_run.asyncio_detailed"
     ) as mock_create_score_run, patch(
-        "aymara_sdk.core.score_runs.get_score_run.asyncio"
+        "aymara_sdk.core.score_runs.get_score_run.asyncio_detailed"
     ) as mock_get_score_run, patch("asyncio.sleep", side_effect=lambda x: None), patch(
         "time.time", side_effect=mock_time
     ):
-        mock_create_score_run.return_value = models.ScoreRunOutSchema(
+        mock_create_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
             score_run_status=models.ScoreRunStatus.RECORD_CREATED,
             test=models.TestOutSchema(
@@ -465,7 +465,7 @@ async def test_score_test_async_timeout(aymara_client):
                 n_test_questions=10,
             ),
         )
-        mock_get_score_run.return_value = models.ScoreRunOutSchema(
+        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
             score_run_status=models.ScoreRunStatus.SCORING,
             test=models.TestOutSchema(
@@ -489,8 +489,10 @@ async def test_score_test_async_timeout(aymara_client):
 
 
 def test_get_score_run_not_finished(aymara_client):
-    with patch("aymara_sdk.core.score_runs.get_score_run.sync") as mock_get_score_run:
-        mock_get_score_run.return_value = models.ScoreRunOutSchema(
+    with patch(
+        "aymara_sdk.core.score_runs.get_score_run.sync_detailed"
+    ) as mock_get_score_run:
+        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
             score_run_status=models.ScoreRunStatus.SCORING,
             test=models.TestOutSchema(
@@ -514,9 +516,9 @@ def test_get_score_run_not_finished(aymara_client):
 @pytest.mark.asyncio
 async def test_get_score_run_async_not_finished(aymara_client):
     with patch(
-        "aymara_sdk.core.score_runs.get_score_run.asyncio"
+        "aymara_sdk.core.score_runs.get_score_run.asyncio_detailed"
     ) as mock_get_score_run:
-        mock_get_score_run.return_value = models.ScoreRunOutSchema(
+        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
             score_run_status=models.ScoreRunStatus.SCORING,
             test=models.TestOutSchema(
@@ -539,9 +541,9 @@ async def test_get_score_run_async_not_finished(aymara_client):
 
 def test_list_score_runs_with_test_uuid(aymara_client):
     with patch(
-        "aymara_sdk.core.score_runs.list_score_runs.sync"
+        "aymara_sdk.core.score_runs.list_score_runs.sync_detailed"
     ) as mock_list_score_runs:
-        mock_list_score_runs.return_value = models.PagedScoreRunOutSchema(
+        mock_list_score_runs.return_value.parsed = models.PagedScoreRunOutSchema(
             items=[
                 models.ScoreRunOutSchema(
                     score_run_uuid="score1",
@@ -572,9 +574,9 @@ def test_list_score_runs_with_test_uuid(aymara_client):
 @pytest.mark.asyncio
 async def test_list_score_runs_async_with_test_uuid(aymara_client):
     with patch(
-        "aymara_sdk.core.score_runs.list_score_runs.asyncio"
+        "aymara_sdk.core.score_runs.list_score_runs.asyncio_detailed"
     ) as mock_list_score_runs:
-        mock_list_score_runs.return_value = models.PagedScoreRunOutSchema(
+        mock_list_score_runs.return_value.parsed = models.PagedScoreRunOutSchema(
             items=[
                 models.ScoreRunOutSchema(
                     score_run_uuid="score1",
@@ -604,42 +606,54 @@ async def test_list_score_runs_async_with_test_uuid(aymara_client):
 
 def test_list_score_runs_multiple_pages(aymara_client):
     with patch(
-        "aymara_sdk.core.score_runs.list_score_runs.sync"
+        "aymara_sdk.core.score_runs.list_score_runs.sync_detailed"
     ) as mock_list_score_runs:
         mock_list_score_runs.side_effect = [
-            models.PagedScoreRunOutSchema(
-                items=[
-                    models.ScoreRunOutSchema(
-                        score_run_uuid="score1",
-                        score_run_status=models.ScoreRunStatus.FINISHED,
-                        test=models.TestOutSchema(
-                            test_name="Test 1",
-                            test_uuid="test123",
-                            test_status=models.TestStatus.FINISHED,
-                            test_type=models.TestType.SAFETY,
-                            organization_name="Organization 1",
-                            n_test_questions=10,
-                        ),
-                    ),
-                ],
-                count=2,
+            type(
+                "Response",
+                (),
+                {
+                    "parsed": models.PagedScoreRunOutSchema(
+                        items=[
+                            models.ScoreRunOutSchema(
+                                score_run_uuid="score1",
+                                score_run_status=models.ScoreRunStatus.FINISHED,
+                                test=models.TestOutSchema(
+                                    test_name="Test 1",
+                                    test_uuid="test123",
+                                    test_status=models.TestStatus.FINISHED,
+                                    test_type=models.TestType.SAFETY,
+                                    organization_name="Organization 1",
+                                    n_test_questions=10,
+                                ),
+                            ),
+                        ],
+                        count=2,
+                    )
+                },
             ),
-            models.PagedScoreRunOutSchema(
-                items=[
-                    models.ScoreRunOutSchema(
-                        score_run_uuid="score2",
-                        score_run_status=models.ScoreRunStatus.FINISHED,
-                        test=models.TestOutSchema(
-                            test_name="Test 2",
-                            test_uuid="test456",
-                            test_status=models.TestStatus.FINISHED,
-                            test_type=models.TestType.SAFETY,
-                            organization_name="Organization 1",
-                            n_test_questions=10,
-                        ),
-                    ),
-                ],
-                count=2,
+            type(
+                "Response",
+                (),
+                {
+                    "parsed": models.PagedScoreRunOutSchema(
+                        items=[
+                            models.ScoreRunOutSchema(
+                                score_run_uuid="score2",
+                                score_run_status=models.ScoreRunStatus.FINISHED,
+                                test=models.TestOutSchema(
+                                    test_name="Test 2",
+                                    test_uuid="test456",
+                                    test_status=models.TestStatus.FINISHED,
+                                    test_type=models.TestType.SAFETY,
+                                    organization_name="Organization 1",
+                                    n_test_questions=10,
+                                ),
+                            ),
+                        ],
+                        count=2,
+                    )
+                },
             ),
         ]
 
@@ -654,42 +668,54 @@ def test_list_score_runs_multiple_pages(aymara_client):
 @pytest.mark.asyncio
 async def test_list_score_runs_async_multiple_pages(aymara_client):
     with patch(
-        "aymara_sdk.core.score_runs.list_score_runs.asyncio"
+        "aymara_sdk.core.score_runs.list_score_runs.asyncio_detailed"
     ) as mock_list_score_runs:
         mock_list_score_runs.side_effect = [
-            models.PagedScoreRunOutSchema(
-                items=[
-                    models.ScoreRunOutSchema(
-                        score_run_uuid="score1",
-                        score_run_status=models.ScoreRunStatus.FINISHED,
-                        test=models.TestOutSchema(
-                            test_name="Test 1",
-                            test_uuid="test123",
-                            test_status=models.TestStatus.FINISHED,
-                            test_type=models.TestType.SAFETY,
-                            organization_name="Organization 1",
-                            n_test_questions=10,
-                        ),
-                    ),
-                ],
-                count=2,
+            type(
+                "Response",
+                (),
+                {
+                    "parsed": models.PagedScoreRunOutSchema(
+                        items=[
+                            models.ScoreRunOutSchema(
+                                score_run_uuid="score1",
+                                score_run_status=models.ScoreRunStatus.FINISHED,
+                                test=models.TestOutSchema(
+                                    test_name="Test 1",
+                                    test_uuid="test123",
+                                    test_status=models.TestStatus.FINISHED,
+                                    test_type=models.TestType.SAFETY,
+                                    organization_name="Organization 1",
+                                    n_test_questions=10,
+                                ),
+                            ),
+                        ],
+                        count=2,
+                    )
+                },
             ),
-            models.PagedScoreRunOutSchema(
-                items=[
-                    models.ScoreRunOutSchema(
-                        score_run_uuid="score2",
-                        score_run_status=models.ScoreRunStatus.FINISHED,
-                        test=models.TestOutSchema(
-                            test_name="Test 2",
-                            test_uuid="test456",
-                            test_status=models.TestStatus.FINISHED,
-                            test_type=models.TestType.SAFETY,
-                            organization_name="Organization 1",
-                            n_test_questions=10,
-                        ),
-                    ),
-                ],
-                count=2,
+            type(
+                "Response",
+                (),
+                {
+                    "parsed": models.PagedScoreRunOutSchema(
+                        items=[
+                            models.ScoreRunOutSchema(
+                                score_run_uuid="score2",
+                                score_run_status=models.ScoreRunStatus.FINISHED,
+                                test=models.TestOutSchema(
+                                    test_name="Test 2",
+                                    test_uuid="test456",
+                                    test_status=models.TestStatus.FINISHED,
+                                    test_type=models.TestType.SAFETY,
+                                    organization_name="Organization 1",
+                                    n_test_questions=10,
+                                ),
+                            ),
+                        ],
+                        count=2,
+                    )
+                },
             ),
         ]
 
@@ -741,38 +767,54 @@ def test_score_runs_to_df(aymara_client):
 
 def test_get_all_score_run_answers_sync(aymara_client):
     with patch(
-        "aymara_sdk.core.score_runs.get_score_run_answers.sync"
+        "aymara_sdk.core.score_runs.get_score_run_answers.sync_detailed"
     ) as mock_get_answers:
         mock_get_answers.side_effect = [
-            models.PagedAnswerSchema(
-                items=[
-                    models.AnswerSchema(
-                        answer_uuid="a1",
-                        answer_text="Answer 1",
-                        question=models.QuestionSchema(
-                            question_uuid="q1",
-                            question_text="Question 1",
-                        ),
-                        explanation="Explanation 1",
-                        confidence=0.5,
+            type(
+                "Response",
+                (),
+                {
+                    "parsed": models.PagedAnswerSchema(
+                        items=[
+                            models.AnswerSchema(
+                                answer_uuid="a1",
+                                answer_text="Answer 1",
+                                question=models.QuestionSchema(
+                                    question_uuid="q1",
+                                    question_text="Question 1",
+                                ),
+                                explanation="Explanation 1",
+                                confidence=0.5,
+                                is_passed=True,
+                            )
+                        ],
+                        count=2,
                     ),
-                ],
-                count=2,
+                    "status_code": 200,
+                },
             ),
-            models.PagedAnswerSchema(
-                items=[
-                    models.AnswerSchema(
-                        answer_uuid="a2",
-                        answer_text="Answer 2",
-                        question=models.QuestionSchema(
-                            question_uuid="q2",
-                            question_text="Question 2",
-                        ),
-                        explanation="Explanation 2",
-                        confidence=0.7,
+            type(
+                "Response",
+                (),
+                {
+                    "parsed": models.PagedAnswerSchema(
+                        items=[
+                            models.AnswerSchema(
+                                answer_uuid="a2",
+                                answer_text="Answer 2",
+                                question=models.QuestionSchema(
+                                    question_uuid="q2",
+                                    question_text="Question 2",
+                                ),
+                                explanation="Explanation 2",
+                                confidence=0.7,
+                                is_passed=False,
+                            )
+                        ],
+                        count=2,
                     ),
-                ],
-                count=2,
+                    "status_code": 200,
+                },
             ),
         ]
 
@@ -787,38 +829,54 @@ def test_get_all_score_run_answers_sync(aymara_client):
 @pytest.mark.asyncio
 async def test_get_all_score_run_answers_async(aymara_client):
     with patch(
-        "aymara_sdk.core.score_runs.get_score_run_answers.asyncio"
+        "aymara_sdk.core.score_runs.get_score_run_answers.asyncio_detailed"
     ) as mock_get_answers:
         mock_get_answers.side_effect = [
-            models.PagedAnswerSchema(
-                items=[
-                    models.AnswerSchema(
-                        answer_uuid="a1",
-                        answer_text="Answer 1",
-                        question=models.QuestionSchema(
-                            question_uuid="q1",
-                            question_text="Question 1",
-                        ),
-                        explanation="Explanation 1",
-                        confidence=0.5,
+            type(
+                "Response",
+                (),
+                {
+                    "parsed": models.PagedAnswerSchema(
+                        items=[
+                            models.AnswerSchema(
+                                answer_uuid="a1",
+                                answer_text="Answer 1",
+                                question=models.QuestionSchema(
+                                    question_uuid="q1",
+                                    question_text="Question 1",
+                                ),
+                                explanation="Explanation 1",
+                                confidence=0.5,
+                                is_passed=True,
+                            )
+                        ],
+                        count=2,
                     ),
-                ],
-                count=2,
+                    "status_code": 200,
+                },
             ),
-            models.PagedAnswerSchema(
-                items=[
-                    models.AnswerSchema(
-                        answer_uuid="a2",
-                        answer_text="Answer 2",
-                        question=models.QuestionSchema(
-                            question_uuid="q2",
-                            question_text="Question 2",
-                        ),
-                        explanation="Explanation 2",
-                        confidence=0.7,
+            type(
+                "Response",
+                (),
+                {
+                    "parsed": models.PagedAnswerSchema(
+                        items=[
+                            models.AnswerSchema(
+                                answer_uuid="a2",
+                                answer_text="Answer 2",
+                                question=models.QuestionSchema(
+                                    question_uuid="q2",
+                                    question_text="Question 2",
+                                ),
+                                explanation="Explanation 2",
+                                confidence=0.7,
+                                is_passed=False,
+                            )
+                        ],
+                        count=2,
                     ),
-                ],
-                count=2,
+                    "status_code": 200,
+                },
             ),
         ]
 
@@ -856,3 +914,41 @@ def test_validate_student_answers(aymara_client):
         ValueError, match="All items in student answers must be StudentAnswerInput."
     ):
         aymara_client._validate_student_answers(invalid_answers)
+
+
+def test_delete_score_run(aymara_client):
+    with patch(
+        "aymara_sdk.core.score_runs.delete_score_run.sync_detailed"
+    ) as mock_delete:
+        # Test successful deletion
+        mock_delete.return_value.status_code = 200
+        aymara_client.delete_score_run("valid_uuid")
+        mock_delete.assert_called_once_with(
+            client=aymara_client.client, score_run_uuid="valid_uuid"
+        )
+
+        # Test score run not found
+        mock_delete.return_value.status_code = 404
+        with pytest.raises(
+            ValueError, match="Score run with UUID not_found_uuid not found"
+        ):
+            aymara_client.delete_score_run("not_found_uuid")
+
+
+async def test_delete_score_run_async(aymara_client):
+    with patch(
+        "aymara_sdk.core.score_runs.delete_score_run.asyncio_detailed"
+    ) as mock_delete_async:
+        # Test successful deletion
+        mock_delete_async.return_value.status_code = 200
+        await aymara_client.delete_score_run_async("valid_uuid")
+        mock_delete_async.assert_called_once_with(
+            client=aymara_client.client, score_run_uuid="valid_uuid"
+        )
+
+        # Test score run not found
+        mock_delete_async.return_value.status_code = 404
+        with pytest.raises(
+            ValueError, match="Score run with UUID not_found_uuid not found"
+        ):
+            await aymara_client.delete_score_run_async("not_found_uuid")

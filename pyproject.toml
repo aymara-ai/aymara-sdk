@@ -61,4 +61,4 @@ exclude = []
 [tool.pytest.ini_options]
 norecursedirs = ["aymara_sdk/*"]
 asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
+asyncio_default_fixture_loop_scope = "session"
