@@ -66,12 +66,13 @@ class ExplanationMixin(AymaraAIProtocol):
         self, score_run_uuids: List[str]
     ) -> ScoreRunsExplanationResponse:
         start_time = time.time()
-        explanation_response = create_score_runs_explanation.sync(
+        response = create_score_runs_explanation.sync_detailed(
             client=self.client,
             body=ScoreRunsExplanationInSchema(
                 score_run_uuids=score_run_uuids,
             ),
         )
+        explanation_response = response.parsed
         explanation_uuid = explanation_response.score_runs_explanation_uuid
 
         with self.logger.progress_bar(
@@ -80,9 +81,16 @@ class ExplanationMixin(AymaraAIProtocol):
             Status.from_api_status(explanation_response.status),
         ):
             while True:
-                explanation_response = get_score_runs_explanation.sync(
+                response = get_score_runs_explanation.sync_detailed(
                     client=self.client, explanation_uuid=explanation_uuid
                 )
+
+                if response.status_code == 404:
+                    raise ValueError(
+                        f"Explanation with UUID {explanation_uuid} not found"
+                    )
+
+                explanation_response = response.parsed
 
                 self.logger.update_progress_bar(
                     explanation_uuid,
@@ -116,12 +124,13 @@ class ExplanationMixin(AymaraAIProtocol):
         self, score_run_uuids: List[str]
     ) -> ScoreRunsExplanationResponse:
         start_time = time.time()
-        explanation_response = await create_score_runs_explanation.asyncio(
+        response = await create_score_runs_explanation.asyncio_detailed(
             client=self.client,
             body=ScoreRunsExplanationInSchema(
                 score_run_uuids=score_run_uuids,
             ),
         )
+        explanation_response = response.parsed
         explanation_uuid = explanation_response.score_runs_explanation_uuid
 
         with self.logger.progress_bar(
@@ -130,9 +139,16 @@ class ExplanationMixin(AymaraAIProtocol):
             Status.from_api_status(explanation_response.status),
         ):
             while True:
-                explanation_response = await get_score_runs_explanation.asyncio(
+                response = await get_score_runs_explanation.asyncio_detailed(
                     client=self.client, explanation_uuid=explanation_uuid
                 )
+
+                if response.status_code == 404:
+                    raise ValueError(
+                        f"Explanation with UUID {explanation_uuid} not found"
+                    )
+
+                explanation_response = response.parsed
 
                 self.logger.update_progress_bar(
                     explanation_uuid,
@@ -207,9 +223,12 @@ class ExplanationMixin(AymaraAIProtocol):
     def _get_explanation_sync_impl(
         self, explanation_uuid: str
     ) -> ScoreRunsExplanationResponse:
-        explanation_response = get_score_runs_explanation.sync(
+        response = get_score_runs_explanation.sync_detailed(
             client=self.client, explanation_uuid=explanation_uuid
         )
+        if response.status_code == 404:
+            raise ValueError(f"Explanation with UUID {explanation_uuid} not found")
+        explanation_response = response.parsed
         return (
             ScoreRunsExplanationResponse.from_explanation_out_schema_and_failure_reason(
                 explanation_response
@@ -219,9 +238,12 @@ class ExplanationMixin(AymaraAIProtocol):
     async def _get_explanation_async_impl(
         self, explanation_uuid: str
     ) -> ScoreRunsExplanationResponse:
-        explanation_response = await get_score_runs_explanation.asyncio(
+        response = await get_score_runs_explanation.asyncio_detailed(
             client=self.client, explanation_uuid=explanation_uuid
         )
+        if response.status_code == 404:
+            raise ValueError(f"Explanation with UUID {explanation_uuid} not found")
+        explanation_response = response.parsed
         return (
             ScoreRunsExplanationResponse.from_explanation_out_schema_and_failure_reason(
                 explanation_response
@@ -242,7 +264,8 @@ class ExplanationMixin(AymaraAIProtocol):
         return await self._list_explanations_async_impl()
 
     def _list_explanations_sync_impl(self) -> List[ScoreRunsExplanationResponse]:
-        explanation_response = list_score_runs_explanations.sync(client=self.client)
+        response = list_score_runs_explanations.sync_detailed(client=self.client)
+        explanation_response = response.parsed
         return [
             ScoreRunsExplanationResponse.from_explanation_out_schema_and_failure_reason(
                 explanation
@@ -251,9 +274,10 @@ class ExplanationMixin(AymaraAIProtocol):
         ]
 
     async def _list_explanations_async_impl(self) -> List[ScoreRunsExplanationResponse]:
-        explanation_response = await list_score_runs_explanations.asyncio(
+        response = await list_score_runs_explanations.asyncio_detailed(
             client=self.client
         )
+        explanation_response = response.parsed
         return [
             ScoreRunsExplanationResponse.from_explanation_out_schema_and_failure_reason(
                 explanation

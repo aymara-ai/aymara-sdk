@@ -1,17 +1,16 @@
 from http import HTTPStatus
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, cast
 
 import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.error_schema import ErrorSchema
-from ...models.test_out_schema import TestOutSchema
 from ...types import UNSET, Response, Unset
 
 
 def _get_kwargs(
-    test_uuid: str,
+    explanation_uuid: str,
     *,
     workspace_uuid: Union[Unset, str] = UNSET,
 ) -> Dict[str, Any]:
@@ -22,8 +21,8 @@ def _get_kwargs(
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
     _kwargs: Dict[str, Any] = {
-        "method": "get",
-        "url": f"/v1/tests/{test_uuid}",
+        "method": "delete",
+        "url": f"/v1/scores/explanations/{explanation_uuid}",
         "params": params,
     }
 
@@ -32,11 +31,10 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[ErrorSchema, TestOutSchema]]:
-    if response.status_code == HTTPStatus.OK:
-        response_200 = TestOutSchema.from_dict(response.json())
-
-        return response_200
+) -> Optional[Union[Any, ErrorSchema]]:
+    if response.status_code == HTTPStatus.NO_CONTENT:
+        response_204 = cast(Any, None)
+        return response_204
     if response.status_code == HTTPStatus.NOT_FOUND:
         response_404 = ErrorSchema.from_dict(response.json())
 
@@ -49,7 +47,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[ErrorSchema, TestOutSchema]]:
+) -> Response[Union[Any, ErrorSchema]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -59,15 +57,15 @@ def _build_response(
 
 
 def sync_detailed(
-    test_uuid: str,
+    explanation_uuid: str,
     *,
     client: AuthenticatedClient,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Response[Union[ErrorSchema, TestOutSchema]]:
-    """Get Test
+) -> Response[Union[Any, ErrorSchema]]:
+    """Delete Score Runs Explanation
 
     Args:
-        test_uuid (str):
+        explanation_uuid (str):
         workspace_uuid (Union[Unset, str]):
 
     Raises:
@@ -75,11 +73,11 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[ErrorSchema, TestOutSchema]]
+        Response[Union[Any, ErrorSchema]]
     """
 
     kwargs = _get_kwargs(
-        test_uuid=test_uuid,
+        explanation_uuid=explanation_uuid,
         workspace_uuid=workspace_uuid,
     )
 
@@ -91,15 +89,15 @@ def sync_detailed(
 
 
 def sync(
-    test_uuid: str,
+    explanation_uuid: str,
     *,
     client: AuthenticatedClient,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Optional[Union[ErrorSchema, TestOutSchema]]:
-    """Get Test
+) -> Optional[Union[Any, ErrorSchema]]:
+    """Delete Score Runs Explanation
 
     Args:
-        test_uuid (str):
+        explanation_uuid (str):
         workspace_uuid (Union[Unset, str]):
 
     Raises:
@@ -107,26 +105,26 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[ErrorSchema, TestOutSchema]
+        Union[Any, ErrorSchema]
     """
 
     return sync_detailed(
-        test_uuid=test_uuid,
+        explanation_uuid=explanation_uuid,
         client=client,
         workspace_uuid=workspace_uuid,
     ).parsed
 
 
 async def asyncio_detailed(
-    test_uuid: str,
+    explanation_uuid: str,
     *,
     client: AuthenticatedClient,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Response[Union[ErrorSchema, TestOutSchema]]:
-    """Get Test
+) -> Response[Union[Any, ErrorSchema]]:
+    """Delete Score Runs Explanation
 
     Args:
-        test_uuid (str):
+        explanation_uuid (str):
         workspace_uuid (Union[Unset, str]):
 
     Raises:
@@ -134,11 +132,11 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[ErrorSchema, TestOutSchema]]
+        Response[Union[Any, ErrorSchema]]
     """
 
     kwargs = _get_kwargs(
-        test_uuid=test_uuid,
+        explanation_uuid=explanation_uuid,
         workspace_uuid=workspace_uuid,
     )
 
@@ -148,15 +146,15 @@ async def asyncio_detailed(
 
 
 async def asyncio(
-    test_uuid: str,
+    explanation_uuid: str,
     *,
     client: AuthenticatedClient,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Optional[Union[ErrorSchema, TestOutSchema]]:
-    """Get Test
+) -> Optional[Union[Any, ErrorSchema]]:
+    """Delete Score Runs Explanation
 
     Args:
-        test_uuid (str):
+        explanation_uuid (str):
         workspace_uuid (Union[Unset, str]):
 
     Raises:
@@ -164,12 +162,12 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[ErrorSchema, TestOutSchema]
+        Union[Any, ErrorSchema]
     """
 
     return (
         await asyncio_detailed(
-            test_uuid=test_uuid,
+            explanation_uuid=explanation_uuid,
             client=client,
             workspace_uuid=workspace_uuid,
         )
