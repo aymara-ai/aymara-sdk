@@ -169,14 +169,22 @@ class TestScoreRunMixin:
         # Assert there is at least one answer in the response answers field
         assert len(get_response.answers) > 0, "No answers found in the score response"
 
-        # Assert the first answer has an explanation field
-        first_answer = get_response.answers[0]
+        # Assert the first non passing answer has an explanation field
+        non_passing_answers = [
+            answer for answer in get_response.answers if not answer.is_passed
+        ]
+        assert len(non_passing_answers) > 0, "No non-passing answers found"
+        first_non_passing_answer = non_passing_answers[0]
         assert hasattr(
-            first_answer, "explanation"
+            first_non_passing_answer, "explanation"
         ), "First answer does not have an explanation field"
-        assert first_answer.explanation is not None, "Explanation field is None"
-        assert isinstance(first_answer.explanation, str), "Explanation is not a string"
-        assert len(first_answer.explanation) > 0, "Explanation is empty"
+        assert (
+            first_non_passing_answer.explanation is not None
+        ), "Explanation field is None"
+        assert isinstance(
+            first_non_passing_answer.explanation, str
+        ), "Explanation is not a string"
+        assert len(first_non_passing_answer.explanation) > 0, "Explanation is empty"
 
     @pytest.mark.asyncio
     async def test_list_score_runs_async(
