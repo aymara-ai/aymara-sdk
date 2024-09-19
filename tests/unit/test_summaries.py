@@ -238,64 +238,70 @@ def test_list_summaries(aymara_client):
     with patch(
         "aymara_sdk.core.summaries.list_score_run_suite_summaries.sync_detailed"
     ) as mock_list_summaries:
-        mock_list_summaries.return_value.parsed = [
-            models.ScoreRunSuiteSummaryOutSchema(
-                score_run_suite_summary_uuid="sum1",
-                status=models.ScoreRunSuiteSummaryStatus.FINISHED,
-                overall_summary="Overall summary 1",
-                overall_improvement_advice="Overall improvement advice 1",
-                score_run_summaries=[
-                    models.ScoreRunSummaryOutSchema(
-                        score_run_summary_uuid="sum1",
-                        explanation_summary="Summary 1",
-                        improvement_advice="Improvement advice 1",
-                        score_run=models.ScoreRunOutSchema(
-                            score_run_uuid="score1",
-                            score_run_status=models.ScoreRunStatus.RECORD_CREATED,
-                            test=models.TestOutSchema(
-                                test_name="Test 1",
-                                test_uuid="test1",
-                                test_status=models.TestStatus.RECORD_CREATED,
-                                test_type=models.TestType.SAFETY,
-                                n_test_questions=10,
-                                organization_name="Organization 1",
+        mock_list_summaries.return_value.parsed = models.PagedScoreRunSuiteSummaryOutSchema(
+            count=2,
+            items=[
+                models.ScoreRunSuiteSummaryOutSchema(
+                    score_run_suite_summary_uuid="sum1",
+                    status=models.ScoreRunSuiteSummaryStatus.FINISHED,
+                    overall_summary="Overall summary 1",
+                    overall_improvement_advice="Overall improvement advice 1",
+                    score_run_summaries=[
+                        models.ScoreRunSummaryOutSchema(
+                            score_run_summary_uuid="sum1",
+                            explanation_summary="Summary 1",
+                            improvement_advice="Improvement advice 1",
+                            score_run=models.ScoreRunOutSchema(
+                                score_run_uuid="score1",
+                                score_run_status=models.ScoreRunStatus.RECORD_CREATED,
+                                test=models.TestOutSchema(
+                                    test_name="Test 1",
+                                    test_uuid="test1",
+                                    test_status=models.TestStatus.RECORD_CREATED,
+                                    test_type=models.TestType.SAFETY,
+                                    n_test_questions=10,
+                                    organization_name="Organization 1",
+                                ),
                             ),
-                        ),
-                    )
-                ],
-            ),
-            models.ScoreRunSuiteSummaryOutSchema(
-                score_run_suite_summary_uuid="sum2",
-                status=models.ScoreRunSuiteSummaryStatus.FINISHED,
-                overall_summary="Overall summary 2",
-                overall_improvement_advice="Overall improvement advice 2",
-                score_run_summaries=[
-                    models.ScoreRunSummaryOutSchema(
-                        score_run_summary_uuid="sum2",
-                        explanation_summary="Summary 2",
-                        improvement_advice="Improvement advice 2",
-                        score_run=models.ScoreRunOutSchema(
-                            score_run_uuid="score2",
-                            score_run_status=models.ScoreRunStatus.RECORD_CREATED,
-                            test=models.TestOutSchema(
-                                test_name="Test 2",
-                                test_uuid="test2",
-                                test_status=models.TestStatus.RECORD_CREATED,
-                                test_type=models.TestType.SAFETY,
-                                n_test_questions=10,
-                                organization_name="Organization 2",
+                        )
+                    ],
+                ),
+                models.ScoreRunSuiteSummaryOutSchema(
+                    score_run_suite_summary_uuid="sum2",
+                    status=models.ScoreRunSuiteSummaryStatus.FINISHED,
+                    overall_summary="Overall summary 2",
+                    overall_improvement_advice="Overall improvement advice 2",
+                    score_run_summaries=[
+                        models.ScoreRunSummaryOutSchema(
+                            score_run_summary_uuid="sum2",
+                            explanation_summary="Summary 2",
+                            improvement_advice="Improvement advice 2",
+                            score_run=models.ScoreRunOutSchema(
+                                score_run_uuid="score2",
+                                score_run_status=models.ScoreRunStatus.RECORD_CREATED,
+                                test=models.TestOutSchema(
+                                    test_name="Test 2",
+                                    test_uuid="test2",
+                                    test_status=models.TestStatus.RECORD_CREATED,
+                                    test_type=models.TestType.SAFETY,
+                                    n_test_questions=10,
+                                    organization_name="Organization 2",
+                                ),
                             ),
-                        ),
-                    )
-                ],
-            ),
-        ]
+                        )
+                    ],
+                ),
+            ],
+        )
 
         result = aymara_client.list_summaries()
 
         assert isinstance(result, list)
         assert len(result) == 2
         assert all(isinstance(item, ScoreRunSuiteSummaryResponse) for item in result)
+        mock_list_summaries.assert_called_once_with(
+            client=aymara_client.client, offset=0
+        )
 
 
 @pytest.mark.asyncio
@@ -303,64 +309,70 @@ async def test_list_summaries_async(aymara_client):
     with patch(
         "aymara_sdk.core.summaries.list_score_run_suite_summaries.asyncio_detailed"
     ) as mock_list_summaries:
-        mock_list_summaries.return_value.parsed = [
-            models.ScoreRunSuiteSummaryOutSchema(
-                score_run_suite_summary_uuid="sum1",
-                status=models.ScoreRunSuiteSummaryStatus.FINISHED,
-                overall_summary="Overall summary 1",
-                overall_improvement_advice="Overall improvement advice 1",
-                score_run_summaries=[
-                    models.ScoreRunSummaryOutSchema(
-                        score_run_summary_uuid="sum1",
-                        explanation_summary="Summary 1",
-                        improvement_advice="Improvement advice 1",
-                        score_run=models.ScoreRunOutSchema(
-                            score_run_uuid="score1",
-                            score_run_status=models.ScoreRunStatus.RECORD_CREATED,
-                            test=models.TestOutSchema(
-                                test_name="Test 1",
-                                test_uuid="test1",
-                                test_status=models.TestStatus.RECORD_CREATED,
-                                test_type=models.TestType.SAFETY,
-                                n_test_questions=10,
-                                organization_name="Organization 1",
+        mock_list_summaries.return_value.parsed = models.PagedScoreRunSuiteSummaryOutSchema(
+            count=2,
+            items=[
+                models.ScoreRunSuiteSummaryOutSchema(
+                    score_run_suite_summary_uuid="sum1",
+                    status=models.ScoreRunSuiteSummaryStatus.FINISHED,
+                    overall_summary="Overall summary 1",
+                    overall_improvement_advice="Overall improvement advice 1",
+                    score_run_summaries=[
+                        models.ScoreRunSummaryOutSchema(
+                            score_run_summary_uuid="sum1",
+                            explanation_summary="Summary 1",
+                            improvement_advice="Improvement advice 1",
+                            score_run=models.ScoreRunOutSchema(
+                                score_run_uuid="score1",
+                                score_run_status=models.ScoreRunStatus.RECORD_CREATED,
+                                test=models.TestOutSchema(
+                                    test_name="Test 1",
+                                    test_uuid="test1",
+                                    test_status=models.TestStatus.RECORD_CREATED,
+                                    test_type=models.TestType.SAFETY,
+                                    n_test_questions=10,
+                                    organization_name="Organization 1",
+                                ),
                             ),
-                        ),
-                    )
-                ],
-            ),
-            models.ScoreRunSuiteSummaryOutSchema(
-                score_run_suite_summary_uuid="sum2",
-                status=models.ScoreRunSuiteSummaryStatus.FINISHED,
-                overall_summary="Overall summary 2",
-                overall_improvement_advice="Overall improvement advice 2",
-                score_run_summaries=[
-                    models.ScoreRunSummaryOutSchema(
-                        score_run_summary_uuid="sum2",
-                        explanation_summary="Summary 2",
-                        improvement_advice="Improvement advice 2",
-                        score_run=models.ScoreRunOutSchema(
-                            score_run_uuid="score2",
-                            score_run_status=models.ScoreRunStatus.RECORD_CREATED,
-                            test=models.TestOutSchema(
-                                test_name="Test 2",
-                                test_uuid="test2",
-                                test_status=models.TestStatus.RECORD_CREATED,
-                                test_type=models.TestType.SAFETY,
-                                n_test_questions=10,
-                                organization_name="Organization 2",
+                        )
+                    ],
+                ),
+                models.ScoreRunSuiteSummaryOutSchema(
+                    score_run_suite_summary_uuid="sum2",
+                    status=models.ScoreRunSuiteSummaryStatus.FINISHED,
+                    overall_summary="Overall summary 2",
+                    overall_improvement_advice="Overall improvement advice 2",
+                    score_run_summaries=[
+                        models.ScoreRunSummaryOutSchema(
+                            score_run_summary_uuid="sum2",
+                            explanation_summary="Summary 2",
+                            improvement_advice="Improvement advice 2",
+                            score_run=models.ScoreRunOutSchema(
+                                score_run_uuid="score2",
+                                score_run_status=models.ScoreRunStatus.RECORD_CREATED,
+                                test=models.TestOutSchema(
+                                    test_name="Test 2",
+                                    test_uuid="test2",
+                                    test_status=models.TestStatus.RECORD_CREATED,
+                                    test_type=models.TestType.SAFETY,
+                                    n_test_questions=10,
+                                    organization_name="Organization 2",
+                                ),
                             ),
-                        ),
-                    )
-                ],
-            ),
-        ]
+                        )
+                    ],
+                ),
+            ],
+        )
 
         result = await aymara_client.list_summaries_async()
 
         assert isinstance(result, list)
         assert len(result) == 2
         assert all(isinstance(item, ScoreRunSuiteSummaryResponse) for item in result)
+        mock_list_summaries.assert_called_once_with(
+            client=aymara_client.client, offset=0
+        )
 
 
 def test_create_summary_validation(aymara_client):

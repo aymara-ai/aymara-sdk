@@ -61,6 +61,6 @@ jobs:
         run: |
           echo "Running tests against API environment: $API_TEST_ENV"
           if [ -z "$VERSION" ]; then
-            echo "Running tests on latest main branch"
+            echo "Running tests on $(git rev-parse --abbrev-ref HEAD) branch"
           fi
           pytest
