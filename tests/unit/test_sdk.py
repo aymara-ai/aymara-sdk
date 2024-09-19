@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from aymara_sdk import AymaraAI
-from aymara_sdk.types.types import ScoredAnswerResponse, ScoreRunResponse, Status
+from aymara_sdk.types import ScoredAnswerResponse, ScoreRunResponse, Status
 from aymara_sdk.utils.constants import DEFAULT_MAX_WAIT_TIME
 
 

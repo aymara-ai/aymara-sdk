@@ -1,11 +1,7 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from typing import Any, Dict, List, Type, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
-
-if TYPE_CHECKING:
-    from ..models.organization_out_schema import OrganizationOutSchema
-
 
 T = TypeVar("T", bound="WorkspaceOutSchema")
 
@@ -16,12 +12,12 @@ class WorkspaceOutSchema:
     Attributes:
         workspace_uuid (str):
         name (str):
-        organization (OrganizationOutSchema):
+        organization_name (str):
     """
 
     workspace_uuid: str
     name: str
-    organization: "OrganizationOutSchema"
+    organization_name: str
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -29,7 +25,7 @@ class WorkspaceOutSchema:
 
         name = self.name
 
-        organization = self.organization.to_dict()
+        organization_name = self.organization_name
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -37,7 +33,7 @@ class WorkspaceOutSchema:
             {
                 "workspace_uuid": workspace_uuid,
                 "name": name,
-                "organization": organization,
+                "organization_name": organization_name,
             }
         )
 
@@ -45,19 +41,17 @@ class WorkspaceOutSchema:
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        from ..models.organization_out_schema import OrganizationOutSchema
-
         d = src_dict.copy()
         workspace_uuid = d.pop("workspace_uuid")
 
         name = d.pop("name")
 
-        organization = OrganizationOutSchema.from_dict(d.pop("organization"))
+        organization_name = d.pop("organization_name")
 
         workspace_out_schema = cls(
             workspace_uuid=workspace_uuid,
             name=name,
-            organization=organization,
+            organization_name=organization_name,
         )
 
         workspace_out_schema.additional_properties = d

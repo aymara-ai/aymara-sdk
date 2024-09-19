@@ -123,7 +123,7 @@ class TestMixin(AymaraAIProtocol):
             test_name, student_description, test_policy, test_language, n_test_questions
         )
 
-        test_data = models.TestSchema(
+        test_data = models.TestInSchema(
             test_name=test_name,
             student_description=student_description,
             test_policy=test_policy,
@@ -179,7 +179,7 @@ class TestMixin(AymaraAIProtocol):
             )
 
     def _create_and_wait_for_test_impl_sync(
-        self, test_data: models.TestSchema
+        self, test_data: models.TestInSchema
     ) -> TestResponse:
         start_time = time.time()
         response = create_test.sync_detailed(client=self.client, body=test_data)
@@ -233,7 +233,7 @@ class TestMixin(AymaraAIProtocol):
                 time.sleep(POLLING_INTERVAL)
 
     async def _create_and_wait_for_test_impl_async(
-        self, test_data: models.TestSchema
+        self, test_data: models.TestInSchema
     ) -> TestResponse:
         start_time = time.time()
         response = await create_test.asyncio_detailed(

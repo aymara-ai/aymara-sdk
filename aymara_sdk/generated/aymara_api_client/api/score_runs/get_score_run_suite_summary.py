@@ -6,12 +6,12 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.error_schema import ErrorSchema
-from ...models.score_runs_explanation_out_schema import ScoreRunsExplanationOutSchema
+from ...models.score_run_suite_summary_out_schema import ScoreRunSuiteSummaryOutSchema
 from ...types import UNSET, Response, Unset
 
 
 def _get_kwargs(
-    explanation_uuid: str,
+    summary_uuid: str,
     *,
     workspace_uuid: Union[Unset, str] = UNSET,
 ) -> Dict[str, Any]:
@@ -23,7 +23,7 @@ def _get_kwargs(
 
     _kwargs: Dict[str, Any] = {
         "method": "get",
-        "url": f"/v1/scores/explanations/{explanation_uuid}",
+        "url": f"/v1/scores/summary/{summary_uuid}",
         "params": params,
     }
 
@@ -32,9 +32,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[ErrorSchema, ScoreRunsExplanationOutSchema]]:
+) -> Optional[Union[ErrorSchema, ScoreRunSuiteSummaryOutSchema]]:
     if response.status_code == HTTPStatus.OK:
-        response_200 = ScoreRunsExplanationOutSchema.from_dict(response.json())
+        response_200 = ScoreRunSuiteSummaryOutSchema.from_dict(response.json())
 
         return response_200
     if response.status_code == HTTPStatus.NOT_FOUND:
@@ -49,7 +49,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[ErrorSchema, ScoreRunsExplanationOutSchema]]:
+) -> Response[Union[ErrorSchema, ScoreRunSuiteSummaryOutSchema]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -59,15 +59,15 @@ def _build_response(
 
 
 def sync_detailed(
-    explanation_uuid: str,
+    summary_uuid: str,
     *,
     client: AuthenticatedClient,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Response[Union[ErrorSchema, ScoreRunsExplanationOutSchema]]:
-    """Get Score Runs Explanation
+) -> Response[Union[ErrorSchema, ScoreRunSuiteSummaryOutSchema]]:
+    """Get Score Run Suite Summary
 
     Args:
-        explanation_uuid (str):
+        summary_uuid (str):
         workspace_uuid (Union[Unset, str]):
 
     Raises:
@@ -75,11 +75,11 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[ErrorSchema, ScoreRunsExplanationOutSchema]]
+        Response[Union[ErrorSchema, ScoreRunSuiteSummaryOutSchema]]
     """
 
     kwargs = _get_kwargs(
-        explanation_uuid=explanation_uuid,
+        summary_uuid=summary_uuid,
         workspace_uuid=workspace_uuid,
     )
 
@@ -91,15 +91,15 @@ def sync_detailed(
 
 
 def sync(
-    explanation_uuid: str,
+    summary_uuid: str,
     *,
     client: AuthenticatedClient,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Optional[Union[ErrorSchema, ScoreRunsExplanationOutSchema]]:
-    """Get Score Runs Explanation
+) -> Optional[Union[ErrorSchema, ScoreRunSuiteSummaryOutSchema]]:
+    """Get Score Run Suite Summary
 
     Args:
-        explanation_uuid (str):
+        summary_uuid (str):
         workspace_uuid (Union[Unset, str]):
 
     Raises:
@@ -107,26 +107,26 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[ErrorSchema, ScoreRunsExplanationOutSchema]
+        Union[ErrorSchema, ScoreRunSuiteSummaryOutSchema]
     """
 
     return sync_detailed(
-        explanation_uuid=explanation_uuid,
+        summary_uuid=summary_uuid,
         client=client,
         workspace_uuid=workspace_uuid,
     ).parsed
 
 
 async def asyncio_detailed(
-    explanation_uuid: str,
+    summary_uuid: str,
     *,
     client: AuthenticatedClient,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Response[Union[ErrorSchema, ScoreRunsExplanationOutSchema]]:
-    """Get Score Runs Explanation
+) -> Response[Union[ErrorSchema, ScoreRunSuiteSummaryOutSchema]]:
+    """Get Score Run Suite Summary
 
     Args:
-        explanation_uuid (str):
+        summary_uuid (str):
         workspace_uuid (Union[Unset, str]):
 
     Raises:
@@ -134,11 +134,11 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[ErrorSchema, ScoreRunsExplanationOutSchema]]
+        Response[Union[ErrorSchema, ScoreRunSuiteSummaryOutSchema]]
     """
 
     kwargs = _get_kwargs(
-        explanation_uuid=explanation_uuid,
+        summary_uuid=summary_uuid,
         workspace_uuid=workspace_uuid,
     )
 
@@ -148,15 +148,15 @@ async def asyncio_detailed(
 
 
 async def asyncio(
-    explanation_uuid: str,
+    summary_uuid: str,
     *,
     client: AuthenticatedClient,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Optional[Union[ErrorSchema, ScoreRunsExplanationOutSchema]]:
-    """Get Score Runs Explanation
+) -> Optional[Union[ErrorSchema, ScoreRunSuiteSummaryOutSchema]]:
+    """Get Score Run Suite Summary
 
     Args:
-        explanation_uuid (str):
+        summary_uuid (str):
         workspace_uuid (Union[Unset, str]):
 
     Raises:
@@ -164,12 +164,12 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[ErrorSchema, ScoreRunsExplanationOutSchema]
+        Union[ErrorSchema, ScoreRunSuiteSummaryOutSchema]
     """
 
     return (
         await asyncio_detailed(
-            explanation_uuid=explanation_uuid,
+            summary_uuid=summary_uuid,
             client=client,
             workspace_uuid=workspace_uuid,
         )

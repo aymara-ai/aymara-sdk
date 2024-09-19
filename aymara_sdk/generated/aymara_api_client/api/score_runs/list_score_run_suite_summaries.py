@@ -5,7 +5,7 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.paged_score_runs_explanation_out_schema import PagedScoreRunsExplanationOutSchema
+from ...models.paged_score_run_suite_summary_out_schema import PagedScoreRunSuiteSummaryOutSchema
 from ...types import UNSET, Response, Unset
 
 
@@ -27,7 +27,7 @@ def _get_kwargs(
 
     _kwargs: Dict[str, Any] = {
         "method": "get",
-        "url": "/v1/scores/explanations",
+        "url": "/v1/scores/summary/",
         "params": params,
     }
 
@@ -36,9 +36,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[PagedScoreRunsExplanationOutSchema]:
+) -> Optional[PagedScoreRunSuiteSummaryOutSchema]:
     if response.status_code == HTTPStatus.OK:
-        response_200 = PagedScoreRunsExplanationOutSchema.from_dict(response.json())
+        response_200 = PagedScoreRunSuiteSummaryOutSchema.from_dict(response.json())
 
         return response_200
     if client.raise_on_unexpected_status:
@@ -49,7 +49,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[PagedScoreRunsExplanationOutSchema]:
+) -> Response[PagedScoreRunSuiteSummaryOutSchema]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -64,8 +64,8 @@ def sync_detailed(
     workspace_uuid: Union[Unset, str] = UNSET,
     limit: Union[Unset, int] = 100,
     offset: Union[Unset, int] = 0,
-) -> Response[PagedScoreRunsExplanationOutSchema]:
-    """List Score Runs Explanations
+) -> Response[PagedScoreRunSuiteSummaryOutSchema]:
+    """List Score Run Suite Summaries
 
     Args:
         workspace_uuid (Union[Unset, str]):
@@ -77,7 +77,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[PagedScoreRunsExplanationOutSchema]
+        Response[PagedScoreRunSuiteSummaryOutSchema]
     """
 
     kwargs = _get_kwargs(
@@ -99,8 +99,8 @@ def sync(
     workspace_uuid: Union[Unset, str] = UNSET,
     limit: Union[Unset, int] = 100,
     offset: Union[Unset, int] = 0,
-) -> Optional[PagedScoreRunsExplanationOutSchema]:
-    """List Score Runs Explanations
+) -> Optional[PagedScoreRunSuiteSummaryOutSchema]:
+    """List Score Run Suite Summaries
 
     Args:
         workspace_uuid (Union[Unset, str]):
@@ -112,7 +112,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        PagedScoreRunsExplanationOutSchema
+        PagedScoreRunSuiteSummaryOutSchema
     """
 
     return sync_detailed(
@@ -129,8 +129,8 @@ async def asyncio_detailed(
     workspace_uuid: Union[Unset, str] = UNSET,
     limit: Union[Unset, int] = 100,
     offset: Union[Unset, int] = 0,
-) -> Response[PagedScoreRunsExplanationOutSchema]:
-    """List Score Runs Explanations
+) -> Response[PagedScoreRunSuiteSummaryOutSchema]:
+    """List Score Run Suite Summaries
 
     Args:
         workspace_uuid (Union[Unset, str]):
@@ -142,7 +142,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[PagedScoreRunsExplanationOutSchema]
+        Response[PagedScoreRunSuiteSummaryOutSchema]
     """
 
     kwargs = _get_kwargs(
@@ -162,8 +162,8 @@ async def asyncio(
     workspace_uuid: Union[Unset, str] = UNSET,
     limit: Union[Unset, int] = 100,
     offset: Union[Unset, int] = 0,
-) -> Optional[PagedScoreRunsExplanationOutSchema]:
-    """List Score Runs Explanations
+) -> Optional[PagedScoreRunSuiteSummaryOutSchema]:
+    """List Score Run Suite Summaries
 
     Args:
         workspace_uuid (Union[Unset, str]):
@@ -175,7 +175,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        PagedScoreRunsExplanationOutSchema
+        PagedScoreRunSuiteSummaryOutSchema
     """
 
     return (

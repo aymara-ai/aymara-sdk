@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from aymara_sdk.generated.aymara_api_client import models
-from aymara_sdk.types.types import Status, TestResponse
+from aymara_sdk.types import Status, TestResponse
 from aymara_sdk.utils.constants import (
     DEFAULT_CHAR_TO_TOKEN_MULTIPLIER,
     DEFAULT_MAX_TOKENS,
@@ -305,7 +305,7 @@ def test_validate_test_inputs_excessive_tokens(aymara_client):
 
 
 def test_create_and_wait_for_test_impl_sync_success(aymara_client):
-    test_data = models.TestSchema(
+    test_data = models.TestInSchema(
         test_name="Test 1",
         student_description="Description",
         test_policy="Policy",
@@ -357,7 +357,7 @@ def test_create_and_wait_for_test_impl_sync_success(aymara_client):
 
 @pytest.mark.asyncio
 async def test_create_and_wait_for_test_impl_async_success(aymara_client):
-    test_data = models.TestSchema(
+    test_data = models.TestInSchema(
         test_name="Test 1",
         student_description="Description",
         test_policy="Policy",
@@ -408,7 +408,7 @@ async def test_create_and_wait_for_test_impl_async_success(aymara_client):
 
 
 def test_create_and_wait_for_test_impl_failure_sync(aymara_client):
-    test_data = models.TestSchema(
+    test_data = models.TestInSchema(
         test_name="Test 1",
         student_description="Description",
         test_policy="Policy",
@@ -451,7 +451,7 @@ def test_create_and_wait_for_test_impl_failure_sync(aymara_client):
 
 @pytest.mark.asyncio
 async def test_create_and_wait_for_test_impl_failure_async(aymara_client):
-    test_data = models.TestSchema(
+    test_data = models.TestInSchema(
         test_name="Test 1",
         student_description="Description",
         test_policy="Policy",
@@ -493,7 +493,7 @@ async def test_create_and_wait_for_test_impl_failure_async(aymara_client):
 
 
 def test_create_and_wait_for_test_impl_timeout_sync(aymara_client):
-    test_data = models.TestSchema(
+    test_data = models.TestInSchema(
         test_name="Test 1",
         student_description="Description",
         test_policy="Policy",
@@ -552,7 +552,7 @@ def test_create_and_wait_for_test_impl_timeout_sync(aymara_client):
 
 @pytest.mark.asyncio
 async def test_create_and_wait_for_test_impl_timeout_async(aymara_client):
-    test_data = models.TestSchema(
+    test_data = models.TestInSchema(
         test_name="Test 1",
         student_description="Description",
         test_policy="Policy",

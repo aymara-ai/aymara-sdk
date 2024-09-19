@@ -7,27 +7,27 @@ if TYPE_CHECKING:
     from ..models.score_run_out_schema import ScoreRunOutSchema
 
 
-T = TypeVar("T", bound="ScoreRunExplanationOutSchema")
+T = TypeVar("T", bound="ScoreRunSummaryOutSchema")
 
 
 @_attrs_define
-class ScoreRunExplanationOutSchema:
+class ScoreRunSummaryOutSchema:
     """
     Attributes:
-        score_run_explanation_uuid (str):
+        score_run_summary_uuid (str):
         score_run (ScoreRunOutSchema):
         explanation_summary (str):
         improvement_advice (str):
     """
 
-    score_run_explanation_uuid: str
+    score_run_summary_uuid: str
     score_run: "ScoreRunOutSchema"
     explanation_summary: str
     improvement_advice: str
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        score_run_explanation_uuid = self.score_run_explanation_uuid
+        score_run_summary_uuid = self.score_run_summary_uuid
 
         score_run = self.score_run.to_dict()
 
@@ -39,7 +39,7 @@ class ScoreRunExplanationOutSchema:
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "score_run_explanation_uuid": score_run_explanation_uuid,
+                "score_run_summary_uuid": score_run_summary_uuid,
                 "score_run": score_run,
                 "explanation_summary": explanation_summary,
                 "improvement_advice": improvement_advice,
@@ -53,7 +53,7 @@ class ScoreRunExplanationOutSchema:
         from ..models.score_run_out_schema import ScoreRunOutSchema
 
         d = src_dict.copy()
-        score_run_explanation_uuid = d.pop("score_run_explanation_uuid")
+        score_run_summary_uuid = d.pop("score_run_summary_uuid")
 
         score_run = ScoreRunOutSchema.from_dict(d.pop("score_run"))
 
@@ -61,15 +61,15 @@ class ScoreRunExplanationOutSchema:
 
         improvement_advice = d.pop("improvement_advice")
 
-        score_run_explanation_out_schema = cls(
-            score_run_explanation_uuid=score_run_explanation_uuid,
+        score_run_summary_out_schema = cls(
+            score_run_summary_uuid=score_run_summary_uuid,
             score_run=score_run,
             explanation_summary=explanation_summary,
             improvement_advice=improvement_advice,
         )
 
-        score_run_explanation_out_schema.additional_properties = d
-        return score_run_explanation_out_schema
+        score_run_summary_out_schema.additional_properties = d
+        return score_run_summary_out_schema
 
     @property
     def additional_keys(self) -> List[str]:

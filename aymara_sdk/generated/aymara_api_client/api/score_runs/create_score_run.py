@@ -6,14 +6,14 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.error_schema import ErrorSchema
+from ...models.score_run_in_schema import ScoreRunInSchema
 from ...models.score_run_out_schema import ScoreRunOutSchema
-from ...models.score_run_schema import ScoreRunSchema
 from ...types import UNSET, Response, Unset
 
 
 def _get_kwargs(
     *,
-    body: ScoreRunSchema,
+    body: ScoreRunInSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
 ) -> Dict[str, Any]:
     headers: Dict[str, Any] = {}
@@ -70,14 +70,14 @@ def _build_response(
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    body: ScoreRunSchema,
+    body: ScoreRunInSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
 ) -> Response[Union[ErrorSchema, ScoreRunOutSchema]]:
     """Create Score Run
 
     Args:
         workspace_uuid (Union[Unset, str]):
-        body (ScoreRunSchema):
+        body (ScoreRunInSchema):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -102,14 +102,14 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient,
-    body: ScoreRunSchema,
+    body: ScoreRunInSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
 ) -> Optional[Union[ErrorSchema, ScoreRunOutSchema]]:
     """Create Score Run
 
     Args:
         workspace_uuid (Union[Unset, str]):
-        body (ScoreRunSchema):
+        body (ScoreRunInSchema):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -129,14 +129,14 @@ def sync(
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    body: ScoreRunSchema,
+    body: ScoreRunInSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
 ) -> Response[Union[ErrorSchema, ScoreRunOutSchema]]:
     """Create Score Run
 
     Args:
         workspace_uuid (Union[Unset, str]):
-        body (ScoreRunSchema):
+        body (ScoreRunInSchema):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -159,14 +159,14 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient,
-    body: ScoreRunSchema,
+    body: ScoreRunInSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
 ) -> Optional[Union[ErrorSchema, ScoreRunOutSchema]]:
     """Create Score Run
 
     Args:
         workspace_uuid (Union[Unset, str]):
-        body (ScoreRunSchema):
+        body (ScoreRunInSchema):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

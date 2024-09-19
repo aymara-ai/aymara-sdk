@@ -36,12 +36,12 @@ def pytest_collection_modifyitems(items):
 
 
 @pytest.fixture(autouse=True)
-def cleanup_after_test(aymara_client):
+def cleanup_after_test(aymara_client: AymaraAI):
     created_test_uuids = []
     created_score_run_uuids = []
-    created_explanation_uuids = []
+    created_summary_uuids = []
 
-    yield created_test_uuids, created_score_run_uuids, created_explanation_uuids
+    yield created_test_uuids, created_score_run_uuids, created_summary_uuids
 
     for test_uuid in created_test_uuids:
         try:
@@ -51,5 +51,10 @@ def cleanup_after_test(aymara_client):
     for score_run_uuid in created_score_run_uuids:
         try:
             aymara_client.delete_score_run(score_run_uuid)
+        except ValueError:
+            pass
+    for summary_uuid in created_summary_uuids:
+        try:
+            aymara_client.delete_summary(summary_uuid)
         except ValueError:
             pass

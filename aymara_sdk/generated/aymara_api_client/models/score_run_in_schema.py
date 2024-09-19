@@ -7,11 +7,11 @@ if TYPE_CHECKING:
     from ..models.answer_in_schema import AnswerInSchema
 
 
-T = TypeVar("T", bound="ScoreRunSchema")
+T = TypeVar("T", bound="ScoreRunInSchema")
 
 
 @_attrs_define
-class ScoreRunSchema:
+class ScoreRunInSchema:
     """
     Attributes:
         test_uuid (str):
@@ -55,13 +55,13 @@ class ScoreRunSchema:
 
             answers.append(answers_item)
 
-        score_run_schema = cls(
+        score_run_in_schema = cls(
             test_uuid=test_uuid,
             answers=answers,
         )
 
-        score_run_schema.additional_properties = d
-        return score_run_schema
+        score_run_in_schema.additional_properties = d
+        return score_run_in_schema
 
     @property
     def additional_keys(self) -> List[str]:

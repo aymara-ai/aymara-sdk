@@ -15,14 +15,14 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
-from aymara_sdk.core.explanations import ExplanationMixin
 from aymara_sdk.core.protocols import AymaraAIProtocol
 from aymara_sdk.core.score_runs import ScoreRunMixin
+from aymara_sdk.core.summaries import SummaryMixin
 from aymara_sdk.core.tests import TestMixin
 from aymara_sdk.generated.aymara_api_client import (
     client,
 )
-from aymara_sdk.types.types import ScoreRunResponse
+from aymara_sdk.types import ScoreRunResponse
 from aymara_sdk.utils.constants import DEFAULT_MAX_WAIT_TIME
 from aymara_sdk.utils.logger import SDKLogger
 
@@ -30,7 +30,7 @@ from aymara_sdk.utils.logger import SDKLogger
 class AymaraAI(
     TestMixin,
     ScoreRunMixin,
-    ExplanationMixin,
+    SummaryMixin,
     AymaraAIProtocol,
 ):
     """
