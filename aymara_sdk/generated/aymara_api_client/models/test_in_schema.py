@@ -6,11 +6,11 @@ from attrs import field as _attrs_field
 from ..models.test_type import TestType
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="TestSchema")
+T = TypeVar("T", bound="TestInSchema")
 
 
 @_attrs_define
-class TestSchema:
+class TestInSchema:
     """
     Attributes:
         test_name (str):
@@ -112,7 +112,7 @@ class TestSchema:
 
         test_system_prompt = _parse_test_system_prompt(d.pop("test_system_prompt", UNSET))
 
-        test_schema = cls(
+        test_in_schema = cls(
             test_name=test_name,
             n_test_questions=n_test_questions,
             student_description=student_description,
@@ -122,8 +122,8 @@ class TestSchema:
             test_system_prompt=test_system_prompt,
         )
 
-        test_schema.additional_properties = d
-        return test_schema
+        test_in_schema.additional_properties = d
+        return test_in_schema
 
     @property
     def additional_keys(self) -> List[str]:

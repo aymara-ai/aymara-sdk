@@ -1,29 +1,41 @@
-from typing import Any, Dict, List, Type, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="ScoreRunsExplanationInSchema")
+if TYPE_CHECKING:
+    from ..models.answer_out_schema import AnswerOutSchema
+
+
+T = TypeVar("T", bound="PagedAnswerOutSchema")
 
 
 @_attrs_define
-class ScoreRunsExplanationInSchema:
+class PagedAnswerOutSchema:
     """
     Attributes:
-        score_run_uuids (List[str]):
+        items (List['AnswerOutSchema']):
+        count (int):
     """
 
-    score_run_uuids: List[str]
+    items: List["AnswerOutSchema"]
+    count: int
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        score_run_uuids = self.score_run_uuids
+        items = []
+        for items_item_data in self.items:
+            items_item = items_item_data.to_dict()
+            items.append(items_item)
+
+        count = self.count
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "score_run_uuids": score_run_uuids,
+                "items": items,
+                "count": count,
             }
         )
 
@@ -31,15 +43,25 @@ class ScoreRunsExplanationInSchema:
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        d = src_dict.copy()
-        score_run_uuids = cast(List[str], d.pop("score_run_uuids"))
+        from ..models.answer_out_schema import AnswerOutSchema
 
-        score_runs_explanation_in_schema = cls(
-            score_run_uuids=score_run_uuids,
+        d = src_dict.copy()
+        items = []
+        _items = d.pop("items")
+        for items_item_data in _items:
+            items_item = AnswerOutSchema.from_dict(items_item_data)
+
+            items.append(items_item)
+
+        count = d.pop("count")
+
+        paged_answer_out_schema = cls(
+            items=items,
+            count=count,
         )
 
-        score_runs_explanation_in_schema.additional_properties = d
-        return score_runs_explanation_in_schema
+        paged_answer_out_schema.additional_properties = d
+        return paged_answer_out_schema
 
     @property
     def additional_keys(self) -> List[str]:

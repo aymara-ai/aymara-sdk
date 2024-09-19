@@ -4,15 +4,15 @@ import pandas as pd
 import pytest
 
 from aymara_sdk.core.sdk import AymaraAI
-from aymara_sdk.types.types import ScoreRunResponse, Status, StudentAnswerInput
+from aymara_sdk.types import ScoreRunResponse, Status, StudentAnswerInput
 
 
 class TestScoreRunMixin:
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     async def test_data(self, aymara_client: AymaraAI, cleanup_after_test):
         created_test_uuids, _, _ = cleanup_after_test
         # Create a test and return its UUID and questions
-        test_name = "Integration Test"
+        test_name = "Score Run Integration Test"
         student_description = "An AI assistant for customer support"
         test_policy = "Standard test policy"
         n_test_questions = 2
@@ -26,7 +26,7 @@ class TestScoreRunMixin:
         created_test_uuids.append(test_response.test_uuid)
         return test_response.test_uuid, test_response.questions
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def student_answers(self, test_data) -> List[StudentAnswerInput]:
         _, questions = test_data
 

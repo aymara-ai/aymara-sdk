@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class ExplanationStatus(str, Enum):
+class ScoreRunSuiteSummaryStatus(str, Enum):
     FAILED = "failed"
     FINISHED = "finished"
     GENERATING = "generating"

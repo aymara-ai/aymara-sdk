@@ -8,25 +8,25 @@ from typing import Annotated, List, Optional, Union
 import pandas as pd
 from pydantic import BaseModel, Field
 
+from aymara_sdk.generated.aymara_api_client.models import ScoreRunSuiteSummaryOutSchema
 from aymara_sdk.generated.aymara_api_client.models.answer_in_schema import (
     AnswerInSchema,
 )
-from aymara_sdk.generated.aymara_api_client.models.answer_schema import AnswerSchema
-from aymara_sdk.generated.aymara_api_client.models.explanation_status import (
-    ExplanationStatus,
+from aymara_sdk.generated.aymara_api_client.models.answer_out_schema import (
+    AnswerOutSchema,
 )
 from aymara_sdk.generated.aymara_api_client.models.question_schema import QuestionSchema
-from aymara_sdk.generated.aymara_api_client.models.score_run_explanation_out_schema import (
-    ScoreRunExplanationOutSchema,
-)
 from aymara_sdk.generated.aymara_api_client.models.score_run_out_schema import (
     ScoreRunOutSchema,
 )
 from aymara_sdk.generated.aymara_api_client.models.score_run_status import (
     ScoreRunStatus,
 )
-from aymara_sdk.generated.aymara_api_client.models.score_runs_explanation_out_schema import (
-    ScoreRunsExplanationOutSchema,
+from aymara_sdk.generated.aymara_api_client.models.score_run_suite_summary_status import (
+    ScoreRunSuiteSummaryStatus,
+)
+from aymara_sdk.generated.aymara_api_client.models.score_run_summary_out_schema import (
+    ScoreRunSummaryOutSchema,
 )
 from aymara_sdk.generated.aymara_api_client.models.test_out_schema import TestOutSchema
 from aymara_sdk.generated.aymara_api_client.models.test_status import TestStatus
@@ -41,7 +41,7 @@ class Status(Enum):
 
     @classmethod
     def from_api_status(
-        cls, api_status: Union[TestStatus, ScoreRunStatus, ExplanationStatus]
+        cls, api_status: Union[TestStatus, ScoreRunStatus, ScoreRunSuiteSummaryStatus]
     ) -> "Status":
         """
         Transform an API status to the user-friendly status.
@@ -65,12 +65,12 @@ class Status(Enum):
                 ScoreRunStatus.FINISHED: cls.COMPLETED,
                 ScoreRunStatus.FAILED: cls.FAILED,
             }
-        elif isinstance(api_status, ExplanationStatus):
+        elif isinstance(api_status, ScoreRunSuiteSummaryStatus):
             status_mapping = {
-                ExplanationStatus.RECORD_CREATED: cls.PENDING,
-                ExplanationStatus.GENERATING: cls.PENDING,
-                ExplanationStatus.FINISHED: cls.COMPLETED,
-                ExplanationStatus.FAILED: cls.FAILED,
+                ScoreRunSuiteSummaryStatus.RECORD_CREATED: cls.PENDING,
+                ScoreRunSuiteSummaryStatus.GENERATING: cls.PENDING,
+                ScoreRunSuiteSummaryStatus.FINISHED: cls.COMPLETED,
+                ScoreRunSuiteSummaryStatus.FAILED: cls.FAILED,
             }
         else:
             raise ValueError(f"Unexpected status type: {type(api_status)}")
@@ -210,7 +210,7 @@ class ScoredAnswerResponse(BaseModel):
     ]
 
     @classmethod
-    def from_answer_out_schema(cls, answer: AnswerSchema) -> "ScoredAnswerResponse":
+    def from_answer_out_schema(cls, answer: AnswerOutSchema) -> "ScoredAnswerResponse":
         return cls(
             answer_uuid=answer.answer_uuid,
             question_uuid=answer.question.question_uuid,
@@ -263,6 +263,7 @@ class ScoreRunResponse(BaseModel):
                     "test_name": self.test_name,
                     "question_uuid": answer.question_uuid,
                     "answer_uuid": answer.answer_uuid,
+                    "is_passed": answer.is_passed,
                     "question_text": answer.question_text,
                     "answer_text": answer.answer_text,
                     "explanation": answer.explanation,
@@ -280,7 +281,7 @@ class ScoreRunResponse(BaseModel):
     def from_score_run_out_schema_and_answers(
         cls,
         score_run: ScoreRunOutSchema,
-        answers: Optional[List[AnswerSchema]] = None,
+        answers: Optional[List[AnswerOutSchema]] = None,
         failure_reason: Optional[str] = None,
     ) -> "ScoreRunResponse":
         return cls(
@@ -299,57 +300,57 @@ class ScoreRunResponse(BaseModel):
         )
 
 
-class ScoreRunExplanationResponse(BaseModel):
+class ScoreRunSummaryResponse(BaseModel):
     """
-    Score run explanation item response.
+    Score run summary response.
     """
 
-    score_run_explanation_uuid: Annotated[
-        str, Field(..., description="UUID of the score run explanation")
+    score_run_summary_uuid: Annotated[
+        str, Field(..., description="UUID of the score run summary")
     ]
     explanation_summary: Annotated[
-        str, Field(..., description="Summary of the explanation")
+        str, Field(..., description="Summary of the explanations")
     ]
     improvement_advice: Annotated[str, Field(..., description="Advice for improvement")]
     test_name: Annotated[str, Field(..., description="Name of the test")]
     score_run_uuid: Annotated[str, Field(..., description="UUID of the score run")]
 
     @classmethod
-    def from_score_run_explanation_out_schema(
-        cls, explanation: ScoreRunExplanationOutSchema
-    ) -> "ScoreRunExplanationResponse":
+    def from_score_run_summary_out_schema(
+        cls, summary: ScoreRunSummaryOutSchema
+    ) -> "ScoreRunSummaryResponse":
         return cls(
-            score_run_explanation_uuid=explanation.score_run_explanation_uuid,
-            explanation_summary=explanation.explanation_summary,
-            improvement_advice=explanation.improvement_advice,
-            test_name=explanation.score_run.test.test_name,
-            score_run_uuid=explanation.score_run.score_run_uuid,
+            score_run_summary_uuid=summary.score_run_summary_uuid,
+            explanation_summary=summary.explanation_summary,
+            improvement_advice=summary.improvement_advice,
+            test_name=summary.score_run.test.test_name,
+            score_run_uuid=summary.score_run.score_run_uuid,
         )
 
 
-class ScoreRunsExplanationResponse(BaseModel):
+class ScoreRunSuiteSummaryResponse(BaseModel):
     """
-    Score run explanation response.
+    Score run suite summary response.
     """
 
-    score_runs_explanation_uuid: Annotated[
-        str, Field(..., description="UUID of the score run explanation")
+    score_run_suite_summary_uuid: Annotated[
+        str, Field(..., description="UUID of the score run suite summary")
     ]
 
-    score_run_explanation_status: Annotated[
-        Status, Field(..., description="Status of the score run explanation")
+    score_run_suite_summary_status: Annotated[
+        Status, Field(..., description="Status of the score run suite summary")
     ]
 
-    overall_explanation_summary: Annotated[
-        str, Field(..., description="Summary of the overall explanation")
+    overall_summary: Annotated[
+        Optional[str], Field(None, description="Summary of the overall explanation")
     ]
     overall_improvement_advice: Annotated[
-        str, Field(..., description="Advice for improvement")
+        Optional[str], Field(None, description="Advice for improvement")
     ]
 
-    score_run_explanations: Annotated[
-        List[ScoreRunExplanationResponse],
-        Field(..., description="List of score run explanations"),
+    score_run_summaries: Annotated[
+        List[ScoreRunSummaryResponse],
+        Field(..., description="List of score run summaries"),
     ]
 
     failure_reason: Annotated[
@@ -360,41 +361,38 @@ class ScoreRunsExplanationResponse(BaseModel):
         """Create a scores DataFrame."""
         rows = [
             {
-                "score_run_uuid": None,
-                "explanation_uuid": self.score_runs_explanation_uuid,
+                "score_run_suite_summary_uuid": self.score_run_suite_summary_uuid,
                 "test_name": "Overall",
-                "explanation_summary": self.overall_explanation_summary,
+                "explanation_summary": self.overall_summary,
                 "improvement_advice": self.overall_improvement_advice,
             }
         ] + [
             {
-                "score_run_uuid": explanation.score_run_uuid,
-                "explanation_uuid": explanation.score_run_explanation_uuid,
-                "test_name": explanation.test_name,
-                "explanation_summary": explanation.explanation_summary,
-                "improvement_advice": explanation.improvement_advice,
+                "score_run_suite_summary_uuid": self.score_run_suite_summary_uuid,
+                "score_run_summary_uuid": summary.score_run_summary_uuid,
+                "test_name": summary.test_name,
+                "explanation_summary": summary.explanation_summary,
+                "improvement_advice": summary.improvement_advice,
             }
-            for explanation in self.score_run_explanations
+            for summary in self.score_run_summaries
         ]
 
         return pd.DataFrame(rows)
 
     @classmethod
-    def from_explanation_out_schema_and_failure_reason(
+    def from_summary_out_schema_and_failure_reason(
         cls,
-        explanation: ScoreRunsExplanationOutSchema,
+        summary: ScoreRunSuiteSummaryOutSchema,
         failure_reason: Optional[str] = None,
-    ) -> "ScoreRunsExplanationResponse":
+    ) -> "ScoreRunSuiteSummaryResponse":
         return cls(
-            score_runs_explanation_uuid=explanation.score_runs_explanation_uuid,
-            score_run_explanation_status=Status.from_api_status(explanation.status),
-            overall_explanation_summary=explanation.overall_explanation_summary,
-            overall_improvement_advice=explanation.overall_improvement_advice,
-            score_run_explanations=[
-                ScoreRunExplanationResponse.from_score_run_explanation_out_schema(
-                    explanation
-                )
-                for explanation in explanation.score_run_explanations
+            score_run_suite_summary_uuid=summary.score_run_suite_summary_uuid,
+            score_run_suite_summary_status=Status.from_api_status(summary.status),
+            overall_summary=summary.overall_summary,
+            overall_improvement_advice=summary.overall_improvement_advice,
+            score_run_summaries=[
+                ScoreRunSummaryResponse.from_score_run_summary_out_schema(summary)
+                for summary in summary.score_run_summaries
             ],
             failure_reason=failure_reason,
         )

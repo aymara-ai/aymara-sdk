@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from aymara_sdk.generated.aymara_api_client import models
-from aymara_sdk.types.types import ScoreRunResponse, Status, StudentAnswerInput
+from aymara_sdk.types import ScoreRunResponse, Status, StudentAnswerInput
 
 
 def test_score_test(aymara_client):
@@ -39,9 +39,9 @@ def test_score_test(aymara_client):
                 n_test_questions=10,
             ),
         )
-        mock_get_answers.return_value.parsed = models.PagedAnswerSchema(
+        mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
-                models.AnswerSchema(
+                models.AnswerOutSchema(
                     answer_uuid="a1",
                     answer_text="Answer 1",
                     question=models.QuestionSchema(
@@ -99,9 +99,9 @@ async def test_score_test_async(aymara_client):
                 n_test_questions=10,
             ),
         )
-        mock_get_answers.return_value.parsed = models.PagedAnswerSchema(
+        mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
-                models.AnswerSchema(
+                models.AnswerOutSchema(
                     answer_uuid="a1",
                     answer_text="Answer 1",
                     question=models.QuestionSchema(
@@ -144,9 +144,9 @@ def test_get_score_run(aymara_client):
                 n_test_questions=10,
             ),
         )
-        mock_get_answers.return_value.parsed = models.PagedAnswerSchema(
+        mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
-                models.AnswerSchema(
+                models.AnswerOutSchema(
                     answer_uuid="a1",
                     answer_text="Answer 1",
                     question=models.QuestionSchema(
@@ -188,9 +188,9 @@ async def test_get_score_run_async(aymara_client):
                 n_test_questions=10,
             ),
         )
-        mock_get_answers.return_value.parsed = models.PagedAnswerSchema(
+        mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
-                models.AnswerSchema(
+                models.AnswerOutSchema(
                     answer_uuid="a1",
                     answer_text="Answer 1",
                     question=models.QuestionSchema(
@@ -774,9 +774,9 @@ def test_get_all_score_run_answers_sync(aymara_client):
                 "Response",
                 (),
                 {
-                    "parsed": models.PagedAnswerSchema(
+                    "parsed": models.PagedAnswerOutSchema(
                         items=[
-                            models.AnswerSchema(
+                            models.AnswerOutSchema(
                                 answer_uuid="a1",
                                 answer_text="Answer 1",
                                 question=models.QuestionSchema(
@@ -797,9 +797,9 @@ def test_get_all_score_run_answers_sync(aymara_client):
                 "Response",
                 (),
                 {
-                    "parsed": models.PagedAnswerSchema(
+                    "parsed": models.PagedAnswerOutSchema(
                         items=[
-                            models.AnswerSchema(
+                            models.AnswerOutSchema(
                                 answer_uuid="a2",
                                 answer_text="Answer 2",
                                 question=models.QuestionSchema(
@@ -822,7 +822,7 @@ def test_get_all_score_run_answers_sync(aymara_client):
 
         assert isinstance(result, list)
         assert len(result) == 2
-        assert all(isinstance(item, models.AnswerSchema) for item in result)
+        assert all(isinstance(item, models.AnswerOutSchema) for item in result)
         assert mock_get_answers.call_count == 2
 
 
@@ -836,9 +836,9 @@ async def test_get_all_score_run_answers_async(aymara_client):
                 "Response",
                 (),
                 {
-                    "parsed": models.PagedAnswerSchema(
+                    "parsed": models.PagedAnswerOutSchema(
                         items=[
-                            models.AnswerSchema(
+                            models.AnswerOutSchema(
                                 answer_uuid="a1",
                                 answer_text="Answer 1",
                                 question=models.QuestionSchema(
@@ -859,9 +859,9 @@ async def test_get_all_score_run_answers_async(aymara_client):
                 "Response",
                 (),
                 {
-                    "parsed": models.PagedAnswerSchema(
+                    "parsed": models.PagedAnswerOutSchema(
                         items=[
-                            models.AnswerSchema(
+                            models.AnswerOutSchema(
                                 answer_uuid="a2",
                                 answer_text="Answer 2",
                                 question=models.QuestionSchema(
@@ -884,7 +884,7 @@ async def test_get_all_score_run_answers_async(aymara_client):
 
         assert isinstance(result, list)
         assert len(result) == 2
-        assert all(isinstance(item, models.AnswerSchema) for item in result)
+        assert all(isinstance(item, models.AnswerOutSchema) for item in result)
         assert mock_get_answers.call_count == 2
 
 

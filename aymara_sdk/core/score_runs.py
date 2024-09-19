@@ -13,7 +13,7 @@ from aymara_sdk.generated.aymara_api_client.api.score_runs import (
     get_score_run_answers,
     list_score_runs,
 )
-from aymara_sdk.types.types import (
+from aymara_sdk.types import (
     ScoreRunResponse,
     Status,
     StudentAnswerInput,
@@ -65,7 +65,7 @@ class ScoreRunMixin(AymaraAIProtocol):
     ) -> Union[ScoreRunResponse, Coroutine[ScoreRunResponse, None, None]]:
         self._validate_student_answers(student_answers)
 
-        score_data = models.ScoreRunSchema(
+        score_data = models.ScoreRunInSchema(
             test_uuid=test_uuid,
             answers=[
                 StudentAnswerInput.to_answer_in_schema(student_answer)
@@ -255,7 +255,7 @@ class ScoreRunMixin(AymaraAIProtocol):
 
     # Helper Methods
     def _create_and_wait_for_score_impl_sync(
-        self, score_data: models.ScoreRunSchema
+        self, score_data: models.ScoreRunInSchema
     ) -> ScoreRunResponse:
         start_time = time.time()
         response = create_score_run.sync_detailed(client=self.client, body=score_data)
@@ -312,7 +312,7 @@ class ScoreRunMixin(AymaraAIProtocol):
                 time.sleep(POLLING_INTERVAL)
 
     async def _create_and_wait_for_score_impl_async(
-        self, score_data: models.ScoreRunSchema
+        self, score_data: models.ScoreRunInSchema
     ) -> ScoreRunResponse:
         start_time = time.time()
         response = await create_score_run.asyncio_detailed(
@@ -375,7 +375,7 @@ class ScoreRunMixin(AymaraAIProtocol):
 
     def _get_all_score_run_answers_sync(
         self, score_run_uuid: str
-    ) -> List[models.AnswerSchema]:
+    ) -> List[models.AnswerOutSchema]:
         answers = []
         offset = 0
         while True:
@@ -395,7 +395,7 @@ class ScoreRunMixin(AymaraAIProtocol):
 
     async def _get_all_score_run_answers_async(
         self, score_run_uuid: str
-    ) -> List[models.AnswerSchema]:
+    ) -> List[models.AnswerOutSchema]:
         answers = []
         offset = 0
         while True:

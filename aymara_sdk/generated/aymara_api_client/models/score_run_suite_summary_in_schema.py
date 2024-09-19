@@ -1,29 +1,29 @@
-from typing import Any, Dict, List, Type, TypeVar
+from typing import Any, Dict, List, Type, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="OrganizationOutSchema")
+T = TypeVar("T", bound="ScoreRunSuiteSummaryInSchema")
 
 
 @_attrs_define
-class OrganizationOutSchema:
+class ScoreRunSuiteSummaryInSchema:
     """
     Attributes:
-        name (str):
+        score_run_uuids (List[str]):
     """
 
-    name: str
+    score_run_uuids: List[str]
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        name = self.name
+        score_run_uuids = self.score_run_uuids
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "name": name,
+                "score_run_uuids": score_run_uuids,
             }
         )
 
@@ -32,14 +32,14 @@ class OrganizationOutSchema:
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         d = src_dict.copy()
-        name = d.pop("name")
+        score_run_uuids = cast(List[str], d.pop("score_run_uuids"))
 
-        organization_out_schema = cls(
-            name=name,
+        score_run_suite_summary_in_schema = cls(
+            score_run_uuids=score_run_uuids,
         )
 
-        organization_out_schema.additional_properties = d
-        return organization_out_schema
+        score_run_suite_summary_in_schema.additional_properties = d
+        return score_run_suite_summary_in_schema
 
     @property
     def additional_keys(self) -> List[str]:

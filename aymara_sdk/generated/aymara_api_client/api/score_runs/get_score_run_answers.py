@@ -6,7 +6,7 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.error_schema import ErrorSchema
-from ...models.paged_answer_schema import PagedAnswerSchema
+from ...models.paged_answer_out_schema import PagedAnswerOutSchema
 from ...types import UNSET, Response, Unset
 
 
@@ -38,9 +38,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[ErrorSchema, PagedAnswerSchema]]:
+) -> Optional[Union[ErrorSchema, PagedAnswerOutSchema]]:
     if response.status_code == HTTPStatus.OK:
-        response_200 = PagedAnswerSchema.from_dict(response.json())
+        response_200 = PagedAnswerOutSchema.from_dict(response.json())
 
         return response_200
     if response.status_code == HTTPStatus.NOT_FOUND:
@@ -55,7 +55,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[ErrorSchema, PagedAnswerSchema]]:
+) -> Response[Union[ErrorSchema, PagedAnswerOutSchema]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -71,7 +71,7 @@ def sync_detailed(
     workspace_uuid: Union[Unset, str] = UNSET,
     limit: Union[Unset, int] = 100,
     offset: Union[Unset, int] = 0,
-) -> Response[Union[ErrorSchema, PagedAnswerSchema]]:
+) -> Response[Union[ErrorSchema, PagedAnswerOutSchema]]:
     """Get Score Run Answers
 
     Args:
@@ -85,7 +85,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[ErrorSchema, PagedAnswerSchema]]
+        Response[Union[ErrorSchema, PagedAnswerOutSchema]]
     """
 
     kwargs = _get_kwargs(
@@ -109,7 +109,7 @@ def sync(
     workspace_uuid: Union[Unset, str] = UNSET,
     limit: Union[Unset, int] = 100,
     offset: Union[Unset, int] = 0,
-) -> Optional[Union[ErrorSchema, PagedAnswerSchema]]:
+) -> Optional[Union[ErrorSchema, PagedAnswerOutSchema]]:
     """Get Score Run Answers
 
     Args:
@@ -123,7 +123,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[ErrorSchema, PagedAnswerSchema]
+        Union[ErrorSchema, PagedAnswerOutSchema]
     """
 
     return sync_detailed(
@@ -142,7 +142,7 @@ async def asyncio_detailed(
     workspace_uuid: Union[Unset, str] = UNSET,
     limit: Union[Unset, int] = 100,
     offset: Union[Unset, int] = 0,
-) -> Response[Union[ErrorSchema, PagedAnswerSchema]]:
+) -> Response[Union[ErrorSchema, PagedAnswerOutSchema]]:
     """Get Score Run Answers
 
     Args:
@@ -156,7 +156,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[ErrorSchema, PagedAnswerSchema]]
+        Response[Union[ErrorSchema, PagedAnswerOutSchema]]
     """
 
     kwargs = _get_kwargs(
@@ -178,7 +178,7 @@ async def asyncio(
     workspace_uuid: Union[Unset, str] = UNSET,
     limit: Union[Unset, int] = 100,
     offset: Union[Unset, int] = 0,
-) -> Optional[Union[ErrorSchema, PagedAnswerSchema]]:
+) -> Optional[Union[ErrorSchema, PagedAnswerOutSchema]]:
     """Get Score Run Answers
 
     Args:
@@ -192,7 +192,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[ErrorSchema, PagedAnswerSchema]
+        Union[ErrorSchema, PagedAnswerOutSchema]
     """
 
     return (

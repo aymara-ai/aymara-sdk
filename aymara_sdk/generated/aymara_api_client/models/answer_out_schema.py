@@ -9,11 +9,11 @@ if TYPE_CHECKING:
     from ..models.question_schema import QuestionSchema
 
 
-T = TypeVar("T", bound="AnswerSchema")
+T = TypeVar("T", bound="AnswerOutSchema")
 
 
 @_attrs_define
-class AnswerSchema:
+class AnswerOutSchema:
     """
     Attributes:
         answer_uuid (str):
@@ -125,7 +125,7 @@ class AnswerSchema:
 
         is_passed = _parse_is_passed(d.pop("is_passed", UNSET))
 
-        answer_schema = cls(
+        answer_out_schema = cls(
             answer_uuid=answer_uuid,
             question=question,
             answer_text=answer_text,
@@ -134,8 +134,8 @@ class AnswerSchema:
             is_passed=is_passed,
         )
 
-        answer_schema.additional_properties = d
-        return answer_schema
+        answer_out_schema.additional_properties = d
+        return answer_out_schema
 
     @property
     def additional_keys(self) -> List[str]:

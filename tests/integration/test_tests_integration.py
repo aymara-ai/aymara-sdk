@@ -230,6 +230,6 @@ class TestTestMixin:
         with pytest.raises(ValueError):
             aymara_client.delete_test("nonexistent_uuid")
 
-    async def test_delete_nonexistent_test_async(self, aymara_client):
+    async def test_delete_nonexistent_test_async(self, aymara_client: AymaraAI):
         with pytest.raises(ValueError):
             await aymara_client.delete_test_async("nonexistent_uuid")

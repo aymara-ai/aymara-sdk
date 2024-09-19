@@ -4,21 +4,21 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 if TYPE_CHECKING:
-    from ..models.score_runs_explanation_out_schema import ScoreRunsExplanationOutSchema
+    from ..models.score_run_suite_summary_out_schema import ScoreRunSuiteSummaryOutSchema
 
 
-T = TypeVar("T", bound="PagedScoreRunsExplanationOutSchema")
+T = TypeVar("T", bound="PagedScoreRunSuiteSummaryOutSchema")
 
 
 @_attrs_define
-class PagedScoreRunsExplanationOutSchema:
+class PagedScoreRunSuiteSummaryOutSchema:
     """
     Attributes:
-        items (List['ScoreRunsExplanationOutSchema']):
+        items (List['ScoreRunSuiteSummaryOutSchema']):
         count (int):
     """
 
-    items: List["ScoreRunsExplanationOutSchema"]
+    items: List["ScoreRunSuiteSummaryOutSchema"]
     count: int
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -43,25 +43,25 @@ class PagedScoreRunsExplanationOutSchema:
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        from ..models.score_runs_explanation_out_schema import ScoreRunsExplanationOutSchema
+        from ..models.score_run_suite_summary_out_schema import ScoreRunSuiteSummaryOutSchema
 
         d = src_dict.copy()
         items = []
         _items = d.pop("items")
         for items_item_data in _items:
-            items_item = ScoreRunsExplanationOutSchema.from_dict(items_item_data)
+            items_item = ScoreRunSuiteSummaryOutSchema.from_dict(items_item_data)
 
             items.append(items_item)
 
         count = d.pop("count")
 
-        paged_score_runs_explanation_out_schema = cls(
+        paged_score_run_suite_summary_out_schema = cls(
             items=items,
             count=count,
         )
 
-        paged_score_runs_explanation_out_schema.additional_properties = d
-        return paged_score_runs_explanation_out_schema
+        paged_score_run_suite_summary_out_schema.additional_properties = d
+        return paged_score_run_suite_summary_out_schema
 
     @property
     def additional_keys(self) -> List[str]:
