@@ -35,7 +35,7 @@ def pytest_collection_modifyitems(items):
         async_test.add_marker(session_scope_marker, append=False)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="session")
 def cleanup_after_test(aymara_client: AymaraAI):
     created_test_uuids = []
     created_score_run_uuids = []

@@ -7,7 +7,7 @@ from aymara_sdk.types import ScoreRunSuiteSummaryResponse, Status, StudentAnswer
 
 
 class TestSummaryMixin:
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     async def test_data(self, aymara_client: AymaraAI, cleanup_after_test):
         created_test_uuids, _, __ = cleanup_after_test
         # Create a test and return its UUID and questions
@@ -25,7 +25,7 @@ class TestSummaryMixin:
         created_test_uuids.append(test_response.test_uuid)
         return test_response.test_uuid, test_response.questions
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def student_answers(self, test_data) -> List[StudentAnswerInput]:
         _, questions = test_data
         return [
@@ -36,14 +36,14 @@ class TestSummaryMixin:
             for question in questions
         ]
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     async def score_runs(
         self, aymara_client: AymaraAI, test_data, student_answers, cleanup_after_test
     ):
         _, created_score_run_uuids, __ = cleanup_after_test
         test_uuid, _ = test_data
         score_runs = []
-        for _ in range(2):  # Create 2 score runs
+        for _ in range(3):  # Create 3 score runs
             score_response = await aymara_client.score_test_async(
                 test_uuid, student_answers
             )

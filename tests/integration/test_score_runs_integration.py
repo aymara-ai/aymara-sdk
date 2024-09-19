@@ -8,7 +8,7 @@ from aymara_sdk.types import ScoreRunResponse, Status, StudentAnswerInput
 
 
 class TestScoreRunMixin:
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     async def test_data(self, aymara_client: AymaraAI, cleanup_after_test):
         created_test_uuids, _, _ = cleanup_after_test
         # Create a test and return its UUID and questions
@@ -26,7 +26,7 @@ class TestScoreRunMixin:
         created_test_uuids.append(test_response.test_uuid)
         return test_response.test_uuid, test_response.questions
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def student_answers(self, test_data) -> List[StudentAnswerInput]:
         _, questions = test_data
 
