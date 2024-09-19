@@ -30,6 +30,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print concurrency group
+        run: echo "${{ github.workflow }}-${{ github.ref }}"
   test:
     runs-on: ubuntu-latest
     steps:
