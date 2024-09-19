@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Print concurrency group
-        run: echo "${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+        run: echo "${{ github.workflow }}-${{ github.head_ref || github.ref_name }}"
   test:
     runs-on: ubuntu-latest
     steps:
