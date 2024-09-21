@@ -48,13 +48,18 @@ def cleanup_after_test(aymara_client: AymaraAI):
             aymara_client.delete_test(test_uuid)
         except ValueError:
             pass
+    print("Deleted %s tests", len(created_test_uuids))
+
     for score_run_uuid in created_score_run_uuids:
         try:
             aymara_client.delete_score_run(score_run_uuid)
         except ValueError:
             pass
+    print("Deleted %s score runs", len(created_score_run_uuids))
+
     for summary_uuid in created_summary_uuids:
         try:
             aymara_client.delete_summary(summary_uuid)
         except ValueError:
             pass
+    print("Deleted %s summaries", len(created_summary_uuids))
