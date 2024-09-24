@@ -2,13 +2,13 @@
 
 <!-- sphinx-doc-begin -->
 
-Hi! 👋 We're [Aymara](https://www.aymara.ai/).
+Hi! 👋 We're [Aymara](https://aymara.ai/).
 
 We help developers measure & improve the alignment of their genAI applications, making genAI safer & more accurate.
 
 So we built this library for you.
 
-Aymara Python SDK provides convenient access to the Aymara REST API from Python 3.11+. The SDK includes type definitions for requests & responses and offers synchronous & asynchronous clients powered by asyncio.
+Aymara Python SDK provides convenient access to the Aymara REST API from Python 3.9+. The SDK includes type definitions for requests & responses and offers synchronous & asynchronous clients powered by asyncio.
 
 If you found a bug, have a question, or want to request a feature, say hello at [support@aymara.ai](mailto:support@aymara.ai) or [open an issue](https://github.com/aymara-ai/aymara-ai/issues/new) on our GitHub repo.
 

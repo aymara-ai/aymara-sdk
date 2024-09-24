@@ -25,6 +25,7 @@ extensions = [
 ]
 
 nb_execution_mode = "off"
+pygments_style = "sphinx"
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -39,6 +40,12 @@ html_theme_options = {
         "image_light": "_static/logo-wide-black.png",
         "image_dark": "_static/logo-wide-white.png",
     },
+    "extra_css": {
+        ".code-cell": {
+            "white-space": "pre-wrap",
+            "word-wrap": "break-word",
+        }
+    }
 }
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]

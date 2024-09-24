@@ -189,7 +189,7 @@ class AymaraAI(
         ]
 
         if ylim_min is None:
-            ylim_min = math.floor(min(pass_rates) * 10) / 10
+            ylim_min = math.floor((min(pass_rates) - .001) * 10) / 10
 
         fig, ax = plt.subplots()
 

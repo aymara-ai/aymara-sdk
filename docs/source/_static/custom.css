@@ -1,0 +1,10 @@
+div.nbinput .highlight pre,
+div.nboutput .highlight pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+div.highlight pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
