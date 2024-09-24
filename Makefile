@@ -6,8 +6,9 @@ DOCS_DIR = docs
 # Default target
 .PHONY: docs
 docs:
-	@rm -rf $(DOCS_DIR)/build
+	@cp aymara_sdk/examples/safety/safety_notebook.ipynb $(DOCS_DIR)/source/
 	@$(MAKE) -C $(DOCS_DIR) html
+	@rm $(DOCS_DIR)/source/safety_notebook.ipynb
 
 # Other common targets
 .PHONY: clean

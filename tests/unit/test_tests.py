@@ -1,10 +1,11 @@
+from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pandas as pd
 import pytest
 
 from aymara_sdk.generated.aymara_api_client import models
-from aymara_sdk.types import Status, TestResponse
+from aymara_sdk.types import ListTestResponse, Status, TestResponse
 from aymara_sdk.utils.constants import (
     DEFAULT_CHAR_TO_TOKEN_MULTIPLIER,
     DEFAULT_MAX_TOKENS,
@@ -29,6 +30,8 @@ def test_create_test(aymara_client):
             test_type=models.TestType.SAFETY,
             organization_name="Test Organization",
             n_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_create_test.return_value.status_code = 200
         mock_get_test.return_value.parsed = models.TestOutSchema(
@@ -38,6 +41,8 @@ def test_create_test(aymara_client):
             test_type=models.TestType.SAFETY,
             organization_name="Test Organization",
             n_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
@@ -75,6 +80,8 @@ async def test_create_test_async(aymara_client):
             test_type=models.TestType.SAFETY,
             organization_name="Test Organization",
             n_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_create_test.return_value.status_code = 200
         mock_get_test.return_value.parsed = models.TestOutSchema(
@@ -84,6 +91,8 @@ async def test_create_test_async(aymara_client):
             test_type=models.TestType.SAFETY,
             organization_name="Test Organization",
             n_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
@@ -129,6 +138,8 @@ def test_get_test(aymara_client):
             test_type=models.TestType.SAFETY,
             organization_name="Test Organization",
             n_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
@@ -162,6 +173,8 @@ async def test_get_test_async(aymara_client):
             test_type=models.TestType.SAFETY,
             organization_name="Test Organization",
             n_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
@@ -192,6 +205,8 @@ def test_list_tests(aymara_client):
                     test_type=models.TestType.SAFETY,
                     organization_name="Test Organization",
                     n_test_questions=10,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
                 models.TestOutSchema(
                     test_uuid="test2",
@@ -200,6 +215,8 @@ def test_list_tests(aymara_client):
                     test_type=models.TestType.SAFETY,
                     organization_name="Test Organization",
                     n_test_questions=10,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
             ],
             count=2,
@@ -208,11 +225,11 @@ def test_list_tests(aymara_client):
 
         result = aymara_client.list_tests()
 
-        assert isinstance(result, list)
+        assert isinstance(result, ListTestResponse)
         assert len(result) == 2
         assert all(isinstance(item, TestResponse) for item in result)
 
-        df_result = aymara_client.list_tests(as_df=True)
+        df_result = result.to_df()
         assert isinstance(df_result, pd.DataFrame)
         assert len(df_result) == 2
 
@@ -229,6 +246,8 @@ async def test_list_tests_async(aymara_client):
                     test_type=models.TestType.SAFETY,
                     organization_name="Test Organization",
                     n_test_questions=10,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
                 models.TestOutSchema(
                     test_uuid="test2",
@@ -237,6 +256,8 @@ async def test_list_tests_async(aymara_client):
                     test_type=models.TestType.SAFETY,
                     organization_name="Test Organization",
                     n_test_questions=10,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
             ],
             count=2,
@@ -245,11 +266,11 @@ async def test_list_tests_async(aymara_client):
 
         result = await aymara_client.list_tests_async()
 
-        assert isinstance(result, list)
+        assert isinstance(result, ListTestResponse)
         assert len(result) == 2
         assert all(isinstance(item, TestResponse) for item in result)
 
-        df_result = await aymara_client.list_tests_async(as_df=True)
+        df_result = result.to_df()
         assert isinstance(df_result, pd.DataFrame)
         assert len(df_result) == 2
 
@@ -321,6 +342,8 @@ def test_create_and_wait_for_test_impl_sync_success(aymara_client):
         test_type=models.TestType.SAFETY,
         organization_name="Test Organization",
         n_test_questions=10,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
     mock_create.return_value.status_code = 200
 
@@ -332,6 +355,8 @@ def test_create_and_wait_for_test_impl_sync_success(aymara_client):
         test_type=models.TestType.SAFETY,
         organization_name="Test Organization",
         n_test_questions=10,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
     mock_get.return_value.status_code = 200
 
@@ -373,6 +398,8 @@ async def test_create_and_wait_for_test_impl_async_success(aymara_client):
         test_type=models.TestType.SAFETY,
         organization_name="Test Organization",
         n_test_questions=10,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
     mock_create.return_value.status_code = 200
 
@@ -384,6 +411,8 @@ async def test_create_and_wait_for_test_impl_async_success(aymara_client):
         test_type=models.TestType.SAFETY,
         organization_name="Test Organization",
         n_test_questions=10,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
     mock_get.return_value.status_code = 200
 
@@ -424,6 +453,8 @@ def test_create_and_wait_for_test_impl_failure_sync(aymara_client):
         test_type=models.TestType.SAFETY,
         organization_name="Test Organization",
         n_test_questions=10,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
     mock_create.return_value.status_code = 200
 
@@ -435,6 +466,8 @@ def test_create_and_wait_for_test_impl_failure_sync(aymara_client):
         test_type=models.TestType.SAFETY,
         organization_name="Test Organization",
         n_test_questions=10,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
     mock_get.return_value.status_code = 200
 
@@ -467,6 +500,8 @@ async def test_create_and_wait_for_test_impl_failure_async(aymara_client):
         test_type=models.TestType.SAFETY,
         organization_name="Test Organization",
         n_test_questions=10,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
     mock_create.return_value.status_code = 200
 
@@ -478,6 +513,8 @@ async def test_create_and_wait_for_test_impl_failure_async(aymara_client):
         test_type=models.TestType.SAFETY,
         organization_name="Test Organization",
         n_test_questions=10,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
     mock_get.return_value.status_code = 200
 
@@ -509,6 +546,8 @@ def test_create_and_wait_for_test_impl_timeout_sync(aymara_client):
         test_type=models.TestType.SAFETY,
         organization_name="Test Organization",
         n_test_questions=10,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
     mock_create.return_value.status_code = 200
 
@@ -520,6 +559,8 @@ def test_create_and_wait_for_test_impl_timeout_sync(aymara_client):
         test_type=models.TestType.SAFETY,
         organization_name="Test Organization",
         n_test_questions=10,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
     mock_get.return_value.status_code = 200
 
@@ -568,6 +609,8 @@ async def test_create_and_wait_for_test_impl_timeout_async(aymara_client):
         test_type=models.TestType.SAFETY,
         organization_name="Test Organization",
         n_test_questions=10,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
     mock_create.return_value.status_code = 200
 
@@ -579,6 +622,8 @@ async def test_create_and_wait_for_test_impl_timeout_async(aymara_client):
         test_type=models.TestType.SAFETY,
         organization_name="Test Organization",
         n_test_questions=10,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
     mock_get.return_value.status_code = 200
 
@@ -744,6 +789,8 @@ def test_list_tests_pagination(aymara_client):
                     test_type=models.TestType.SAFETY,
                     organization_name="Test Organization",
                     n_test_questions=10,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
                 models.TestOutSchema(
                     test_uuid="test2",
@@ -752,6 +799,8 @@ def test_list_tests_pagination(aymara_client):
                     test_type=models.TestType.SAFETY,
                     organization_name="Test Organization",
                     n_test_questions=10,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
             ],
             count=2,
@@ -760,7 +809,7 @@ def test_list_tests_pagination(aymara_client):
 
         result = aymara_client.list_tests()
 
-        assert isinstance(result, list)
+        assert isinstance(result, ListTestResponse)
         assert len(result) == 2
         assert all(isinstance(item, TestResponse) for item in result)
         assert result[0].test_uuid == "test1"
@@ -785,6 +834,8 @@ def test_logger_progress_bar(aymara_client):
             test_type=models.TestType.SAFETY,
             organization_name="Test Organization",
             n_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_create_test.return_value.status_code = 200
         mock_get_test.side_effect = [
@@ -796,6 +847,8 @@ def test_logger_progress_bar(aymara_client):
                     test_type=models.TestType.SAFETY,
                     organization_name="Test Organization",
                     n_test_questions=10,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
                 status_code=200,
             ),
@@ -807,6 +860,8 @@ def test_logger_progress_bar(aymara_client):
                     test_type=models.TestType.SAFETY,
                     organization_name="Test Organization",
                     n_test_questions=10,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
                 status_code=200,
             ),
@@ -846,6 +901,8 @@ def test_max_wait_time_exceeded(aymara_client):
             test_type=models.TestType.SAFETY,
             organization_name="Test Organization",
             n_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_create_test.return_value.status_code = 200
         mock_get_test.return_value.parsed = models.TestOutSchema(
@@ -855,6 +912,8 @@ def test_max_wait_time_exceeded(aymara_client):
             test_type=models.TestType.SAFETY,
             organization_name="Test Organization",
             n_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_test.return_value.status_code = 200
 
@@ -887,6 +946,8 @@ def test_status_handling(aymara_client, test_status, expected_status):
             test_type=models.TestType.SAFETY,
             organization_name="Test Organization",
             n_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_test.return_value.status_code = 200
 

@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from unittest.mock import AsyncMock, Mock, patch
 
 import pandas as pd
@@ -64,6 +65,8 @@ def mock_score_run_response():
             )
             for i in range(1, 11)
         ],
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
 
 
@@ -98,6 +101,8 @@ def test_get_pass_stats_multiple_runs():
                 )
                 for j in range(1, 11)
             ],
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         for i in range(1, 4)
     ]
@@ -202,6 +207,8 @@ def test_graph_pass_rates_multiple_runs():
                 )
                 for j in range(1, 11)
             ],
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         for i in range(1, 4)
     ]
