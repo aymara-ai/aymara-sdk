@@ -1,7 +1,9 @@
+import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
+from dateutil.parser import isoparse
 
 from ..models.score_run_suite_summary_status import ScoreRunSuiteSummaryStatus
 from ..types import UNSET, Unset
@@ -20,6 +22,8 @@ class ScoreRunSuiteSummaryOutSchema:
         score_run_suite_summary_uuid (str):
         status (ScoreRunSuiteSummaryStatus):
         score_run_summaries (List['ScoreRunSummaryOutSchema']):
+        created_at (datetime.datetime):
+        updated_at (datetime.datetime):
         overall_improvement_advice (Union[None, Unset, str]):
         overall_summary (Union[None, Unset, str]):
     """
@@ -27,6 +31,8 @@ class ScoreRunSuiteSummaryOutSchema:
     score_run_suite_summary_uuid: str
     status: ScoreRunSuiteSummaryStatus
     score_run_summaries: List["ScoreRunSummaryOutSchema"]
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
     overall_improvement_advice: Union[None, Unset, str] = UNSET
     overall_summary: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -40,6 +46,10 @@ class ScoreRunSuiteSummaryOutSchema:
         for score_run_summaries_item_data in self.score_run_summaries:
             score_run_summaries_item = score_run_summaries_item_data.to_dict()
             score_run_summaries.append(score_run_summaries_item)
+
+        created_at = self.created_at.isoformat()
+
+        updated_at = self.updated_at.isoformat()
 
         overall_improvement_advice: Union[None, Unset, str]
         if isinstance(self.overall_improvement_advice, Unset):
@@ -60,6 +70,8 @@ class ScoreRunSuiteSummaryOutSchema:
                 "score_run_suite_summary_uuid": score_run_suite_summary_uuid,
                 "status": status,
                 "score_run_summaries": score_run_summaries,
+                "created_at": created_at,
+                "updated_at": updated_at,
             }
         )
         if overall_improvement_advice is not UNSET:
@@ -85,6 +97,10 @@ class ScoreRunSuiteSummaryOutSchema:
 
             score_run_summaries.append(score_run_summaries_item)
 
+        created_at = isoparse(d.pop("created_at"))
+
+        updated_at = isoparse(d.pop("updated_at"))
+
         def _parse_overall_improvement_advice(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -107,6 +123,8 @@ class ScoreRunSuiteSummaryOutSchema:
             score_run_suite_summary_uuid=score_run_suite_summary_uuid,
             status=status,
             score_run_summaries=score_run_summaries,
+            created_at=created_at,
+            updated_at=updated_at,
             overall_improvement_advice=overall_improvement_advice,
             overall_summary=overall_summary,
         )

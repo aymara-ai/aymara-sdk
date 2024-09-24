@@ -2,11 +2,12 @@
 Types for the SDK
 """
 
+from datetime import datetime
 from enum import Enum
-from typing import Annotated, List, Optional, Union
+from typing import Annotated, Iterator, List, Optional, Union
 
 import pandas as pd
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, RootModel
 
 from aymara_sdk.generated.aymara_api_client.models import ScoreRunSuiteSummaryOutSchema
 from aymara_sdk.generated.aymara_api_client.models.answer_in_schema import (
@@ -139,6 +140,9 @@ class TestResponse(BaseModel):
     test_uuid: Annotated[str, Field(..., description="UUID of the test")]
     test_name: Annotated[str, Field(..., description="Name of the test")]
     test_status: Annotated[Status, Field(..., description="Status of the test")]
+    created_at: Annotated[
+        datetime, Field(..., description="Timestamp of the test creation")
+    ]
 
     questions: Annotated[
         Optional[List[QuestionResponse]],
@@ -186,8 +190,41 @@ class TestResponse(BaseModel):
             ]
             if questions is not None
             else None,
+            created_at=test.created_at,
             failure_reason=failure_reason,
         )
+
+
+class ListTestResponse(RootModel):
+    """
+    List of tests.
+    """
+
+    root: List[TestResponse]
+
+    def __iter__(self) -> Iterator[TestResponse]:
+        return iter(self.root)
+
+    def __getitem__(self, index) -> TestResponse:
+        return self.root[index]
+
+    def __len__(self) -> int:
+        return len(self.root)
+
+    def to_df(self) -> pd.DataFrame:
+        """Create a DataFrame from the list of TestResponses."""
+        rows = []
+        for test in self.root:
+            row = {
+                "test_uuid": test.test_uuid,
+                "test_name": test.test_name,
+                "test_status": test.test_status.value,
+                "created_at": test.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "failure_reason": test.failure_reason,
+                "num_questions": len(test.questions) if test.questions else 0,
+            }
+            rows.append(row)
+        return pd.DataFrame(rows)
 
 
 class ScoredAnswerResponse(BaseModel):
@@ -239,6 +276,10 @@ class ScoreRunResponse(BaseModel):
     answers: Annotated[
         Optional[List[ScoredAnswerResponse]],
         Field(None, description="List of scored answers"),
+    ]
+
+    created_at: Annotated[
+        datetime, Field(..., description="Timestamp of the score run creation")
     ]
 
     failure_reason: Annotated[
@@ -296,8 +337,42 @@ class ScoreRunResponse(BaseModel):
             ]
             if answers is not None
             else None,
+            created_at=score_run.created_at,
             failure_reason=failure_reason,
         )
+
+
+class ListScoreRunResponse(RootModel):
+    """
+    List of score runs.
+    """
+
+    root: List["ScoreRunResponse"]
+
+    def __iter__(self) -> Iterator[ScoreRunResponse]:
+        return iter(self.root)
+
+    def __getitem__(self, index) -> ScoreRunResponse:
+        return self.root[index]
+
+    def __len__(self) -> int:
+        return len(self.root)
+
+    def to_df(self) -> pd.DataFrame:
+        """Create a DataFrame from the list of ScoreRunResponses."""
+        rows = []
+        for score_run in self.root:
+            row = {
+                "score_run_uuid": score_run.score_run_uuid,
+                "test_uuid": score_run.test_uuid,
+                "test_name": score_run.test_name,
+                "score_run_status": score_run.score_run_status.value,
+                "created_at": score_run.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "failure_reason": score_run.failure_reason,
+                "num_test_questions": score_run.num_test_questions,
+            }
+            rows.append(row)
+        return pd.DataFrame(rows)
 
 
 class ScoreRunSummaryResponse(BaseModel):
@@ -353,6 +428,11 @@ class ScoreRunSuiteSummaryResponse(BaseModel):
         Field(..., description="List of score run summaries"),
     ]
 
+    created_at: Annotated[
+        datetime,
+        Field(..., description="Timestamp of the score run suite summary creation"),
+    ]
+
     failure_reason: Annotated[
         Optional[str], Field(None, description="Reason for the score run failure")
     ]
@@ -394,5 +474,23 @@ class ScoreRunSuiteSummaryResponse(BaseModel):
                 ScoreRunSummaryResponse.from_score_run_summary_out_schema(summary)
                 for summary in summary.score_run_summaries
             ],
+            created_at=summary.created_at,
             failure_reason=failure_reason,
         )
+
+
+class ListScoreRunSuiteSummaryResponse(RootModel):
+    """
+    List of score run suite summaries.
+    """
+
+    root: List["ScoreRunSuiteSummaryResponse"]
+
+    def __iter__(self) -> Iterator[ScoreRunSuiteSummaryResponse]:
+        return iter(self.root)
+
+    def __getitem__(self, index) -> ScoreRunSuiteSummaryResponse:
+        return self.root[index]
+
+    def __len__(self) -> int:
+        return len(self.root)

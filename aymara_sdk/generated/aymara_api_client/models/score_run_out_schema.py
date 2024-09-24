@@ -1,7 +1,9 @@
+import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
+from dateutil.parser import isoparse
 
 from ..models.score_run_status import ScoreRunStatus
 
@@ -19,11 +21,15 @@ class ScoreRunOutSchema:
         score_run_uuid (str):
         score_run_status (ScoreRunStatus):
         test (TestOutSchema):
+        created_at (datetime.datetime):
+        updated_at (datetime.datetime):
     """
 
     score_run_uuid: str
     score_run_status: ScoreRunStatus
     test: "TestOutSchema"
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -33,6 +39,10 @@ class ScoreRunOutSchema:
 
         test = self.test.to_dict()
 
+        created_at = self.created_at.isoformat()
+
+        updated_at = self.updated_at.isoformat()
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -40,6 +50,8 @@ class ScoreRunOutSchema:
                 "score_run_uuid": score_run_uuid,
                 "score_run_status": score_run_status,
                 "test": test,
+                "created_at": created_at,
+                "updated_at": updated_at,
             }
         )
 
@@ -56,10 +68,16 @@ class ScoreRunOutSchema:
 
         test = TestOutSchema.from_dict(d.pop("test"))
 
+        created_at = isoparse(d.pop("created_at"))
+
+        updated_at = isoparse(d.pop("updated_at"))
+
         score_run_out_schema = cls(
             score_run_uuid=score_run_uuid,
             score_run_status=score_run_status,
             test=test,
+            created_at=created_at,
+            updated_at=updated_at,
         )
 
         score_run_out_schema.additional_properties = d

@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest.mock import patch
 
 import pytest
@@ -30,10 +31,16 @@ def test_create_summary(aymara_client):
                             test_type=models.TestType.SAFETY,
                             n_test_questions=10,
                             organization_name="Organization 1",
+                            created_at=datetime.now(),
+                            updated_at=datetime.now(),
                         ),
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
                     ),
                 )
             ],
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_summary.return_value.parsed = models.ScoreRunSuiteSummaryOutSchema(
             score_run_suite_summary_uuid="sum123",
@@ -55,10 +62,16 @@ def test_create_summary(aymara_client):
                             test_type=models.TestType.SAFETY,
                             n_test_questions=10,
                             organization_name="Organization 1",
+                            created_at=datetime.now(),
+                            updated_at=datetime.now(),
                         ),
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
                     ),
                 )
             ],
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
 
         result = aymara_client.create_summary(["score123"])
@@ -95,10 +108,16 @@ async def test_create_summary_async(aymara_client):
                             test_type=models.TestType.SAFETY,
                             n_test_questions=10,
                             organization_name="Organization 1",
+                            created_at=datetime.now(),
+                            updated_at=datetime.now(),
                         ),
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
                     ),
                 )
             ],
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_summary.return_value.parsed = models.ScoreRunSuiteSummaryOutSchema(
             score_run_suite_summary_uuid="sum123",
@@ -120,10 +139,16 @@ async def test_create_summary_async(aymara_client):
                             test_type=models.TestType.SAFETY,
                             n_test_questions=10,
                             organization_name="Organization 1",
+                            created_at=datetime.now(),
+                            updated_at=datetime.now(),
                         ),
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
                     ),
                 )
             ],
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
 
         result = await aymara_client.create_summary_async(["score123"])
@@ -159,10 +184,16 @@ def test_get_summary(aymara_client):
                             test_type=models.TestType.SAFETY,
                             n_test_questions=10,
                             organization_name="Organization 1",
+                            created_at=datetime.now(),
+                            updated_at=datetime.now(),
                         ),
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
                     ),
                 )
             ],
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_summary.return_value.status_code = 200
 
@@ -209,10 +240,16 @@ async def test_get_summary_async(aymara_client):
                             test_type=models.TestType.SAFETY,
                             n_test_questions=10,
                             organization_name="Organization 1",
+                            created_at=datetime.now(),
+                            updated_at=datetime.now(),
                         ),
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
                     ),
                 )
             ],
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_summary.return_value.status_code = 200
 
@@ -261,10 +298,16 @@ def test_list_summaries(aymara_client):
                                     test_type=models.TestType.SAFETY,
                                     n_test_questions=10,
                                     organization_name="Organization 1",
+                                    created_at=datetime.now(),
+                                    updated_at=datetime.now(),
                                 ),
+                                created_at=datetime.now(),
+                                updated_at=datetime.now(),
                             ),
                         )
                     ],
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
                 models.ScoreRunSuiteSummaryOutSchema(
                     score_run_suite_summary_uuid="sum2",
@@ -286,10 +329,16 @@ def test_list_summaries(aymara_client):
                                     test_type=models.TestType.SAFETY,
                                     n_test_questions=10,
                                     organization_name="Organization 2",
+                                    created_at=datetime.now(),
+                                    updated_at=datetime.now(),
                                 ),
+                                created_at=datetime.now(),
+                                updated_at=datetime.now(),
                             ),
                         )
                     ],
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
             ],
         )
@@ -332,10 +381,16 @@ async def test_list_summaries_async(aymara_client):
                                     test_type=models.TestType.SAFETY,
                                     n_test_questions=10,
                                     organization_name="Organization 1",
+                                    created_at=datetime.now(),
+                                    updated_at=datetime.now(),
                                 ),
+                                created_at=datetime.now(),
+                                updated_at=datetime.now(),
                             ),
                         )
                     ],
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
                 models.ScoreRunSuiteSummaryOutSchema(
                     score_run_suite_summary_uuid="sum2",
@@ -357,10 +412,16 @@ async def test_list_summaries_async(aymara_client):
                                     test_type=models.TestType.SAFETY,
                                     n_test_questions=10,
                                     organization_name="Organization 2",
+                                    created_at=datetime.now(),
+                                    updated_at=datetime.now(),
                                 ),
+                                created_at=datetime.now(),
+                                updated_at=datetime.now(),
                             ),
                         )
                     ],
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
             ],
         )

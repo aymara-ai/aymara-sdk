@@ -1,10 +1,16 @@
+from datetime import datetime
 from unittest.mock import patch
 
 import pandas as pd
 import pytest
 
 from aymara_sdk.generated.aymara_api_client import models
-from aymara_sdk.types import ScoreRunResponse, Status, StudentAnswerInput
+from aymara_sdk.types import (
+    ListScoreRunResponse,
+    ScoreRunResponse,
+    Status,
+    StudentAnswerInput,
+)
 
 
 def test_score_test(aymara_client):
@@ -25,7 +31,11 @@ def test_score_test(aymara_client):
                 test_type=models.TestType.SAFETY,
                 organization_name="Organization 1",
                 n_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
@@ -37,7 +47,11 @@ def test_score_test(aymara_client):
                 test_type=models.TestType.SAFETY,
                 organization_name="Organization 1",
                 n_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
@@ -85,7 +99,11 @@ async def test_score_test_async(aymara_client):
                 test_type=models.TestType.SAFETY,
                 organization_name="Organization 1",
                 n_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
@@ -97,7 +115,11 @@ async def test_score_test_async(aymara_client):
                 test_type=models.TestType.SAFETY,
                 organization_name="Organization 1",
                 n_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
@@ -142,7 +164,11 @@ def test_get_score_run(aymara_client):
                 test_type=models.TestType.SAFETY,
                 organization_name="Organization 1",
                 n_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
@@ -186,7 +212,11 @@ async def test_get_score_run_async(aymara_client):
                 test_type=models.TestType.SAFETY,
                 organization_name="Organization 1",
                 n_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
@@ -229,7 +259,11 @@ def test_list_score_runs(aymara_client):
                         test_type=models.TestType.SAFETY,
                         organization_name="Organization 1",
                         n_test_questions=10,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
                     ),
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
                 models.ScoreRunOutSchema(
                     score_run_uuid="score2",
@@ -241,7 +275,11 @@ def test_list_score_runs(aymara_client):
                         test_type=models.TestType.SAFETY,
                         organization_name="Organization 1",
                         n_test_questions=10,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
                     ),
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
             ],
             count=2,
@@ -249,11 +287,11 @@ def test_list_score_runs(aymara_client):
 
         result = aymara_client.list_score_runs()
 
-        assert isinstance(result, list)
+        assert isinstance(result, ListScoreRunResponse)
         assert len(result) == 2
         assert all(isinstance(item, ScoreRunResponse) for item in result)
 
-        df_result = aymara_client.list_score_runs(as_df=True)
+        df_result = result.to_df()
         assert isinstance(df_result, pd.DataFrame)
         assert len(df_result) == 2
 
@@ -275,7 +313,11 @@ async def test_list_score_runs_async(aymara_client):
                         test_type=models.TestType.SAFETY,
                         organization_name="Organization 1",
                         n_test_questions=10,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
                     ),
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
                 models.ScoreRunOutSchema(
                     score_run_uuid="score2",
@@ -287,7 +329,11 @@ async def test_list_score_runs_async(aymara_client):
                         test_type=models.TestType.SAFETY,
                         organization_name="Organization 1",
                         n_test_questions=10,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
                     ),
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
             ],
             count=2,
@@ -295,11 +341,11 @@ async def test_list_score_runs_async(aymara_client):
 
         result = await aymara_client.list_score_runs_async()
 
-        assert isinstance(result, list)
+        assert isinstance(result, ListScoreRunResponse)
         assert len(result) == 2
         assert all(isinstance(item, ScoreRunResponse) for item in result)
 
-        df_result = await aymara_client.list_score_runs_async(as_df=True)
+        df_result = result.to_df()
         assert isinstance(df_result, pd.DataFrame)
         assert len(df_result) == 2
 
@@ -320,7 +366,11 @@ def test_score_test_failed(aymara_client):
                 test_type=models.TestType.SAFETY,
                 organization_name="Organization 1",
                 n_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
@@ -332,7 +382,11 @@ def test_score_test_failed(aymara_client):
                 test_type=models.TestType.SAFETY,
                 organization_name="Organization 1",
                 n_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
 
         result = aymara_client.score_test(
@@ -370,7 +424,11 @@ def test_score_test_timeout(aymara_client):
                 test_type=models.TestType.SAFETY,
                 organization_name="Organization 1",
                 n_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
@@ -382,7 +440,11 @@ def test_score_test_timeout(aymara_client):
                 test_type=models.TestType.SAFETY,
                 organization_name="Organization 1",
                 n_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
 
         result = aymara_client.score_test(
@@ -412,7 +474,11 @@ async def test_score_test_async_failed(aymara_client):
                 test_type=models.TestType.SAFETY,
                 organization_name="Organization 1",
                 n_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
@@ -424,7 +490,11 @@ async def test_score_test_async_failed(aymara_client):
                 test_type=models.TestType.SAFETY,
                 organization_name="Organization 1",
                 n_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
 
         result = await aymara_client.score_test_async(
@@ -463,7 +533,11 @@ async def test_score_test_async_timeout(aymara_client):
                 test_type=models.TestType.SAFETY,
                 organization_name="Organization 1",
                 n_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
@@ -475,7 +549,11 @@ async def test_score_test_async_timeout(aymara_client):
                 test_type=models.TestType.SAFETY,
                 organization_name="Organization 1",
                 n_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
 
         result = await aymara_client.score_test_async(
@@ -502,7 +580,11 @@ def test_get_score_run_not_finished(aymara_client):
                 test_type=models.TestType.SAFETY,
                 organization_name="Organization 1",
                 n_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
 
         result = aymara_client.get_score_run("score123")
@@ -528,7 +610,11 @@ async def test_get_score_run_async_not_finished(aymara_client):
                 test_type=models.TestType.SAFETY,
                 organization_name="Organization 1",
                 n_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
             ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
 
         result = await aymara_client.get_score_run_async("score123")
@@ -555,7 +641,11 @@ def test_list_score_runs_with_test_uuid(aymara_client):
                         test_type=models.TestType.SAFETY,
                         organization_name="Organization 1",
                         n_test_questions=10,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
                     ),
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
             ],
             count=1,
@@ -563,7 +653,7 @@ def test_list_score_runs_with_test_uuid(aymara_client):
 
         result = aymara_client.list_score_runs(test_uuid="test123")
 
-        assert isinstance(result, list)
+        assert isinstance(result, ListScoreRunResponse)
         assert len(result) == 1
         assert all(isinstance(item, ScoreRunResponse) for item in result)
         mock_list_score_runs.assert_called_once_with(
@@ -588,7 +678,11 @@ async def test_list_score_runs_async_with_test_uuid(aymara_client):
                         test_type=models.TestType.SAFETY,
                         organization_name="Organization 1",
                         n_test_questions=10,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
                     ),
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
                 ),
             ],
             count=1,
@@ -596,7 +690,7 @@ async def test_list_score_runs_async_with_test_uuid(aymara_client):
 
         result = await aymara_client.list_score_runs_async(test_uuid="test123")
 
-        assert isinstance(result, list)
+        assert isinstance(result, ListScoreRunResponse)
         assert len(result) == 1
         assert all(isinstance(item, ScoreRunResponse) for item in result)
         mock_list_score_runs.assert_called_once_with(
@@ -625,7 +719,11 @@ def test_list_score_runs_multiple_pages(aymara_client):
                                     test_type=models.TestType.SAFETY,
                                     organization_name="Organization 1",
                                     n_test_questions=10,
+                                    created_at=datetime.now(),
+                                    updated_at=datetime.now(),
                                 ),
+                                created_at=datetime.now(),
+                                updated_at=datetime.now(),
                             ),
                         ],
                         count=2,
@@ -648,7 +746,11 @@ def test_list_score_runs_multiple_pages(aymara_client):
                                     test_type=models.TestType.SAFETY,
                                     organization_name="Organization 1",
                                     n_test_questions=10,
+                                    created_at=datetime.now(),
+                                    updated_at=datetime.now(),
                                 ),
+                                created_at=datetime.now(),
+                                updated_at=datetime.now(),
                             ),
                         ],
                         count=2,
@@ -659,7 +761,7 @@ def test_list_score_runs_multiple_pages(aymara_client):
 
         result = aymara_client.list_score_runs()
 
-        assert isinstance(result, list)
+        assert isinstance(result, ListScoreRunResponse)
         assert len(result) == 2
         assert all(isinstance(item, ScoreRunResponse) for item in result)
         assert mock_list_score_runs.call_count == 2
@@ -687,7 +789,11 @@ async def test_list_score_runs_async_multiple_pages(aymara_client):
                                     test_type=models.TestType.SAFETY,
                                     organization_name="Organization 1",
                                     n_test_questions=10,
+                                    created_at=datetime.now(),
+                                    updated_at=datetime.now(),
                                 ),
+                                created_at=datetime.now(),
+                                updated_at=datetime.now(),
                             ),
                         ],
                         count=2,
@@ -710,7 +816,11 @@ async def test_list_score_runs_async_multiple_pages(aymara_client):
                                     test_type=models.TestType.SAFETY,
                                     organization_name="Organization 1",
                                     n_test_questions=10,
+                                    created_at=datetime.now(),
+                                    updated_at=datetime.now(),
                                 ),
+                                created_at=datetime.now(),
+                                updated_at=datetime.now(),
                             ),
                         ],
                         count=2,
@@ -721,48 +831,10 @@ async def test_list_score_runs_async_multiple_pages(aymara_client):
 
         result = await aymara_client.list_score_runs_async()
 
-        assert isinstance(result, list)
+        assert isinstance(result, ListScoreRunResponse)
         assert len(result) == 2
         assert all(isinstance(item, ScoreRunResponse) for item in result)
         assert mock_list_score_runs.call_count == 2
-
-
-def test_score_runs_to_df(aymara_client):
-    score_runs = [
-        ScoreRunResponse(
-            score_run_uuid="score1",
-            score_run_status=Status.COMPLETED,
-            test_uuid="test123",
-            test_name="Test 1",
-            num_test_questions=10,
-            failure_reason=None,
-            answers=None,
-        ),
-        ScoreRunResponse(
-            score_run_uuid="score2",
-            score_run_status=Status.FAILED,
-            test_uuid="test456",
-            test_name="Test 2",
-            num_test_questions=5,
-            failure_reason="Error occurred",
-            answers=None,
-        ),
-    ]
-
-    df = aymara_client._score_runs_to_df(score_runs)
-
-    assert isinstance(df, pd.DataFrame)
-    assert len(df) == 2
-    assert list(df.columns) == [
-        "score_run_uuid",
-        "score_run_status",
-        "test_uuid",
-        "test_name",
-        "num_test_questions",
-        "failure_reason",
-    ]
-    assert df.iloc[0]["score_run_uuid"] == "score1"
-    assert df.iloc[1]["failure_reason"] == "Error occurred"
 
 
 def test_get_all_score_run_answers_sync(aymara_client):
