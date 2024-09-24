@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from aymara_sdk.core.sdk import AymaraAI
-from aymara_sdk.types import Status, TestResponse
+from aymara_sdk.types import ListTestResponse, Status, TestResponse
 from aymara_sdk.utils.constants import DEFAULT_TEST_LANGUAGE, AymaraTestPolicy
 
 
@@ -86,7 +86,7 @@ class TestTestMixin:
         created_test = aymara_client.create_test(**test_data)
         created_test_uuids.append(created_test.test_uuid)
         tests_list = aymara_client.list_tests()
-        assert isinstance(tests_list, list)
+        assert isinstance(tests_list, ListTestResponse)
         assert len(tests_list) > 0
         assert all(isinstance(test, TestResponse) for test in tests_list)
 
@@ -95,7 +95,7 @@ class TestTestMixin:
         created_test = await aymara_client.create_test_async(**test_data)
         created_test_uuids.append(created_test.test_uuid)
         tests_list = await aymara_client.list_tests_async()
-        assert isinstance(tests_list, list)
+        assert isinstance(tests_list, ListTestResponse)
         assert len(tests_list) > 0
         assert all(isinstance(test, TestResponse) for test in tests_list)
 
@@ -103,7 +103,7 @@ class TestTestMixin:
         created_test_uuids, _, _ = cleanup_after_test
         created_test = aymara_client.create_test(**test_data)
         created_test_uuids.append(created_test.test_uuid)
-        df = aymara_client.list_tests(as_df=True)
+        df = aymara_client.list_tests().to_df()
         assert isinstance(df, pd.DataFrame)
         assert len(df) > 0
         assert all(
@@ -117,7 +117,7 @@ class TestTestMixin:
         created_test_uuids, _, _ = cleanup_after_test
         created_test = await aymara_client.create_test_async(**test_data)
         created_test_uuids.append(created_test.test_uuid)
-        df = await aymara_client.list_tests_async(as_df=True)
+        df = (await aymara_client.list_tests_async()).to_df()
         assert isinstance(df, pd.DataFrame)
         assert len(df) > 0
         assert all(
