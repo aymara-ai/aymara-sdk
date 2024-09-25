@@ -4,7 +4,12 @@ import pandas as pd
 import pytest
 
 from aymara_sdk.core.sdk import AymaraAI
-from aymara_sdk.types import ScoreRunResponse, Status, StudentAnswerInput
+from aymara_sdk.types import (
+    ListScoreRunResponse,
+    ScoreRunResponse,
+    Status,
+    StudentAnswerInput,
+)
 
 
 class TestScoreRunMixin:
@@ -201,11 +206,11 @@ class TestScoreRunMixin:
         )
         created_score_run_uuids.append(score_response.score_run_uuid)
         score_runs = await aymara_client.list_score_runs_async(test_uuid)
-        assert isinstance(score_runs, list)
+        assert isinstance(score_runs, ListScoreRunResponse)
         assert len(score_runs) > 0
         assert all(isinstance(run, ScoreRunResponse) for run in score_runs)
 
-        df = await aymara_client.list_score_runs_async(test_uuid, as_df=True)
+        df = (await aymara_client.list_score_runs_async(test_uuid)).to_df()
         assert isinstance(df, pd.DataFrame)
         assert len(df) > 0
 
@@ -221,11 +226,11 @@ class TestScoreRunMixin:
         score_response = aymara_client.score_test(test_uuid, student_answers)
         created_score_run_uuids.append(score_response.score_run_uuid)
         score_runs = aymara_client.list_score_runs(test_uuid)
-        assert isinstance(score_runs, list)
+        assert isinstance(score_runs, ListScoreRunResponse)
         assert len(score_runs) > 0
         assert all(isinstance(run, ScoreRunResponse) for run in score_runs)
 
-        df = aymara_client.list_score_runs(test_uuid, as_df=True)
+        df = aymara_client.list_score_runs(test_uuid).to_df()
         assert isinstance(df, pd.DataFrame)
         assert len(df) > 0
 
@@ -280,7 +285,7 @@ class TestScoreRunMixin:
 
     def test_list_score_runs_with_non_existent_test(self, aymara_client: AymaraAI):
         score_runs = aymara_client.list_score_runs("non-existent-test-uuid")
-        assert isinstance(score_runs, list)
+        assert isinstance(score_runs, ListScoreRunResponse)
         assert len(score_runs) == 0
 
     def test_score_test_with_empty_answers(
