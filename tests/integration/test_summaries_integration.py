@@ -16,7 +16,7 @@ class TestSummaryMixin:
         test_policy = "Standard test policy"
         n_test_questions = 2
 
-        test_response = await aymara_client.create_test_async(
+        test_response = await aymara_client.create_safety_test_async(
             test_name=test_name,
             student_description=student_description,
             test_policy=test_policy,
