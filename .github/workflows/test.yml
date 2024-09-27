@@ -60,8 +60,8 @@ jobs:
           pip install .[dev]
       - name: Run tests
         env:
-          PROD_TESTING_API_KEY: ${{ secrets.PROD_TESTING_API_KEY }}
-          STAGING_TESTING_API_KEY: ${{ secrets.STAGING_TESTING_API_KEY }}
+          PROD_INTEGRATION_TESTING_API_KEY: ${{ secrets.PROD_INTEGRATION_TESTING_API_KEY }}
+          STAGING_INTEGRATION_TESTING_API_KEY: ${{ secrets.STAGING_INTEGRATION_TESTING_API_KEY }}
           API_TEST_ENV: ${{ github.event.inputs.api_test_env || github.event.client_payload.environment || vars.API_TEST_ENV }}
         run: |
           VERSION=${{ github.event.inputs.version || github.event.client_payload.sdk_version }}
