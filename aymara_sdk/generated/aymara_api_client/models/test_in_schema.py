@@ -14,27 +14,25 @@ class TestInSchema:
     """
     Attributes:
         test_name (str):
-        n_test_questions (int):
         student_description (str):
         test_type (Union[Unset, TestType]): Test type. Default: TestType.SAFETY.
         test_language (Union[Unset, str]):  Default: 'en'.
         test_policy (Union[None, Unset, str]):
+        n_test_questions (Union[None, Unset, int]):
         test_system_prompt (Union[None, Unset, str]):
     """
 
     test_name: str
-    n_test_questions: int
     student_description: str
     test_type: Union[Unset, TestType] = TestType.SAFETY
     test_language: Union[Unset, str] = "en"
     test_policy: Union[None, Unset, str] = UNSET
+    n_test_questions: Union[None, Unset, int] = UNSET
     test_system_prompt: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         test_name = self.test_name
-
-        n_test_questions = self.n_test_questions
 
         student_description = self.student_description
 
@@ -50,6 +48,12 @@ class TestInSchema:
         else:
             test_policy = self.test_policy
 
+        n_test_questions: Union[None, Unset, int]
+        if isinstance(self.n_test_questions, Unset):
+            n_test_questions = UNSET
+        else:
+            n_test_questions = self.n_test_questions
+
         test_system_prompt: Union[None, Unset, str]
         if isinstance(self.test_system_prompt, Unset):
             test_system_prompt = UNSET
@@ -61,7 +65,6 @@ class TestInSchema:
         field_dict.update(
             {
                 "test_name": test_name,
-                "n_test_questions": n_test_questions,
                 "student_description": student_description,
             }
         )
@@ -71,6 +74,8 @@ class TestInSchema:
             field_dict["test_language"] = test_language
         if test_policy is not UNSET:
             field_dict["test_policy"] = test_policy
+        if n_test_questions is not UNSET:
+            field_dict["n_test_questions"] = n_test_questions
         if test_system_prompt is not UNSET:
             field_dict["test_system_prompt"] = test_system_prompt
 
@@ -80,8 +85,6 @@ class TestInSchema:
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         d = src_dict.copy()
         test_name = d.pop("test_name")
-
-        n_test_questions = d.pop("n_test_questions")
 
         student_description = d.pop("student_description")
 
@@ -103,6 +106,15 @@ class TestInSchema:
 
         test_policy = _parse_test_policy(d.pop("test_policy", UNSET))
 
+        def _parse_n_test_questions(data: object) -> Union[None, Unset, int]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, int], data)
+
+        n_test_questions = _parse_n_test_questions(d.pop("n_test_questions", UNSET))
+
         def _parse_test_system_prompt(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -114,11 +126,11 @@ class TestInSchema:
 
         test_in_schema = cls(
             test_name=test_name,
-            n_test_questions=n_test_questions,
             student_description=student_description,
             test_type=test_type,
             test_language=test_language,
             test_policy=test_policy,
+            n_test_questions=n_test_questions,
             test_system_prompt=test_system_prompt,
         )
 

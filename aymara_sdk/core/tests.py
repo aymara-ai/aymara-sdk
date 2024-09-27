@@ -11,6 +11,7 @@ from aymara_sdk.generated.aymara_api_client.api.tests import (
     get_test_questions,
     list_tests,
 )
+from aymara_sdk.generated.aymara_api_client.models.test_type import TestType
 from aymara_sdk.types import ListTestResponse, Status, TestResponse
 from aymara_sdk.utils.constants import (
     AYMARA_TEST_POLICY_PREFIX,
@@ -29,8 +30,8 @@ from aymara_sdk.utils.constants import (
 
 
 class TestMixin(AymaraAIProtocol):
-    # Create Test Methods
-    def create_test(
+    # Create Safety Test Methods
+    def create_safety_test(
         self,
         test_name: str,
         student_description: str,
@@ -59,15 +60,17 @@ class TestMixin(AymaraAIProtocol):
         :raises ValueError: If test_policy is not provided for safety tests.
         """
         return self._create_test(
-            test_name,
-            student_description,
-            test_policy,
-            test_language,
-            n_test_questions,
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=test_policy,
+            test_system_prompt=None,
+            test_language=test_language,
+            n_test_questions=n_test_questions,
             is_async=False,
+            test_type=TestType.SAFETY,
         )
 
-    async def create_test_async(
+    async def create_safety_test_async(
         self,
         test_name: str,
         student_description: str,
@@ -96,12 +99,85 @@ class TestMixin(AymaraAIProtocol):
         :raises ValueError: If test_policy is not provided for safety tests.
         """
         return await self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=test_policy,
+            test_system_prompt=None,
+            test_language=test_language,
+            n_test_questions=n_test_questions,
+            is_async=True,
+            test_type=TestType.SAFETY,
+        )
+
+    # Create Jailbreak Test Methods
+    def create_jailbreak_test(
+        self,
+        test_name: str,
+        student_description: str,
+        test_system_prompt: str,
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+    ) -> TestResponse:
+        """
+        Create an Aymara jailbreak test synchronously and wait for completion.
+
+        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
+        :type test_name: str
+        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
+        :type student_description: str
+        :param test_system_prompt: System prompt of the jailbreak test.
+        :type test_system_prompt: str
+        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
+        :type test_language: str, optional
+        :return: Test response containing test details and generated questions.
+        :rtype: TestResponse
+
+        :raises ValueError: If the test_name length is not within the allowed range.
+        :raises ValueError: If n_test_questions is not within the allowed range.
+        :raises ValueError: If test_system_prompt is not provided for jailbreak tests.
+        """
+        return self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=None,
+            test_system_prompt=test_system_prompt,
+            test_language=test_language,
+            is_async=False,
+            test_type=TestType.JAILBREAK,
+        )
+
+    async def create_jailbreak_test_async(
+        self,
+        test_name: str,
+        student_description: str,
+        test_system_prompt: str,
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+    ) -> TestResponse:
+        """
+        Create an Aymara jailbreak test asynchronously and wait for completion.
+
+        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
+        :type test_name: str
+        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
+        :type student_description: str
+        :param test_system_prompt: System prompt of the jailbreak test.
+        :type test_system_prompt: str
+        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
+        :type test_language: str, optional
+        :return: Test response containing test details and generated questions.
+        :rtype: TestResponse
+
+        :raises ValueError: If the test_name length is not within the allowed range.
+        :raises ValueError: If n_test_questions is not within the allowed range.
+        :raises ValueError: If test_system_prompt is not provided for jailbreak tests.
+        """
+        return await self._create_test(
             test_name,
             student_description,
-            test_policy,
-            test_language,
-            n_test_questions,
+            test_policy=None,
+            test_system_prompt=test_system_prompt,
+            test_language=test_language,
             is_async=True,
+            test_type=TestType.JAILBREAK,
         )
 
     def _create_test(
@@ -109,24 +185,36 @@ class TestMixin(AymaraAIProtocol):
         test_name: str,
         student_description: str,
         test_policy: Union[str, AymaraTestPolicy],
+        test_system_prompt: str,
         test_language: str,
-        n_test_questions: int,
         is_async: bool,
+        test_type: TestType,
+        n_test_questions: Optional[int] = None,
     ) -> Union[TestResponse, Coroutine[TestResponse, None, None]]:
-        # Convert AymaraTestPolicy to string and prefix with "aymara_test_policy:"
-        if isinstance(test_policy, AymaraTestPolicy):
+        # Convert AymaraTestPolicy to string and prefix with "aymara_test_policy:" for safety tests
+        if test_type == TestType.SAFETY and isinstance(test_policy, AymaraTestPolicy):
             test_policy = f"{AYMARA_TEST_POLICY_PREFIX}{test_policy.value}"
 
         self._validate_test_inputs(
-            test_name, student_description, test_policy, test_language, n_test_questions
+            test_name,
+            student_description,
+            test_policy,
+            test_system_prompt,
+            test_language,
+            n_test_questions,
+            test_type,
         )
 
         test_data = models.TestInSchema(
             test_name=test_name,
             student_description=student_description,
-            test_policy=test_policy,
+            test_policy=test_policy if test_type == TestType.SAFETY else None,
+            test_system_prompt=test_system_prompt
+            if test_type == TestType.JAILBREAK
+            else None,
             test_language=test_language,
             n_test_questions=n_test_questions,
+            test_type=test_type,
         )
 
         if is_async:
@@ -139,8 +227,10 @@ class TestMixin(AymaraAIProtocol):
         test_name: str,
         student_description: str,
         test_policy: Optional[str],
+        test_system_prompt: Optional[str],
         test_language: str,
-        n_test_questions: int,
+        n_test_questions: Optional[int],
+        test_type: TestType,
     ) -> None:
         if not student_description:
             raise ValueError("student_description is required")
@@ -148,8 +238,11 @@ class TestMixin(AymaraAIProtocol):
         if test_language not in SUPPORTED_LANGUAGES:
             raise ValueError(f"test_language must be one of {SUPPORTED_LANGUAGES}")
 
-        if test_policy is None:
+        if test_type == TestType.SAFETY and test_policy is None:
             raise ValueError("test_policy is required for safety tests")
+
+        if test_type == TestType.JAILBREAK and test_system_prompt is None:
+            raise ValueError("test_system_prompt is required for jailbreak tests")
 
         if (
             len(test_name) < DEFAULT_TEST_NAME_LEN_MIN
@@ -159,7 +252,7 @@ class TestMixin(AymaraAIProtocol):
                 f"test_name must be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters"
             )
 
-        if (
+        if n_test_questions is not None and (
             n_test_questions < DEFAULT_NUM_QUESTIONS_MIN
             or n_test_questions > DEFAULT_NUM_QUESTIONS_MAX
         ):
@@ -168,12 +261,20 @@ class TestMixin(AymaraAIProtocol):
             )
 
         token1 = len(student_description) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
-        token2 = len(test_policy) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
+
+        token_2_field = (
+            "test_policy" if test_type == TestType.SAFETY else "test_system_prompt"
+        )
+        token2 = (
+            len(test_policy) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
+            if test_type == TestType.SAFETY
+            else len(test_system_prompt) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
+        )
 
         total_tokens = token1 + token2
         if total_tokens > DEFAULT_MAX_TOKENS:
             raise ValueError(
-                f"student_description is ~{token1:,} tokens and test_policy is ~{token2:,} tokens. They are ~{total_tokens:,} tokens in total but they should be less than {DEFAULT_MAX_TOKENS:,} tokens."
+                f"student_description is ~{token1:,} tokens and {token_2_field} is ~{token2:,} tokens. They are ~{total_tokens:,} tokens in total but they should be less than {DEFAULT_MAX_TOKENS:,} tokens."
             )
 
     def _create_and_wait_for_test_impl_sync(

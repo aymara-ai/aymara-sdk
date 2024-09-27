@@ -15,7 +15,7 @@ from aymara_sdk.utils.constants import (
 )
 
 
-def test_create_test(aymara_client):
+def test_create_safety_test(aymara_client):
     with patch(
         "aymara_sdk.core.tests.create_test.sync_detailed"
     ) as mock_create_test, patch(
@@ -53,7 +53,7 @@ def test_create_test(aymara_client):
         )
         mock_get_questions.return_value.status_code = 200
 
-        result = aymara_client.create_test(
+        result = aymara_client.create_safety_test(
             "Test 1", "Student description", "Test policy"
         )
 
@@ -65,7 +65,7 @@ def test_create_test(aymara_client):
 
 
 @pytest.mark.asyncio
-async def test_create_test_async(aymara_client):
+async def test_create_safety_test_async(aymara_client):
     with patch(
         "aymara_sdk.core.tests.create_test.asyncio_detailed"
     ) as mock_create_test, patch(
@@ -103,8 +103,107 @@ async def test_create_test_async(aymara_client):
         )
         mock_get_questions.return_value.status_code = 200
 
-        result = await aymara_client.create_test_async(
+        result = await aymara_client.create_safety_test_async(
             "Test 1", "Student description", "Test policy"
+        )
+
+        assert isinstance(result, TestResponse)
+        assert result.test_uuid == "test123"
+        assert result.test_name == "Test 1"
+        assert result.test_status == Status.COMPLETED
+        assert len(result.questions) == 1
+
+
+def test_create_jailbreak_test(aymara_client):
+    with patch(
+        "aymara_sdk.core.tests.create_test.sync_detailed"
+    ) as mock_create_test, patch(
+        "aymara_sdk.core.tests.get_test.sync_detailed"
+    ) as mock_get_test, patch(
+        "aymara_sdk.core.tests.get_test_questions.sync_detailed"
+    ) as mock_get_questions:
+        mock_create_test.return_value.parsed = models.TestOutSchema(
+            test_uuid="test123",
+            test_name="Test 1",
+            test_status=models.TestStatus.RECORD_CREATED,
+            test_type=models.TestType.JAILBREAK,
+            organization_name="Test Organization",
+            n_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+        mock_create_test.return_value.status_code = 200
+        mock_get_test.return_value.parsed = models.TestOutSchema(
+            test_uuid="test123",
+            test_name="Test 1",
+            test_status=models.TestStatus.FINISHED,
+            test_type=models.TestType.JAILBREAK,
+            organization_name="Test Organization",
+            n_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+        mock_get_test.return_value.status_code = 200
+        mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
+            items=[
+                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
+            ],
+            count=1,
+        )
+        mock_get_questions.return_value.status_code = 200
+
+        result = aymara_client.create_jailbreak_test(
+            "Test 1", "Student description", "Jailbreak scenario"
+        )
+
+        assert isinstance(result, TestResponse)
+        assert result.test_uuid == "test123"
+        assert result.test_name == "Test 1"
+        assert result.test_status == Status.COMPLETED
+        assert len(result.questions) == 1
+
+
+@pytest.mark.asyncio
+async def test_create_jailbreak_test_async(aymara_client):
+    with patch(
+        "aymara_sdk.core.tests.create_test.asyncio_detailed"
+    ) as mock_create_test, patch(
+        "aymara_sdk.core.tests.get_test.asyncio_detailed"
+    ) as mock_get_test, patch(
+        "aymara_sdk.core.tests.get_test_questions.asyncio_detailed"
+    ) as mock_get_questions:
+        mock_create_test.return_value.parsed = models.TestOutSchema(
+            test_uuid="test123",
+            test_name="Test 1",
+            test_status=models.TestStatus.RECORD_CREATED,
+            test_type=models.TestType.JAILBREAK,
+            organization_name="Test Organization",
+            n_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+        mock_create_test.return_value.status_code = 200
+        mock_get_test.return_value.parsed = models.TestOutSchema(
+            test_uuid="test123",
+            test_name="Test 1",
+            test_status=models.TestStatus.FINISHED,
+            test_type=models.TestType.JAILBREAK,
+            organization_name="Test Organization",
+            n_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+        mock_get_test.return_value.status_code = 200
+        mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
+            items=[
+                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
+            ],
+            count=1,
+        )
+        mock_get_questions.return_value.status_code = 200
+
+        result = await aymara_client.create_jailbreak_test_async(
+            "Test 1", "Student description", "Jailbreak scenario"
         )
 
         assert isinstance(result, TestResponse)
@@ -116,15 +215,20 @@ async def test_create_test_async(aymara_client):
 
 def test_create_test_validation(aymara_client):
     with pytest.raises(ValueError, match="test_name must be between"):
-        aymara_client.create_test("A" * 256, "Student description", "Test policy")
+        aymara_client.create_safety_test(
+            "A" * 256, "Student description", "Test policy"
+        )
 
     with pytest.raises(ValueError, match="n_test_questions must be between"):
-        aymara_client.create_test(
+        aymara_client.create_safety_test(
             "Test 1", "Student description", "Test policy", n_test_questions=0
         )
 
     with pytest.raises(ValueError, match="test_policy is required"):
-        aymara_client.create_test("Test 1", "Student description", None)
+        aymara_client.create_safety_test("Test 1", "Student description", None)
+
+    with pytest.raises(ValueError, match="test_system_prompt is required"):
+        aymara_client.create_jailbreak_test("Test 1", "Student description", None)
 
 
 def test_get_test(aymara_client):
@@ -277,7 +381,13 @@ async def test_list_tests_async(aymara_client):
 
 def test_validate_test_inputs_valid(aymara_client):
     aymara_client._validate_test_inputs(
-        "Valid Test Name", "Valid student description", "Valid test policy", "en", 10
+        "Valid Test Name",
+        "Valid student description",
+        "Valid test policy",
+        None,
+        "en",
+        10,
+        models.TestType.SAFETY,
     )
     # If no exception is raised, the test passes
 
@@ -288,8 +398,10 @@ def test_validate_test_inputs_invalid_name_length(aymara_client):
             "A" * (DEFAULT_TEST_NAME_LEN_MAX + 1),
             "Valid student description",
             "Valid test policy",
+            None,
             "en",
             10,
+            models.TestType.SAFETY,
         )
 
 
@@ -299,8 +411,10 @@ def test_validate_test_inputs_invalid_question_count(aymara_client):
             "Valid Test Name",
             "Valid student description",
             "Valid test policy",
+            None,
             "en",
             DEFAULT_NUM_QUESTIONS_MAX + 1,
+            models.TestType.SAFETY,
         )
 
     with pytest.raises(ValueError, match="n_test_questions must be between"):
@@ -308,8 +422,10 @@ def test_validate_test_inputs_invalid_question_count(aymara_client):
             "Valid Test Name",
             "Valid student description",
             "Valid test policy",
+            None,
             "en",
             DEFAULT_NUM_QUESTIONS_MIN - 1,
+            models.TestType.SAFETY,
         )
 
 
@@ -321,7 +437,13 @@ def test_validate_test_inputs_excessive_tokens(aymara_client):
 
     with pytest.raises(ValueError, match="They are ~"):
         aymara_client._validate_test_inputs(
-            "Valid Test Name", long_text, long_text, "en", 10
+            "Valid Test Name",
+            long_text,
+            long_text,
+            None,
+            "en",
+            10,
+            models.TestType.SAFETY,
         )
 
 
@@ -874,7 +996,7 @@ def test_logger_progress_bar(aymara_client):
         )
         mock_get_questions.return_value.status_code = 200
 
-        aymara_client.create_test("Test 1", "Student description", "Test policy")
+        aymara_client.create_safety_test("Test 1", "Student description", "Test policy")
 
         mock_logger.progress_bar.assert_called_once_with(
             "Test 1", "test123", Status.PENDING
@@ -917,7 +1039,7 @@ def test_max_wait_time_exceeded(aymara_client):
         )
         mock_get_test.return_value.status_code = 200
 
-        result = aymara_client.create_test(
+        result = aymara_client.create_safety_test(
             "Test 1", "Student description", "Test policy"
         )
 

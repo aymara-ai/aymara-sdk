@@ -271,7 +271,11 @@ class ScoreRunResponse(BaseModel):
     test_uuid: Annotated[str, Field(..., description="UUID of the test")]
     test_name: Annotated[str, Field(..., description="Name of the test")]
     num_test_questions: Annotated[
-        int, Field(..., description="Number of test questions")
+        Optional[int],
+        Field(
+            None,
+            description="Number of test questions, only available for safety tests.",
+        ),
     ]
     answers: Annotated[
         Optional[List[ScoredAnswerResponse]],

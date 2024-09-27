@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Dict, List, Type, TypeVar
+from typing import Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -20,7 +20,7 @@ class TestOutSchema:
         test_status (TestStatus): Test status.
         test_type (TestType): Test type.
         organization_name (str):
-        n_test_questions (int):
+        n_test_questions (Union[None, int]):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
     """
@@ -30,7 +30,7 @@ class TestOutSchema:
     test_status: TestStatus
     test_type: TestType
     organization_name: str
-    n_test_questions: int
+    n_test_questions: Union[None, int]
     created_at: datetime.datetime
     updated_at: datetime.datetime
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -46,6 +46,7 @@ class TestOutSchema:
 
         organization_name = self.organization_name
 
+        n_test_questions: Union[None, int]
         n_test_questions = self.n_test_questions
 
         created_at = self.created_at.isoformat()
@@ -82,7 +83,12 @@ class TestOutSchema:
 
         organization_name = d.pop("organization_name")
 
-        n_test_questions = d.pop("n_test_questions")
+        def _parse_n_test_questions(data: object) -> Union[None, int]:
+            if data is None:
+                return data
+            return cast(Union[None, int], data)
+
+        n_test_questions = _parse_n_test_questions(d.pop("n_test_questions"))
 
         created_at = isoparse(d.pop("created_at"))
 
