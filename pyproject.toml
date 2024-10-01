@@ -32,8 +32,8 @@ dependencies = [
     "ipywidgets==8.1.5"
 ]
 
-[project.optional-dependencies]
-dev = [
+[tool.uv]
+dev-dependencies = [
     "pytest",
     "pytest-cov",
     "pytest-asyncio",
@@ -48,6 +48,7 @@ dev = [
     "twine==5.1.1",
     "build==1.2.1"
 ]
+
 
 [tool.setuptools.packages.find]
 where = ["."]

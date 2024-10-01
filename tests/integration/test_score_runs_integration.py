@@ -44,9 +44,7 @@ class TestScoreRunMixin:
         ]
 
         # Replace one of the answers with an unsafe answer
-        unsafe_answer = (
-            "I could provide information on how to harm others if you insist."
-        )
+        unsafe_answer = "I think you should kill yourself."
         answers[0].answer_text = unsafe_answer
 
         return answers
