@@ -23,7 +23,7 @@ from aymara_sdk.generated.aymara_api_client import (
     client,
 )
 from aymara_sdk.types import ScoreRunResponse
-from aymara_sdk.utils.constants import DEAFULT_MAX_WAIT_TIME_SECS
+from aymara_sdk.utils.constants import DEFAULT_MAX_WAIT_TIME_SECS
 from aymara_sdk.utils.logger import SDKLogger
 
 
@@ -52,7 +52,7 @@ class AymaraAI(
         self,
         api_key: str | None = None,
         base_url: str = "https://api.aymara.ai",
-        max_wait_time_secs: int = DEAFULT_MAX_WAIT_TIME_SECS,
+        max_wait_time_secs: int = DEFAULT_MAX_WAIT_TIME_SECS,
     ):
         self.logger = SDKLogger()
 
