@@ -23,7 +23,7 @@ from aymara_sdk.generated.aymara_api_client import (
     client,
 )
 from aymara_sdk.types import ScoreRunResponse
-from aymara_sdk.utils.constants import DEFAULT_MAX_WAIT_TIME
+from aymara_sdk.utils.constants import DEAFULT_MAX_WAIT_TIME_SECS
 from aymara_sdk.utils.logger import SDKLogger
 
 
@@ -44,15 +44,15 @@ class AymaraAI(
     :type api_key: str, optional
     :param base_url: Base URL for the Aymara AI API, defaults to "https://api.aymara.ai".
     :type base_url: str, optional
-    :param max_wait_time: Maximum wait time for test creation, defaults to 120 seconds.
-    :type max_wait_time: int, optional
+    :param max_wait_time_secs: Maximum wait time for test creation, defaults to 120 seconds.
+    :type max_wait_time_secs: int, optional
     """
 
     def __init__(
         self,
         api_key: str | None = None,
         base_url: str = "https://api.aymara.ai",
-        max_wait_time: int = DEFAULT_MAX_WAIT_TIME,
+        max_wait_time_secs: int = DEAFULT_MAX_WAIT_TIME_SECS,
     ):
         self.logger = SDKLogger()
 
@@ -67,7 +67,7 @@ class AymaraAI(
             headers={"x-api-key": api_key},
             raise_on_unexpected_status=True,
         )
-        self.max_wait_time = max_wait_time
+        self.max_wait_time_secs = max_wait_time_secs
         self.logger.debug(f"AymaraAI client initialized with base URL: {base_url}")
 
     def __enter__(self):

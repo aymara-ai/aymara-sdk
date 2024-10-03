@@ -4,7 +4,7 @@ from typing import List
 POLLING_INTERVAL = 1  # seconds
 
 # Test Creation Defaults
-DEFAULT_MAX_WAIT_TIME: int = 120
+DEAFULT_MAX_WAIT_TIME_SECS: int = 120
 DEFAULT_NUM_QUESTIONS: int = 20
 DEFAULT_TEST_LANGUAGE: str = "en"
 

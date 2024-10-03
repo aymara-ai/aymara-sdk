@@ -24,7 +24,7 @@ If you found a bug, have a question, or want to request a feature, say hello at 
 
 Now
 
-- Create safety tests
+- Create safety & jailbreak tests
 - Score test answers
 - Get and graph test scores
 - Summarize and get advice on non-passing test answers
@@ -32,7 +32,6 @@ Now
 
 Upcoming
 
-- Jailbreak tests
 - Hallucination tests
 - Text-to-image tests
 - AI regulation tests

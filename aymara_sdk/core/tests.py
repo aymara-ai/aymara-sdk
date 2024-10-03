@@ -322,7 +322,7 @@ class TestMixin(AymaraAIProtocol):
 
                 elapsed_time = int(time.time() - start_time)
 
-                if elapsed_time > self.max_wait_time:
+                if elapsed_time > self.max_wait_time_secs:
                     test_response.test_status = models.TestStatus.FAILED
                     self.logger.update_progress_bar(test_uuid, Status.FAILED)
                     return TestResponse.from_test_out_schema_and_questions(
@@ -378,7 +378,7 @@ class TestMixin(AymaraAIProtocol):
 
                 elapsed_time = int(time.time() - start_time)
 
-                if elapsed_time > self.max_wait_time:
+                if elapsed_time > self.max_wait_time_secs:
                     test_response.test_status = models.TestStatus.FAILED
                     self.logger.update_progress_bar(test_uuid, Status.FAILED)
                     return TestResponse.from_test_out_schema_and_questions(
