@@ -6,7 +6,15 @@ import pandas as pd
 import pytest
 
 from aymara_sdk import AymaraAI
-from aymara_sdk.types import ScoredAnswerResponse, ScoreRunResponse, Status
+from aymara_sdk.generated.aymara_api_client.models.test_type import (
+    TestType as AymaraTestType,
+)
+from aymara_sdk.types import (
+    BaseTestResponse,
+    ScoredAnswerResponse,
+    ScoreRunResponse,
+    Status,
+)
 from aymara_sdk.utils.constants import DEFAULT_MAX_WAIT_TIME
 
 
@@ -50,9 +58,18 @@ def mock_score_run_response():
     return ScoreRunResponse(
         score_run_uuid="test-uuid",
         score_run_status=Status.COMPLETED,
-        test_uuid="test-test-uuid",
-        test_name="Test 1",
-        num_test_questions=10,
+        test=BaseTestResponse(
+            test_name="Test 1",
+            test_uuid="test-test-uuid",
+            test_status=Status.COMPLETED,
+            test_type=AymaraTestType.SAFETY,
+            organization_name="Organization 1",
+            num_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            test_policy="Don't allow any unsafe answers",
+            test_system_prompt=None,
+        ),
         answers=[
             ScoredAnswerResponse(
                 answer_uuid=f"answer-uuid-{i}",
@@ -86,9 +103,18 @@ def test_get_pass_stats_multiple_runs():
         ScoreRunResponse(
             score_run_uuid=f"uuid-{i}",
             score_run_status=Status.COMPLETED,
-            test_uuid=f"test-uuid-{i}",
-            test_name=f"Test {i}",
-            num_test_questions=10,
+            test=BaseTestResponse(
+                test_name=f"Test {i}",
+                test_uuid=f"test-uuid-{i}",
+                test_status=Status.COMPLETED,
+                test_type=AymaraTestType.SAFETY,
+                organization_name="Organization 1",
+                num_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+                test_policy="Don't allow any unsafe answers",
+                test_system_prompt=None,
+            ),
             answers=[
                 ScoredAnswerResponse(
                     answer_uuid=f"answer-uuid-{j}",
@@ -192,9 +218,18 @@ def test_graph_pass_rates_multiple_runs():
         ScoreRunResponse(
             score_run_uuid=f"uuid-{i}",
             score_run_status=Status.COMPLETED,
-            test_uuid=f"test-uuid-{i}",
-            test_name=f"Test {i}",
-            num_test_questions=10,
+            test=BaseTestResponse(
+                test_name=f"Test {i}",
+                test_uuid=f"test-uuid-{i}",
+                test_status=Status.COMPLETED,
+                test_type=AymaraTestType.SAFETY,
+                organization_name="Organization 1",
+                num_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+                test_policy="Don't allow any unsafe answers",
+                test_system_prompt=None,
+            ),
             answers=[
                 ScoredAnswerResponse(
                     answer_uuid=f"answer-uuid-{j}",

@@ -31,6 +31,7 @@ from aymara_sdk.generated.aymara_api_client.models.score_run_summary_out_schema 
 )
 from aymara_sdk.generated.aymara_api_client.models.test_out_schema import TestOutSchema
 from aymara_sdk.generated.aymara_api_client.models.test_status import TestStatus
+from aymara_sdk.generated.aymara_api_client.models.test_type import TestType
 
 
 class Status(Enum):
@@ -130,9 +131,7 @@ class QuestionResponse(BaseModel):
         )
 
 
-class TestResponse(BaseModel):
-    __test__ = False
-
+class BaseTestResponse(BaseModel):
     """
     Test response. May or may not have questions, depending on the test status.
     """
@@ -142,6 +141,10 @@ class TestResponse(BaseModel):
     test_status: Annotated[Status, Field(..., description="Status of the test")]
     created_at: Annotated[
         datetime, Field(..., description="Timestamp of the test creation")
+    ]
+
+    num_test_questions: Annotated[
+        Optional[int], Field(None, description="Number of test questions")
     ]
 
     questions: Annotated[
@@ -179,20 +182,45 @@ class TestResponse(BaseModel):
         test: TestOutSchema,
         questions: Optional[List[QuestionSchema]] = None,
         failure_reason: Optional[str] = None,
-    ) -> "TestResponse":
-        return cls(
-            test_uuid=test.test_uuid,
-            test_name=test.test_name,
-            test_status=Status.from_api_status(test.test_status),
-            questions=[
-                QuestionResponse.from_question_schema(question)
-                for question in questions
-            ]
-            if questions is not None
+    ) -> "BaseTestResponse":
+        base_attributes = {
+            "test_uuid": test.test_uuid,
+            "test_name": test.test_name,
+            "test_status": Status.from_api_status(test.test_status),
+            "created_at": test.created_at,
+            "num_test_questions": test.num_test_questions,
+            "questions": [QuestionResponse.from_question_schema(q) for q in questions]
+            if questions
             else None,
-            created_at=test.created_at,
-            failure_reason=failure_reason,
-        )
+            "failure_reason": failure_reason,
+        }
+
+        if test.test_type == TestType.SAFETY:
+            return SafetyTestResponse(**base_attributes, test_policy=test.test_policy)
+        elif test.test_type == TestType.JAILBREAK:
+            return JailbreakTestResponse(
+                **base_attributes, test_system_prompt=test.test_system_prompt
+            )
+        else:
+            raise ValueError(f"Unsupported test type: {test.test_type}")
+
+
+class SafetyTestResponse(BaseTestResponse):
+    """
+    Safety test response.
+    """
+
+    test_policy: Annotated[str, Field(..., description="Safety Policy to test against")]
+
+
+class JailbreakTestResponse(BaseTestResponse):
+    """
+    Jailbreak test response.
+    """
+
+    test_system_prompt: Annotated[
+        str, Field(..., description="System prompt to jailbreak")
+    ]
 
 
 class ListTestResponse(RootModel):
@@ -200,12 +228,12 @@ class ListTestResponse(RootModel):
     List of tests.
     """
 
-    root: List[TestResponse]
+    root: List[BaseTestResponse]
 
-    def __iter__(self) -> Iterator[TestResponse]:
+    def __iter__(self) -> Iterator[BaseTestResponse]:
         return iter(self.root)
 
-    def __getitem__(self, index) -> TestResponse:
+    def __getitem__(self, index) -> BaseTestResponse:
         return self.root[index]
 
     def __len__(self) -> int:
@@ -221,8 +249,14 @@ class ListTestResponse(RootModel):
                 "test_status": test.test_status.value,
                 "created_at": test.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                 "failure_reason": test.failure_reason,
-                "num_questions": len(test.questions) if test.questions else 0,
+                "num_test_questions": test.num_test_questions,
             }
+
+            if isinstance(test, SafetyTestResponse):
+                row["test_policy"] = test.test_policy
+            elif isinstance(test, JailbreakTestResponse):
+                row["test_system_prompt"] = test.test_system_prompt
+
             rows.append(row)
         return pd.DataFrame(rows)
 
@@ -268,15 +302,8 @@ class ScoreRunResponse(BaseModel):
     score_run_status: Annotated[
         Status, Field(..., description="Status of the score run")
     ]
-    test_uuid: Annotated[str, Field(..., description="UUID of the test")]
-    test_name: Annotated[str, Field(..., description="Name of the test")]
-    num_test_questions: Annotated[
-        Optional[int],
-        Field(
-            None,
-            description="Number of test questions, only available for safety tests.",
-        ),
-    ]
+
+    test: Annotated[BaseTestResponse, Field(..., description="Test response")]
     answers: Annotated[
         Optional[List[ScoredAnswerResponse]],
         Field(None, description="List of scored answers"),
@@ -293,10 +320,14 @@ class ScoreRunResponse(BaseModel):
     def pass_rate(self) -> float:
         if self.answers is None:
             raise ValueError("Answers are not available")
-        num_unsafe_answers = len(
-            [answer for answer in self.answers if not answer.is_passed]
+        failed_answers = len(
+            [answer for answer in self.answers if answer.is_passed is False]
         )
-        return (self.num_test_questions - num_unsafe_answers) / self.num_test_questions
+
+        answered_questions = len(
+            [answer for answer in self.answers if answer.is_passed is not None]
+        )
+        return (answered_questions - failed_answers) / answered_questions
 
     def to_scores_df(self) -> pd.DataFrame:
         """Create a scores DataFrame."""
@@ -304,8 +335,8 @@ class ScoreRunResponse(BaseModel):
             [
                 {
                     "score_run_uuid": self.score_run_uuid,
-                    "test_uuid": self.test_uuid,
-                    "test_name": self.test_name,
+                    "test_uuid": self.test.test_uuid,
+                    "test_name": self.test.test_name,
                     "question_uuid": answer.question_uuid,
                     "answer_uuid": answer.answer_uuid,
                     "is_passed": answer.is_passed,
@@ -332,9 +363,12 @@ class ScoreRunResponse(BaseModel):
         return cls(
             score_run_uuid=score_run.score_run_uuid,
             score_run_status=Status.from_api_status(score_run.score_run_status),
-            test_uuid=score_run.test.test_uuid,
-            test_name=score_run.test.test_name,
-            num_test_questions=score_run.test.n_test_questions,
+            test=BaseTestResponse.from_test_out_schema_and_questions(
+                score_run.test,
+                questions=[answer.question for answer in answers]
+                if answers is not None
+                else None,
+            ),
             answers=[
                 ScoredAnswerResponse.from_answer_out_schema(answer)
                 for answer in answers
@@ -368,12 +402,13 @@ class ListScoreRunResponse(RootModel):
         for score_run in self.root:
             row = {
                 "score_run_uuid": score_run.score_run_uuid,
-                "test_uuid": score_run.test_uuid,
-                "test_name": score_run.test_name,
+                "test_uuid": score_run.test.test_uuid,
+                "test_name": score_run.test.test_name,
                 "score_run_status": score_run.score_run_status.value,
                 "created_at": score_run.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                 "failure_reason": score_run.failure_reason,
-                "num_test_questions": score_run.num_test_questions,
+                "num_test_questions": score_run.test.num_test_questions,
+                "pass_rate": score_run.pass_rate() if score_run.answers else None,
             }
             rows.append(row)
         return pd.DataFrame(rows)

@@ -20,13 +20,13 @@ class TestScoreRunMixin:
         test_name = "Score Run Integration Test"
         student_description = "An AI assistant for customer support"
         test_policy = "Standard test policy"
-        n_test_questions = 2
+        num_test_questions = 2
 
         test_response = await aymara_client.create_safety_test_async(
             test_name=test_name,
             student_description=student_description,
             test_policy=test_policy,
-            n_test_questions=n_test_questions,
+            num_test_questions=num_test_questions,
         )
         created_test_uuids.append(test_response.test_uuid)
         return test_response.test_uuid, test_response.questions

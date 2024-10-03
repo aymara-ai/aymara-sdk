@@ -18,7 +18,7 @@ class TestInSchema:
         test_type (Union[Unset, TestType]): Test type. Default: TestType.SAFETY.
         test_language (Union[Unset, str]):  Default: 'en'.
         test_policy (Union[None, Unset, str]):
-        n_test_questions (Union[None, Unset, int]):
+        num_test_questions (Union[None, Unset, int]):
         test_system_prompt (Union[None, Unset, str]):
     """
 
@@ -27,7 +27,7 @@ class TestInSchema:
     test_type: Union[Unset, TestType] = TestType.SAFETY
     test_language: Union[Unset, str] = "en"
     test_policy: Union[None, Unset, str] = UNSET
-    n_test_questions: Union[None, Unset, int] = UNSET
+    num_test_questions: Union[None, Unset, int] = UNSET
     test_system_prompt: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -48,11 +48,11 @@ class TestInSchema:
         else:
             test_policy = self.test_policy
 
-        n_test_questions: Union[None, Unset, int]
-        if isinstance(self.n_test_questions, Unset):
-            n_test_questions = UNSET
+        num_test_questions: Union[None, Unset, int]
+        if isinstance(self.num_test_questions, Unset):
+            num_test_questions = UNSET
         else:
-            n_test_questions = self.n_test_questions
+            num_test_questions = self.num_test_questions
 
         test_system_prompt: Union[None, Unset, str]
         if isinstance(self.test_system_prompt, Unset):
@@ -74,8 +74,8 @@ class TestInSchema:
             field_dict["test_language"] = test_language
         if test_policy is not UNSET:
             field_dict["test_policy"] = test_policy
-        if n_test_questions is not UNSET:
-            field_dict["n_test_questions"] = n_test_questions
+        if num_test_questions is not UNSET:
+            field_dict["num_test_questions"] = num_test_questions
         if test_system_prompt is not UNSET:
             field_dict["test_system_prompt"] = test_system_prompt
 
@@ -106,14 +106,14 @@ class TestInSchema:
 
         test_policy = _parse_test_policy(d.pop("test_policy", UNSET))
 
-        def _parse_n_test_questions(data: object) -> Union[None, Unset, int]:
+        def _parse_num_test_questions(data: object) -> Union[None, Unset, int]:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
             return cast(Union[None, Unset, int], data)
 
-        n_test_questions = _parse_n_test_questions(d.pop("n_test_questions", UNSET))
+        num_test_questions = _parse_num_test_questions(d.pop("num_test_questions", UNSET))
 
         def _parse_test_system_prompt(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -130,7 +130,7 @@ class TestInSchema:
             test_type=test_type,
             test_language=test_language,
             test_policy=test_policy,
-            n_test_questions=n_test_questions,
+            num_test_questions=num_test_questions,
             test_system_prompt=test_system_prompt,
         )
 
