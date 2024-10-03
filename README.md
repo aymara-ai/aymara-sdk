@@ -47,7 +47,7 @@ export GITHUB_PAT=[GITHUB_PAT]
 Then, create a virtual environment and install the SDK from GitHub:
 
 ```bash
-pip install git+https://${GITHUB_PAT}@github.com/aymara-ai/aymara-ai@v0.2.0
+pip install git+https://${GITHUB_PAT}@github.com/aymara-ai/aymara-ai@v0.3.0
 ```
 
 ## Configuration
