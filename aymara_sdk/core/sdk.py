@@ -44,7 +44,7 @@ class AymaraAI(
     :type api_key: str, optional
     :param base_url: Base URL for the Aymara AI API, defaults to "https://api.aymara.ai".
     :type base_url: str, optional
-    :param max_wait_time: Maximum wait time for test creation, defaults to {DEFAULT_MAX_WAIT_TIME}.
+    :param max_wait_time: Maximum wait time for test creation, defaults to 120 seconds.
     :type max_wait_time: int, optional
     """
 
