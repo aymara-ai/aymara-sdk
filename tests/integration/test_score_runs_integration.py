@@ -316,7 +316,7 @@ class TestScoreRunMixin:
         _, created_score_run_uuids, _ = cleanup_after_test
         test_uuid, _ = test_data
 
-        monkeypatch.setattr(aymara_client, "max_wait_time", 0.1)
+        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0.1)
 
         score_response = await aymara_client.score_test_async(
             test_uuid, student_answers
@@ -337,7 +337,7 @@ class TestScoreRunMixin:
         _, created_score_run_uuids, _ = cleanup_after_test
         test_uuid, _ = test_data
 
-        monkeypatch.setattr(aymara_client, "max_wait_time", 0.1)
+        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0.1)
 
         score_response = aymara_client.score_test(test_uuid, student_answers)
         created_score_run_uuids.append(score_response.score_run_uuid)

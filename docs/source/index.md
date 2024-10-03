@@ -8,5 +8,6 @@
 
 
 safety_notebook
+jailbreak_notebook
 sdk_reference
 ```

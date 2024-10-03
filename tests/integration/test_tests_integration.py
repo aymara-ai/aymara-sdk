@@ -220,7 +220,7 @@ class TestTestMixin:
         self, aymara_client, safety_test_data, monkeypatch, cleanup_after_test
     ):
         created_test_uuids, _, _ = cleanup_after_test
-        monkeypatch.setattr(aymara_client, "max_wait_time", 0.1)
+        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0.1)
         response = aymara_client.create_safety_test(**safety_test_data)
         created_test_uuids.append(response.test_uuid)
         assert response.test_status == Status.FAILED
@@ -230,7 +230,7 @@ class TestTestMixin:
         self, aymara_client, jailbreak_test_data, monkeypatch, cleanup_after_test
     ):
         created_test_uuids, _, _ = cleanup_after_test
-        monkeypatch.setattr(aymara_client, "max_wait_time", 0.1)
+        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0.1)
         response = await aymara_client.create_jailbreak_test_async(
             **jailbreak_test_data
         )

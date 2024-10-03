@@ -111,7 +111,7 @@ class SummaryMixin(AymaraAIProtocol):
 
                 elapsed_time = int(time.time() - start_time)
 
-                if elapsed_time > self.max_wait_time:
+                if elapsed_time > self.max_wait_time_secs:
                     summary_response.status = models.ScoreRunSuiteSummaryStatus.FAILED
                     self.logger.update_progress_bar(summary_uuid, Status.FAILED)
                     return ScoreRunSuiteSummaryResponse.from_summary_out_schema_and_failure_reason(
@@ -170,7 +170,7 @@ class SummaryMixin(AymaraAIProtocol):
 
                 elapsed_time = int(time.time() - start_time)
 
-                if elapsed_time > self.max_wait_time:
+                if elapsed_time > self.max_wait_time_secs:
                     summary_response.status = models.ScoreRunSuiteSummaryStatus.FAILED
                     self.logger.update_progress_bar(summary_uuid, Status.FAILED)
                     return ScoreRunSuiteSummaryResponse.from_summary_out_schema_and_failure_reason(

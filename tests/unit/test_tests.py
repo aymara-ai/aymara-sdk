@@ -649,7 +649,7 @@ def test_create_and_wait_for_test_impl_timeout_sync(aymara_client):
 
     def mock_time():
         nonlocal start_time
-        start_time += aymara_client.max_wait_time + 1
+        start_time += aymara_client.max_wait_time_secs + 1
         return start_time
 
     with patch("aymara_sdk.core.tests.create_test.sync_detailed", mock_create), patch(
@@ -717,7 +717,7 @@ async def test_create_and_wait_for_test_impl_timeout_async(aymara_client):
 
     def mock_time():
         nonlocal start_time
-        start_time += aymara_client.max_wait_time + 1
+        start_time += aymara_client.max_wait_time_secs + 1
         return start_time
 
     with patch(
@@ -973,8 +973,8 @@ def test_logger_progress_bar(aymara_client):
         mock_logger.update_progress_bar.assert_called_with("test123", Status.COMPLETED)
 
 
-def test_max_wait_time_exceeded(aymara_client):
-    aymara_client.max_wait_time = 1  # Set a short timeout for testing
+def test_max_wait_time_secs_exceeded(aymara_client):
+    aymara_client.max_wait_time_secs = 1  # Set a short timeout for testing
 
     with patch(
         "aymara_sdk.core.tests.create_test.sync_detailed"

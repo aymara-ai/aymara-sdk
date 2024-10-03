@@ -428,7 +428,7 @@ def test_score_test_timeout(aymara_client):
 
     def mock_time():
         nonlocal start_time
-        start_time += aymara_client.max_wait_time + 1
+        start_time += aymara_client.max_wait_time_secs + 1
         return start_time
 
     with patch(
@@ -545,7 +545,7 @@ async def test_score_test_async_timeout(aymara_client):
 
     def mock_time():
         nonlocal start_time
-        start_time += aymara_client.max_wait_time + 1
+        start_time += aymara_client.max_wait_time_secs + 1
         return start_time
 
     with patch(
