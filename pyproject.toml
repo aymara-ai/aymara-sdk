@@ -4,7 +4,7 @@ requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "aymara-ai"
+name = "aymara-sdk"
 version = "0.2.0"
 description = "A Python SDK for using Aymara to test your AI alignment."
 authors = [
@@ -32,8 +32,8 @@ dependencies = [
     "ipywidgets==8.1.5"
 ]
 
-[project.optional-dependencies]
-dev = [
+[tool.uv]
+dev-dependencies = [
     "pytest",
     "pytest-cov",
     "pytest-asyncio",
@@ -49,6 +49,7 @@ dev = [
     "build==1.2.1"
 ]
 
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["aymara_sdk*"]
@@ -59,6 +60,7 @@ exclude = []
 
 
 [tool.pytest.ini_options]
+testpaths = ["aymara_sdk/tests"]
 norecursedirs = ["aymara_sdk/*"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"

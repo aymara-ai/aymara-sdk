@@ -132,10 +132,11 @@ class AymaraAI(
 
         return pd.DataFrame(
             data={
-                "test_name": [score.test_name for score in score_runs],
+                "test_name": [score.test.test_name for score in score_runs],
                 "pass_rate": [score.pass_rate() for score in score_runs],
                 "pass_total": [
-                    score.pass_rate() * score.num_test_questions for score in score_runs
+                    score.pass_rate() * score.test.num_test_questions
+                    for score in score_runs
                 ],
             },
             index=pd.Index(
@@ -184,12 +185,12 @@ class AymaraAI(
 
         pass_rates = [score.pass_rate() for score in score_runs]
         names = [
-            score.test_name if xaxis_is_tests else score.score_run_uuid
+            score.test.test_name if xaxis_is_tests else score.score_run_uuid
             for score in score_runs
         ]
 
         if ylim_min is None:
-            ylim_min = math.floor((min(pass_rates) - .001) * 10) / 10
+            ylim_min = math.floor((min(pass_rates) - 0.001) * 10) / 10
 
         fig, ax = plt.subplots()
 
