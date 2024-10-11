@@ -156,7 +156,7 @@ class TestSummaryMixin:
         self, aymara_client: AymaraAI, score_runs, monkeypatch, cleanup_after_test
     ):
         _, _, created_summary_uuids = cleanup_after_test
-        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0.1)
+        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0.01)
         summary_response = aymara_client.create_summary(score_runs)
         created_summary_uuids.append(summary_response.score_run_suite_summary_uuid)
         assert isinstance(summary_response, ScoreRunSuiteSummaryResponse)
