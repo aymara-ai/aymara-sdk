@@ -101,14 +101,6 @@ class SummaryMixin(AymaraAIProtocol):
                         "Internal server error. Please try again.",
                     )
 
-                if (
-                    summary_response.status
-                    == models.ScoreRunSuiteSummaryStatus.FINISHED
-                ):
-                    return ScoreRunSuiteSummaryResponse.from_summary_out_schema_and_failure_reason(
-                        summary_response
-                    )
-
                 elapsed_time = int(time.time() - start_time)
 
                 if elapsed_time > self.max_wait_time_secs:
@@ -117,6 +109,14 @@ class SummaryMixin(AymaraAIProtocol):
                     return ScoreRunSuiteSummaryResponse.from_summary_out_schema_and_failure_reason(
                         summary_response,
                         failure_reason="Summary creation timed out.",
+                    )
+
+                if (
+                    summary_response.status
+                    == models.ScoreRunSuiteSummaryStatus.FINISHED
+                ):
+                    return ScoreRunSuiteSummaryResponse.from_summary_out_schema_and_failure_reason(
+                        summary_response
                     )
 
                 time.sleep(POLLING_INTERVAL)
