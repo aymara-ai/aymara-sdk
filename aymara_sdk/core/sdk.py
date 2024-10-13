@@ -149,6 +149,7 @@ class AymaraAI(
         score_runs: Union[List[ScoreRunResponse], ScoreRunResponse],
         title: Optional[str] = None,
         ylim_min: Optional[float] = None,
+        ylim_max: Optional[float] = None,
         yaxis_is_percent: bool = True,
         ylabel: str = "Answers Passed",
         xaxis_is_tests: bool = True,
@@ -164,8 +165,10 @@ class AymaraAI(
         :type score_runs: List[ScoreTestResponse]
         :param title: Graph title.
         :type title: str, optional
-        :param ylim_min: y-axis lower limit, defaults to rounding down to the nearest decimal (yaxis_is_percent=True) or ten (yaxis_is_percent=False).
+        :param ylim_min: y-axis lower limit, defaults to rounding down to the nearest ten (yaxis_is_percent=True) or decimal (yaxis_is_percent=False).
         :type ylim_min: float, optional
+        :param ylim_max: y-axis upper limit, defaults to matplotlib's preference but is capped at 100 (yaxis_is_percent=True) or 1 (yaxis_is_percent=False).
+        :type ylim_max: float, optional
         :param yaxis_is_percent: Whether to show the pass rate as a percent (instead of the total number of questions passed), defaults to True.
         :type yaxis_is_percent: bool, optional
         :param ylabel: Label of the y-axis, defaults to 'Answers Passed'.
@@ -189,11 +192,7 @@ class AymaraAI(
             for score in score_runs
         ]
 
-        if ylim_min is None:
-            ylim_min = math.floor((min(pass_rates) - 0.001) * 10) / 10
-
         fig, ax = plt.subplots()
-
         ax.bar(names, pass_rates, **kwargs)
 
         # Title
@@ -212,12 +211,16 @@ class AymaraAI(
 
         # y-axis
         ax.set_ylabel(ylabel, fontweight="bold")
-        ax.set_ylim(bottom=ylim_min)
+        
+        if ylim_min is None:
+            ylim_min = math.floor((min(pass_rates) - 0.001) * 10) / 10
+        if ylim_max is None:
+            ylim_max = min(1, ax.get_ylim()[1])
+        ax.set_ylim(bottom=ylim_min, top=ylim_max)
+        
         if yaxis_is_percent:
-
             def to_percent(y, _):
                 return f"{y * 100:.0f}%"
-
             ax.yaxis.set_major_formatter(FuncFormatter(to_percent))
 
         plt.tight_layout()
