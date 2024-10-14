@@ -243,8 +243,11 @@ class ScoreRunMixin(AymaraAIProtocol):
         remaining_score_runs = score_response.remaining_score_runs
 
         if remaining_score_runs is not None:
+            score_run_plural = (
+                "score run" if remaining_score_runs == 1 else "score runs"
+            )
             self.logger.warning(
-                f"You have {remaining_score_runs} score runs remaining. To upgrade, email us at upgrade@aymara.ai or visit https://aymara.ai/upgrade."
+                f"You have {remaining_score_runs} {score_run_plural} remaining. To upgrade, visit https://aymara.ai/upgrade."
             )
 
         with self.logger.progress_bar(
@@ -310,8 +313,9 @@ class ScoreRunMixin(AymaraAIProtocol):
         remaining_score_runs = score_response.remaining_score_runs
 
         if remaining_score_runs is not None:
+            score_run_plural = "score run" if remaining_score_runs == 1 else "score run"
             self.logger.warning(
-                f"You have {remaining_score_runs} score runs remaining. To upgrade, email us at upgrade@aymara.ai or visit https://aymara.ai/upgrade."
+                f"You have {remaining_score_runs} {score_run_plural} remaining. To upgrade, visit https://aymara.ai/upgrade."
             )
 
         with self.logger.progress_bar(

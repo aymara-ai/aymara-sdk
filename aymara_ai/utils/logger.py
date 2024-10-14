@@ -1,9 +1,11 @@
 import logging
+import re
 import time
 from contextlib import contextmanager
 
 from colorama import Fore, Style, init
 from IPython import get_ipython
+from IPython.display import HTML, display
 from tqdm.auto import tqdm
 
 from ..types import Status
@@ -99,6 +101,14 @@ class SDKLogger(logging.Logger):
         )
 
     def warning(self, msg, *args, **kwargs):
-        if not self.is_notebook:
+        if self.is_notebook:
+            # Detect and create links if in notebook
+            link_pattern = r"(https?://\S+)"
+            colored_msg = re.sub(
+                link_pattern, r'<a href="\1" target="_blank">\1</a>', msg
+            )
+            colored_msg = f'<span style="color: orange;">{colored_msg}</span>'
+            display(HTML(colored_msg))
+        else:
             msg = f"{Fore.YELLOW}{msg}{Style.RESET_ALL}"
-        super().warning(msg, *args, **kwargs)
+            super().warning(msg, *args, **kwargs)

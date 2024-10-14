@@ -40,12 +40,6 @@ html_theme_options = {
         "image_light": "_static/logo-wide-black.png",
         "image_dark": "_static/logo-wide-white.png",
     },
-    "extra_css": {
-        ".code-cell": {
-            "white-space": "pre-wrap",
-            "word-wrap": "break-word",
-        }
-    }
 }
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
@@ -59,9 +53,6 @@ def setup(app):
 
 
 def on_include_read(app, path, docname, source):
-    print("path: ", path)
-    print("docname: ", docname)
-    print("source: ", source)
     new_source = []
     in_sphinx_ignore = False
     for line in source[0].splitlines():

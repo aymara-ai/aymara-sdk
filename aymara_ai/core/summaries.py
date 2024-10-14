@@ -78,8 +78,9 @@ class SummaryMixin(AymaraAIProtocol):
         remaining_summaries = summary_response.remaining_summaries
 
         if remaining_summaries is not None:
+            summary_plural = "summary" if remaining_summaries == 1 else "summaries"
             self.logger.warning(
-                f"You have {remaining_summaries} summaries remaining. To upgrade, email us at upgrade@aymara.ai or visit https://aymara.ai/upgrade."
+                f"You have {remaining_summaries} {summary_plural} remaining. To upgrade, visit https://aymara.ai/upgrade."
             )
 
         with self.logger.progress_bar(
@@ -144,8 +145,9 @@ class SummaryMixin(AymaraAIProtocol):
         remaining_summaries = summary_response.remaining_summaries
 
         if remaining_summaries is not None:
+            summary_plural = "summary" if remaining_summaries == 1 else "summaries"
             self.logger.warning(
-                f"You have {remaining_summaries} summaries remaining. To upgrade, email us at upgrade@aymara.ai or visit https://aymara.ai/upgrade."
+                f"You have {remaining_summaries} {summary_plural} remaining. To upgrade, visit https://aymara.ai/upgrade."
             )
 
         with self.logger.progress_bar(
