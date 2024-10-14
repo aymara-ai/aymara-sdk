@@ -4,7 +4,7 @@ SDK Reference
 
 SDK
 ---------
-.. automodule:: aymara_sdk.core
+.. automodule:: aymara_ai.core
    :members:
    :undoc-members:
    :show-inheritance:
@@ -12,7 +12,7 @@ SDK
 
 SDK Types
 ---------
-.. automodule:: aymara_sdk.types
+.. automodule:: aymara_ai.types
    :members:
    :undoc-members:
    :show-inheritance:

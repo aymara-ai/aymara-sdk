@@ -6,9 +6,9 @@ DOCS_DIR = docs
 # Default target
 .PHONY: docs
 docs:
-	@cp aymara_sdk/examples/safety/safety_notebook.ipynb $(DOCS_DIR)/source/
-	@cp aymara_sdk/examples/safety/free_trial_notebook.ipynb $(DOCS_DIR)/source/
-	@cp aymara_sdk/examples/jailbreak/jailbreak_notebook.ipynb $(DOCS_DIR)/source/
+	@cp aymara_ai/examples/safety/safety_notebook.ipynb $(DOCS_DIR)/source/
+	@cp aymara_ai/examples/safety/free_trial_notebook.ipynb $(DOCS_DIR)/source/
+	@cp aymara_ai/examples/jailbreak/jailbreak_notebook.ipynb $(DOCS_DIR)/source/
 	@$(MAKE) -C $(DOCS_DIR) html
 	@rm $(DOCS_DIR)/source/safety_notebook.ipynb
 	@rm $(DOCS_DIR)/source/free_trial_notebook.ipynb
@@ -36,4 +36,4 @@ test-integration:
 
 
 generate-client:
-	openapi-python-client generate --url http://localhost:8000/openapi.json --output-path aymara_sdk/generated --overwrite --config aymara_sdk/client_config.yml
+	openapi-python-client generate --url http://localhost:8000/openapi.json --output-path aymara_ai/generated --overwrite --config aymara_ai/client_config.yml

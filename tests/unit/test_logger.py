@@ -18,7 +18,7 @@ def test_sdk_logger_initialization(sdk_logger):
 
 
 def test_progress_bar_context_manager(sdk_logger):
-    with patch("aymara_sdk.utils.logger.tqdm") as mock_tqdm:
+    with patch("aymara_ai.utils.logger.tqdm") as mock_tqdm:
         mock_pbar = MagicMock()
         mock_tqdm.return_value.__enter__.return_value = mock_pbar
 
@@ -32,7 +32,7 @@ def test_progress_bar_context_manager(sdk_logger):
 
 
 def test_update_progress_bar(sdk_logger):
-    with patch("aymara_sdk.utils.logger.tqdm") as mock_tqdm:
+    with patch("aymara_ai.utils.logger.tqdm") as mock_tqdm:
         mock_pbar = MagicMock()
         mock_tqdm.return_value.__enter__.return_value = mock_pbar
 
@@ -72,7 +72,7 @@ def test_get_progress_description(sdk_logger):
     ],
 )
 def test_update_progress_bar_colors(sdk_logger, status, expected_color):
-    with patch("aymara_sdk.utils.logger.tqdm") as mock_tqdm:
+    with patch("aymara_ai.utils.logger.tqdm") as mock_tqdm:
         mock_pbar = MagicMock()
         mock_tqdm.return_value.__enter__.return_value = mock_pbar
 

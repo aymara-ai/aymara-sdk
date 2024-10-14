@@ -9,9 +9,9 @@ from aymara_ai.types import ScoreRunSuiteSummaryResponse, Status
 
 def test_create_summary(aymara_client):
     with patch(
-        "aymara_sdk.core.summaries.create_score_run_suite_summary.sync_detailed"
+        "aymara_ai.core.summaries.create_score_run_suite_summary.sync_detailed"
     ) as mock_create_summary, patch(
-        "aymara_sdk.core.summaries.get_score_run_suite_summary.sync_detailed"
+        "aymara_ai.core.summaries.get_score_run_suite_summary.sync_detailed"
     ) as mock_get_summary:
         mock_create_summary.return_value.parsed = models.ScoreRunSuiteSummaryOutSchema(
             score_run_suite_summary_uuid="sum123",
@@ -94,9 +94,9 @@ def test_create_summary(aymara_client):
 @pytest.mark.asyncio
 async def test_create_summary_async(aymara_client):
     with patch(
-        "aymara_sdk.core.summaries.create_score_run_suite_summary.asyncio_detailed"
+        "aymara_ai.core.summaries.create_score_run_suite_summary.asyncio_detailed"
     ) as mock_create_summary, patch(
-        "aymara_sdk.core.summaries.get_score_run_suite_summary.asyncio_detailed"
+        "aymara_ai.core.summaries.get_score_run_suite_summary.asyncio_detailed"
     ) as mock_get_summary:
         mock_create_summary.return_value.parsed = models.ScoreRunSuiteSummaryOutSchema(
             score_run_suite_summary_uuid="sum123",
@@ -178,7 +178,7 @@ async def test_create_summary_async(aymara_client):
 
 def test_get_summary(aymara_client):
     with patch(
-        "aymara_sdk.core.summaries.get_score_run_suite_summary.sync_detailed"
+        "aymara_ai.core.summaries.get_score_run_suite_summary.sync_detailed"
     ) as mock_get_summary:
         mock_get_summary.return_value.parsed = models.ScoreRunSuiteSummaryOutSchema(
             score_run_suite_summary_uuid="sum123",
@@ -227,7 +227,7 @@ def test_get_summary(aymara_client):
 
     # Test 404 response
     with patch(
-        "aymara_sdk.core.summaries.get_score_run_suite_summary.sync_detailed"
+        "aymara_ai.core.summaries.get_score_run_suite_summary.sync_detailed"
     ) as mock_get_summary:
         mock_get_summary.return_value.status_code = 404
 
@@ -238,7 +238,7 @@ def test_get_summary(aymara_client):
 @pytest.mark.asyncio
 async def test_get_summary_async(aymara_client):
     with patch(
-        "aymara_sdk.core.summaries.get_score_run_suite_summary.asyncio_detailed"
+        "aymara_ai.core.summaries.get_score_run_suite_summary.asyncio_detailed"
     ) as mock_get_summary:
         mock_get_summary.return_value.parsed = models.ScoreRunSuiteSummaryOutSchema(
             score_run_suite_summary_uuid="sum123",
@@ -287,7 +287,7 @@ async def test_get_summary_async(aymara_client):
 
     # Test 404 response
     with patch(
-        "aymara_sdk.core.summaries.get_score_run_suite_summary.asyncio_detailed"
+        "aymara_ai.core.summaries.get_score_run_suite_summary.asyncio_detailed"
     ) as mock_get_summary:
         mock_get_summary.return_value.status_code = 404
 
@@ -297,7 +297,7 @@ async def test_get_summary_async(aymara_client):
 
 def test_list_summaries(aymara_client):
     with patch(
-        "aymara_sdk.core.summaries.list_score_run_suite_summaries.sync_detailed"
+        "aymara_ai.core.summaries.list_score_run_suite_summaries.sync_detailed"
     ) as mock_list_summaries:
         mock_list_summaries.return_value.parsed = models.PagedScoreRunSuiteSummaryOutSchema(
             count=2,
@@ -388,7 +388,7 @@ def test_list_summaries(aymara_client):
 @pytest.mark.asyncio
 async def test_list_summaries_async(aymara_client):
     with patch(
-        "aymara_sdk.core.summaries.list_score_run_suite_summaries.asyncio_detailed"
+        "aymara_ai.core.summaries.list_score_run_suite_summaries.asyncio_detailed"
     ) as mock_list_summaries:
         mock_list_summaries.return_value.parsed = models.PagedScoreRunSuiteSummaryOutSchema(
             count=2,

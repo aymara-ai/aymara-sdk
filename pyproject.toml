@@ -55,7 +55,7 @@ dev-dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["aymara_sdk*"]
+include = ["aymara_ai*"]
 exclude = []
 
 [tool.setuptools.package-data]
@@ -64,6 +64,6 @@ exclude = []
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-norecursedirs = ["aymara_sdk/*"]
+norecursedirs = ["aymara_ai/*"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"

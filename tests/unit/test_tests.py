@@ -23,11 +23,11 @@ from aymara_ai.utils.constants import (
 
 def test_create_safety_test(aymara_client):
     with patch(
-        "aymara_sdk.core.tests.create_test.sync_detailed"
+        "aymara_ai.core.tests.create_test.sync_detailed"
     ) as mock_create_test, patch(
-        "aymara_sdk.core.tests.get_test.sync_detailed"
+        "aymara_ai.core.tests.get_test.sync_detailed"
     ) as mock_get_test, patch(
-        "aymara_sdk.core.tests.get_test_questions.sync_detailed"
+        "aymara_ai.core.tests.get_test_questions.sync_detailed"
     ) as mock_get_questions:
         mock_create_test.return_value.parsed = models.TestOutSchema(
             test_uuid="test123",
@@ -77,11 +77,11 @@ def test_create_safety_test(aymara_client):
 @pytest.mark.asyncio
 async def test_create_jailbreak_test_async(aymara_client):
     with patch(
-        "aymara_sdk.core.tests.create_test.asyncio_detailed"
+        "aymara_ai.core.tests.create_test.asyncio_detailed"
     ) as mock_create_test, patch(
-        "aymara_sdk.core.tests.get_test.asyncio_detailed"
+        "aymara_ai.core.tests.get_test.asyncio_detailed"
     ) as mock_get_test, patch(
-        "aymara_sdk.core.tests.get_test_questions.asyncio_detailed"
+        "aymara_ai.core.tests.get_test_questions.asyncio_detailed"
     ) as mock_get_questions:
         mock_create_test.return_value.parsed = models.TestOutSchema(
             test_uuid="test123",
@@ -150,8 +150,8 @@ def test_create_test_validation(aymara_client):
 
 
 def test_get_test(aymara_client):
-    with patch("aymara_sdk.core.tests.get_test.sync_detailed") as mock_get_test, patch(
-        "aymara_sdk.core.tests.get_test_questions.sync_detailed"
+    with patch("aymara_ai.core.tests.get_test.sync_detailed") as mock_get_test, patch(
+        "aymara_ai.core.tests.get_test_questions.sync_detailed"
     ) as mock_get_questions:
         mock_get_test.return_value.parsed = models.TestOutSchema(
             test_uuid="test123",
@@ -186,9 +186,9 @@ def test_get_test(aymara_client):
 @pytest.mark.asyncio
 async def test_get_test_async(aymara_client):
     with patch(
-        "aymara_sdk.core.tests.get_test.asyncio_detailed"
+        "aymara_ai.core.tests.get_test.asyncio_detailed"
     ) as mock_get_test, patch(
-        "aymara_sdk.core.tests.get_test_questions.asyncio_detailed"
+        "aymara_ai.core.tests.get_test_questions.asyncio_detailed"
     ) as mock_get_questions:
         mock_get_test.return_value.parsed = models.TestOutSchema(
             test_uuid="test123",
@@ -221,7 +221,7 @@ async def test_get_test_async(aymara_client):
 
 
 def test_list_tests(aymara_client):
-    with patch("aymara_sdk.core.tests.list_tests.sync_detailed") as mock_list_tests:
+    with patch("aymara_ai.core.tests.list_tests.sync_detailed") as mock_list_tests:
         mock_list_tests.return_value.parsed = models.PagedTestOutSchema(
             items=[
                 models.TestOutSchema(
@@ -266,7 +266,7 @@ def test_list_tests(aymara_client):
 
 @pytest.mark.asyncio
 async def test_list_tests_async(aymara_client):
-    with patch("aymara_sdk.core.tests.list_tests.asyncio_detailed") as mock_list_tests:
+    with patch("aymara_ai.core.tests.list_tests.asyncio_detailed") as mock_list_tests:
         mock_list_tests.return_value.parsed = models.PagedTestOutSchema(
             items=[
                 models.TestOutSchema(
@@ -423,10 +423,10 @@ def test_create_and_wait_for_test_impl_sync_success(aymara_client):
     )
     mock_get_questions.return_value.status_code = 200
 
-    with patch("aymara_sdk.core.tests.create_test.sync_detailed", mock_create), patch(
-        "aymara_sdk.core.tests.get_test.sync_detailed", mock_get
+    with patch("aymara_ai.core.tests.create_test.sync_detailed", mock_create), patch(
+        "aymara_ai.core.tests.get_test.sync_detailed", mock_get
     ), patch(
-        "aymara_sdk.core.tests.get_test_questions.sync_detailed", mock_get_questions
+        "aymara_ai.core.tests.get_test_questions.sync_detailed", mock_get_questions
     ):
         result = aymara_client._create_and_wait_for_test_impl_sync(test_data)
 
@@ -484,10 +484,10 @@ async def test_create_and_wait_for_test_impl_async_success(aymara_client):
     )
     mock_get_questions.return_value.status_code = 200
 
-    with patch(
-        "aymara_sdk.core.tests.create_test.asyncio_detailed", mock_create
-    ), patch("aymara_sdk.core.tests.get_test.asyncio_detailed", mock_get), patch(
-        "aymara_sdk.core.tests.get_test_questions.asyncio_detailed", mock_get_questions
+    with patch("aymara_ai.core.tests.create_test.asyncio_detailed", mock_create), patch(
+        "aymara_ai.core.tests.get_test.asyncio_detailed", mock_get
+    ), patch(
+        "aymara_ai.core.tests.get_test_questions.asyncio_detailed", mock_get_questions
     ):
         result = await aymara_client._create_and_wait_for_test_impl_async(test_data)
 
@@ -536,8 +536,8 @@ def test_create_and_wait_for_test_impl_failure_sync(aymara_client):
     )
     mock_get.return_value.status_code = 200
 
-    with patch("aymara_sdk.core.tests.create_test.sync_detailed", mock_create), patch(
-        "aymara_sdk.core.tests.get_test.sync_detailed", mock_get
+    with patch("aymara_ai.core.tests.create_test.sync_detailed", mock_create), patch(
+        "aymara_ai.core.tests.get_test.sync_detailed", mock_get
     ):
         result = aymara_client._create_and_wait_for_test_impl_sync(test_data)
 
@@ -588,9 +588,9 @@ async def test_create_and_wait_for_test_impl_failure_async(aymara_client):
     )
     mock_get.return_value.status_code = 200
 
-    with patch(
-        "aymara_sdk.core.tests.create_test.asyncio_detailed", mock_create
-    ), patch("aymara_sdk.core.tests.get_test.asyncio_detailed", mock_get):
+    with patch("aymara_ai.core.tests.create_test.asyncio_detailed", mock_create), patch(
+        "aymara_ai.core.tests.get_test.asyncio_detailed", mock_get
+    ):
         result = await aymara_client._create_and_wait_for_test_impl_async(test_data)
 
         assert isinstance(result, JailbreakTestResponse)
@@ -652,8 +652,8 @@ def test_create_and_wait_for_test_impl_timeout_sync(aymara_client):
         start_time += aymara_client.max_wait_time_secs + 1
         return start_time
 
-    with patch("aymara_sdk.core.tests.create_test.sync_detailed", mock_create), patch(
-        "aymara_sdk.core.tests.get_test.sync_detailed", mock_get
+    with patch("aymara_ai.core.tests.create_test.sync_detailed", mock_create), patch(
+        "aymara_ai.core.tests.get_test.sync_detailed", mock_get
     ), patch("time.time", side_effect=mock_time), patch(
         "time.sleep", return_value=None
     ):
@@ -720,10 +720,10 @@ async def test_create_and_wait_for_test_impl_timeout_async(aymara_client):
         start_time += aymara_client.max_wait_time_secs + 1
         return start_time
 
-    with patch(
-        "aymara_sdk.core.tests.create_test.asyncio_detailed", mock_create
-    ), patch("aymara_sdk.core.tests.get_test.asyncio_detailed", mock_get), patch(
-        "aymara_sdk.core.tests.get_test_questions.asyncio_detailed", mock_get_questions
+    with patch("aymara_ai.core.tests.create_test.asyncio_detailed", mock_create), patch(
+        "aymara_ai.core.tests.get_test.asyncio_detailed", mock_get
+    ), patch(
+        "aymara_ai.core.tests.get_test_questions.asyncio_detailed", mock_get_questions
     ), patch("time.time", side_effect=mock_time), patch(
         "time.sleep", return_value=None
     ):
@@ -744,7 +744,7 @@ def test_get_all_questions_single_page_sync(aymara_client):
     mock_get_questions.return_value.status_code = 200
 
     with patch(
-        "aymara_sdk.core.tests.get_test_questions.sync_detailed", mock_get_questions
+        "aymara_ai.core.tests.get_test_questions.sync_detailed", mock_get_questions
     ):
         result = aymara_client._get_all_questions_sync("test123")
 
@@ -763,7 +763,7 @@ async def test_get_all_questions_single_page_async(aymara_client):
     mock_get_questions.return_value.status_code = 200
 
     with patch(
-        "aymara_sdk.core.tests.get_test_questions.asyncio_detailed", mock_get_questions
+        "aymara_ai.core.tests.get_test_questions.asyncio_detailed", mock_get_questions
     ):
         result = await aymara_client._get_all_questions_async("test123")
 
@@ -803,7 +803,7 @@ def test_get_all_questions_multiple_pages_sync(aymara_client):
     ]
 
     with patch(
-        "aymara_sdk.core.tests.get_test_questions.sync_detailed", mock_get_questions
+        "aymara_ai.core.tests.get_test_questions.sync_detailed", mock_get_questions
     ):
         result = aymara_client._get_all_questions_sync("test123")
 
@@ -846,7 +846,7 @@ async def test_get_all_questions_multiple_pages_async(aymara_client):
     ]
 
     with patch(
-        "aymara_sdk.core.tests.get_test_questions.asyncio_detailed", mock_get_questions
+        "aymara_ai.core.tests.get_test_questions.asyncio_detailed", mock_get_questions
     ):
         result = await aymara_client._get_all_questions_async("test123")
 
@@ -858,7 +858,7 @@ async def test_get_all_questions_multiple_pages_async(aymara_client):
 
 
 def test_list_tests_pagination(aymara_client):
-    with patch("aymara_sdk.core.tests.list_tests.sync_detailed") as mock_list_tests:
+    with patch("aymara_ai.core.tests.list_tests.sync_detailed") as mock_list_tests:
         mock_list_tests.return_value.parsed = models.PagedTestOutSchema(
             items=[
                 models.TestOutSchema(
@@ -904,11 +904,11 @@ def test_logger_progress_bar(aymara_client):
     aymara_client.logger = mock_logger
 
     with patch(
-        "aymara_sdk.core.tests.create_test.sync_detailed"
+        "aymara_ai.core.tests.create_test.sync_detailed"
     ) as mock_create_test, patch(
-        "aymara_sdk.core.tests.get_test.sync_detailed"
+        "aymara_ai.core.tests.get_test.sync_detailed"
     ) as mock_get_test, patch(
-        "aymara_sdk.core.tests.get_test_questions.sync_detailed"
+        "aymara_ai.core.tests.get_test_questions.sync_detailed"
     ) as mock_get_questions:
         mock_create_test.return_value.parsed = models.TestOutSchema(
             test_uuid="test123",
@@ -977,9 +977,9 @@ def test_max_wait_time_secs_exceeded(aymara_client):
     aymara_client.max_wait_time_secs = 1  # Set a short timeout for testing
 
     with patch(
-        "aymara_sdk.core.tests.create_test.sync_detailed"
+        "aymara_ai.core.tests.create_test.sync_detailed"
     ) as mock_create_test, patch(
-        "aymara_sdk.core.tests.get_test.sync_detailed"
+        "aymara_ai.core.tests.get_test.sync_detailed"
     ) as mock_get_test, patch("time.sleep", return_value=None), patch(
         "time.time", side_effect=[0, 2]
     ):  # Simulate time passing
@@ -1033,8 +1033,8 @@ def test_max_wait_time_secs_exceeded(aymara_client):
     ],
 )
 def test_status_handling(aymara_client, test_status, expected_status, test_type):
-    with patch("aymara_sdk.core.tests.get_test.sync_detailed") as mock_get_test, patch(
-        "aymara_sdk.core.tests.get_test_questions.sync_detailed"
+    with patch("aymara_ai.core.tests.get_test.sync_detailed") as mock_get_test, patch(
+        "aymara_ai.core.tests.get_test_questions.sync_detailed"
     ) as mock_get_test_questions:
         mock_get_test.return_value.parsed = models.TestOutSchema(
             test_uuid="test123",
@@ -1078,7 +1078,7 @@ def test_status_handling(aymara_client, test_status, expected_status, test_type)
 
 
 def test_delete_test(aymara_client):
-    with patch("aymara_sdk.core.tests.delete_test.sync_detailed") as mock_delete_test:
+    with patch("aymara_ai.core.tests.delete_test.sync_detailed") as mock_delete_test:
         mock_delete_test.return_value.status_code = 204  # No Content
 
         aymara_client.delete_test("test123")
@@ -1091,7 +1091,7 @@ def test_delete_test(aymara_client):
 @pytest.mark.asyncio
 async def test_delete_test_async(aymara_client):
     with patch(
-        "aymara_sdk.core.tests.delete_test.asyncio_detailed"
+        "aymara_ai.core.tests.delete_test.asyncio_detailed"
     ) as mock_delete_test_async:
         mock_delete_test_async.return_value.status_code = 204  # No Content
 

@@ -39,7 +39,7 @@ def test_aymara_ai_initialization():
 
 
 def test_aymara_ai_context_manager():
-    with patch("aymara_sdk.core.sdk.client.Client") as mock_client:
+    with patch("aymara_ai.core.sdk.client.Client") as mock_client:
         with AymaraAI(api_key="test_api_key") as ai:
             assert ai.client is not None
         mock_client.return_value._client.close.assert_called_once()
@@ -47,7 +47,7 @@ def test_aymara_ai_context_manager():
 
 @pytest.mark.asyncio
 async def test_aymara_ai_async_context_manager():
-    with patch("aymara_sdk.core.sdk.client.Client") as mock_client:
+    with patch("aymara_ai.core.sdk.client.Client") as mock_client:
         mock_async_client = mock_client.return_value._async_client
         mock_async_client.aclose = AsyncMock()
         async with AymaraAI(api_key="test_api_key") as ai:
