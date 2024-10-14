@@ -46,6 +46,14 @@ def _parse_response(
         response_201 = TestOutSchema.from_dict(response.json())
 
         return response_201
+    if response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY:
+        response_422 = ErrorSchema.from_dict(response.json())
+
+        return response_422
+    if response.status_code == HTTPStatus.NOT_FOUND:
+        response_404 = ErrorSchema.from_dict(response.json())
+
+        return response_404
     if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
         response_500 = ErrorSchema.from_dict(response.json())
 

@@ -75,6 +75,13 @@ class SummaryMixin(AymaraAIProtocol):
         summary_response = response.parsed
         summary_uuid = summary_response.score_run_suite_summary_uuid
 
+        remaining_summaries = summary_response.remaining_summaries
+
+        if remaining_summaries is not None:
+            self.logger.warning(
+                f"You have {remaining_summaries} summaries remaining. To upgrade, email us at upgrade@aymara.ai or visit https://aymara.ai/upgrade."
+            )
+
         with self.logger.progress_bar(
             "Summary",
             summary_uuid,
@@ -133,6 +140,13 @@ class SummaryMixin(AymaraAIProtocol):
         )
         summary_response = response.parsed
         summary_uuid = summary_response.score_run_suite_summary_uuid
+
+        remaining_summaries = summary_response.remaining_summaries
+
+        if remaining_summaries is not None:
+            self.logger.warning(
+                f"You have {remaining_summaries} summaries remaining. To upgrade, email us at upgrade@aymara.ai or visit https://aymara.ai/upgrade."
+            )
 
         with self.logger.progress_bar(
             "Summary",
