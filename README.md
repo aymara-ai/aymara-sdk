@@ -40,13 +40,7 @@ Upcoming
 
 ## Installation
 
-You will need the Aymara GitHub personal access token from your company. Treat the token like a password and never share it or include it in your code. Instead, add it to your env variables:
-
-```bash
-export GITHUB_PAT=[GITHUB_PAT]
-```
-
-Then, create a virtual environment and install the SDK from GitHub:
+Install the SDK with pip. We suggest using a virtual environment to manage dependencies.
 
 ```bash
 pip install aymara-ai
