@@ -38,11 +38,13 @@ def test_create_summary(aymara_client):
                         ),
                         created_at=datetime.now(),
                         updated_at=datetime.now(),
+                        remaining_score_runs=100,
                     ),
                 )
             ],
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_summaries=50,
         )
         mock_get_summary.return_value.parsed = models.ScoreRunSuiteSummaryOutSchema(
             score_run_suite_summary_uuid="sum123",
@@ -71,11 +73,13 @@ def test_create_summary(aymara_client):
                         ),
                         created_at=datetime.now(),
                         updated_at=datetime.now(),
+                        remaining_score_runs=100,
                     ),
                 )
             ],
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_summaries=50,
         )
 
         result = aymara_client.create_summary(["score123"])
@@ -119,11 +123,13 @@ async def test_create_summary_async(aymara_client):
                         ),
                         created_at=datetime.now(),
                         updated_at=datetime.now(),
+                        remaining_score_runs=100,
                     ),
                 )
             ],
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_summaries=50,
         )
         mock_get_summary.return_value.parsed = models.ScoreRunSuiteSummaryOutSchema(
             score_run_suite_summary_uuid="sum123",
@@ -152,11 +158,13 @@ async def test_create_summary_async(aymara_client):
                         ),
                         created_at=datetime.now(),
                         updated_at=datetime.now(),
+                        remaining_score_runs=100,
                     ),
                 )
             ],
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_summaries=50,
         )
 
         result = await aymara_client.create_summary_async(["score123"])
@@ -199,11 +207,13 @@ def test_get_summary(aymara_client):
                         ),
                         created_at=datetime.now(),
                         updated_at=datetime.now(),
+                        remaining_score_runs=100,
                     ),
                 )
             ],
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_summaries=50,
         )
         mock_get_summary.return_value.status_code = 200
 
@@ -257,11 +267,13 @@ async def test_get_summary_async(aymara_client):
                         ),
                         created_at=datetime.now(),
                         updated_at=datetime.now(),
+                        remaining_score_runs=100,
                     ),
                 )
             ],
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_summaries=50,
         )
         mock_get_summary.return_value.status_code = 200
 
@@ -317,11 +329,13 @@ def test_list_summaries(aymara_client):
                                 ),
                                 created_at=datetime.now(),
                                 updated_at=datetime.now(),
+                                remaining_score_runs=100,
                             ),
                         )
                     ],
                     created_at=datetime.now(),
                     updated_at=datetime.now(),
+                    remaining_summaries=50,
                 ),
                 models.ScoreRunSuiteSummaryOutSchema(
                     score_run_suite_summary_uuid="sum2",
@@ -350,11 +364,13 @@ def test_list_summaries(aymara_client):
                                 ),
                                 created_at=datetime.now(),
                                 updated_at=datetime.now(),
+                                remaining_score_runs=100,
                             ),
                         )
                     ],
                     created_at=datetime.now(),
                     updated_at=datetime.now(),
+                    remaining_summaries=50,
                 ),
             ],
         )
@@ -404,11 +420,13 @@ async def test_list_summaries_async(aymara_client):
                                 ),
                                 created_at=datetime.now(),
                                 updated_at=datetime.now(),
+                                remaining_score_runs=100,
                             ),
                         )
                     ],
                     created_at=datetime.now(),
                     updated_at=datetime.now(),
+                    remaining_summaries=50,
                 ),
                 models.ScoreRunSuiteSummaryOutSchema(
                     score_run_suite_summary_uuid="sum2",
@@ -437,11 +455,13 @@ async def test_list_summaries_async(aymara_client):
                                 ),
                                 created_at=datetime.now(),
                                 updated_at=datetime.now(),
+                                remaining_score_runs=100,
                             ),
                         )
                     ],
                     created_at=datetime.now(),
                     updated_at=datetime.now(),
+                    remaining_summaries=50,
                 ),
             ],
         )

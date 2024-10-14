@@ -40,7 +40,12 @@ def test_update_progress_bar(sdk_logger):
             sdk_logger.update_progress_bar("123", Status.COMPLETED)
             assert sdk_logger.tasks["123"]["status"] == Status.COMPLETED
             mock_pbar.set_description_str.assert_called()
-            assert mock_pbar.colour == "green"
+            if sdk_logger.is_notebook:
+                assert mock_pbar.colour == "green"
+            else:
+                mock_pbar.set_description_str.assert_called_with(
+                    sdk_logger._get_progress_description("123")
+                )
 
 
 def test_get_progress_description(sdk_logger):
@@ -73,4 +78,9 @@ def test_update_progress_bar_colors(sdk_logger, status, expected_color):
 
         with sdk_logger.progress_bar("Test", "123", Status.PENDING):
             sdk_logger.update_progress_bar("123", status)
-            assert mock_pbar.colour == expected_color
+            if sdk_logger.is_notebook:
+                assert mock_pbar.colour == expected_color
+            else:
+                mock_pbar.set_description_str.assert_called_with(
+                    sdk_logger._get_progress_description("123")
+                )

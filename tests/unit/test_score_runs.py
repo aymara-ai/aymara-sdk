@@ -38,6 +38,7 @@ def test_score_test(aymara_client):
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_score_runs=100,
         )
         mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
@@ -56,6 +57,7 @@ def test_score_test(aymara_client):
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_score_runs=100,
         )
         mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
@@ -110,6 +112,7 @@ async def test_score_test_async(aymara_client):
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_score_runs=100,
         )
         mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
@@ -128,6 +131,7 @@ async def test_score_test_async(aymara_client):
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_score_runs=100,
         )
         mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
@@ -179,6 +183,7 @@ def test_get_score_run(aymara_client):
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_score_runs=100,
         )
         mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
@@ -229,6 +234,7 @@ async def test_get_score_run_async(aymara_client):
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_score_runs=100,
         )
         mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
@@ -278,6 +284,7 @@ def test_list_score_runs(aymara_client):
                     ),
                     created_at=datetime.now(),
                     updated_at=datetime.now(),
+                    remaining_score_runs=100,
                 ),
                 models.ScoreRunOutSchema(
                     score_run_uuid="score2",
@@ -296,6 +303,7 @@ def test_list_score_runs(aymara_client):
                     ),
                     created_at=datetime.now(),
                     updated_at=datetime.now(),
+                    remaining_score_runs=99,
                 ),
             ],
             count=2,
@@ -336,6 +344,7 @@ async def test_list_score_runs_async(aymara_client):
                     ),
                     created_at=datetime.now(),
                     updated_at=datetime.now(),
+                    remaining_score_runs=100,
                 ),
                 models.ScoreRunOutSchema(
                     score_run_uuid="score2",
@@ -354,6 +363,7 @@ async def test_list_score_runs_async(aymara_client):
                     ),
                     created_at=datetime.now(),
                     updated_at=datetime.now(),
+                    remaining_score_runs=99,
                 ),
             ],
             count=2,
@@ -393,6 +403,7 @@ def test_score_test_failed(aymara_client):
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_score_runs=100,
         )
         mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
@@ -411,6 +422,7 @@ def test_score_test_failed(aymara_client):
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_score_runs=100,
         )
 
         result = aymara_client.score_test(
@@ -455,6 +467,7 @@ def test_score_test_timeout(aymara_client):
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_score_runs=100,
         )
         mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
@@ -473,6 +486,7 @@ def test_score_test_timeout(aymara_client):
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_score_runs=100,
         )
 
         result = aymara_client.score_test(
@@ -509,6 +523,7 @@ async def test_score_test_async_failed(aymara_client):
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_score_runs=100,
         )
         mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
@@ -527,6 +542,7 @@ async def test_score_test_async_failed(aymara_client):
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_score_runs=100,
         )
 
         result = await aymara_client.score_test_async(
@@ -572,6 +588,7 @@ async def test_score_test_async_timeout(aymara_client):
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_score_runs=100,
         )
         mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
@@ -590,6 +607,7 @@ async def test_score_test_async_timeout(aymara_client):
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_score_runs=100,
         )
 
         result = await aymara_client.score_test_async(
@@ -623,6 +641,7 @@ def test_get_score_run_not_finished(aymara_client):
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_score_runs=100,
         )
 
         result = aymara_client.get_score_run("score123")
@@ -655,6 +674,7 @@ async def test_get_score_run_async_not_finished(aymara_client):
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
+            remaining_score_runs=100,
         )
 
         result = await aymara_client.get_score_run_async("score123")
@@ -688,6 +708,7 @@ def test_list_score_runs_with_test_uuid(aymara_client):
                     ),
                     created_at=datetime.now(),
                     updated_at=datetime.now(),
+                    remaining_score_runs=100,
                 ),
             ],
             count=1,
@@ -727,6 +748,7 @@ async def test_list_score_runs_async_with_test_uuid(aymara_client):
                     ),
                     created_at=datetime.now(),
                     updated_at=datetime.now(),
+                    remaining_score_runs=100,
                 ),
             ],
             count=1,
@@ -770,6 +792,7 @@ def test_list_score_runs_multiple_pages(aymara_client):
                                 ),
                                 created_at=datetime.now(),
                                 updated_at=datetime.now(),
+                                remaining_score_runs=100,
                             ),
                         ],
                         count=2,
@@ -799,6 +822,7 @@ def test_list_score_runs_multiple_pages(aymara_client):
                                 ),
                                 created_at=datetime.now(),
                                 updated_at=datetime.now(),
+                                remaining_score_runs=99,
                             ),
                         ],
                         count=2,
@@ -844,6 +868,7 @@ async def test_list_score_runs_async_multiple_pages(aymara_client):
                                 ),
                                 created_at=datetime.now(),
                                 updated_at=datetime.now(),
+                                remaining_score_runs=100,
                             ),
                         ],
                         count=2,
@@ -873,6 +898,7 @@ async def test_list_score_runs_async_multiple_pages(aymara_client):
                                 ),
                                 created_at=datetime.now(),
                                 updated_at=datetime.now(),
+                                remaining_score_runs=99,
                             ),
                         ],
                         count=2,
