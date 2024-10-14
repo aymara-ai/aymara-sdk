@@ -291,6 +291,9 @@ class TestMixin(AymaraAIProtocol):
 
         create_response = response.parsed
 
+        if response.status_code == 422:
+            raise ValueError(f"{create_response.detail}")
+
         test_uuid = create_response.test_uuid
         test_name = create_response.test_name
 
@@ -346,6 +349,9 @@ class TestMixin(AymaraAIProtocol):
         )
 
         create_response = response.parsed
+
+        if response.status_code == 422:
+            raise ValueError(f"{create_response.detail}")
 
         test_uuid = create_response.test_uuid
         test_name = create_response.test_name

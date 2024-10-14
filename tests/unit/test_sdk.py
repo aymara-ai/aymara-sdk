@@ -30,7 +30,9 @@ def test_aymara_ai_initialization():
     assert ai.max_wait_time_secs == DEFAULT_MAX_WAIT_TIME_SECS
 
     ai_custom = AymaraAI(
-        api_key="test_api_key", base_url="https://custom.api.com", max_wait_time_secs=300
+        api_key="test_api_key",
+        base_url="https://custom.api.com",
+        max_wait_time_secs=300,
     )
     assert ai_custom.client._base_url == "https://custom.api.com"
     assert ai_custom.max_wait_time_secs == 300
@@ -151,6 +153,9 @@ def test_graph_pass_rates(mock_score_run_response, yaxis_is_percent, xaxis_is_te
         mock_fig, mock_ax = Mock(), Mock()
         mock_subplots.return_value = (mock_fig, mock_ax)
 
+        # Mock the get_ylim() method to return a tuple
+        mock_ax.get_ylim.return_value = (0, 1)
+
         AymaraAI.graph_pass_rates(
             [mock_score_run_response],
             title="Test Graph",
@@ -163,6 +168,7 @@ def test_graph_pass_rates(mock_score_run_response, yaxis_is_percent, xaxis_is_te
         mock_ax.set_title.assert_called_once_with("Test Graph")
         mock_ax.set_xlabel.assert_called_once()
         mock_ax.set_ylabel.assert_called_once()
+        mock_ax.set_ylim.assert_called_once()  # Add this assertion
         mock_tight_layout.assert_called_once()
         mock_show.assert_called_once()
 
@@ -174,6 +180,9 @@ def test_graph_pass_rates_custom_options(mock_score_run_response):
         mock_fig, mock_ax = Mock(), Mock()
         mock_subplots.return_value = (mock_fig, mock_ax)
 
+        # Mock the get_ylim() method to return a tuple
+        mock_ax.get_ylim.return_value = (0, 1)
+
         # Mock the get_xticklabels() method to return a list of Mock objects
         mock_ax.get_xticklabels.return_value = [Mock(get_text=lambda: "Test 1")]
 
@@ -181,6 +190,7 @@ def test_graph_pass_rates_custom_options(mock_score_run_response):
             [mock_score_run_response],
             title="Custom Graph",
             ylim_min=0.5,
+            ylim_max=1.0,
             ylabel="Custom Y Label",
             xlabel="Custom X Label",
             xtick_rot=45.0,
@@ -198,7 +208,7 @@ def test_graph_pass_rates_custom_options(mock_score_run_response):
         mock_show.assert_called_once()
 
         # Additional assertions to check if custom options are applied correctly
-        mock_ax.set_ylim.assert_called_once_with(bottom=0.5)
+        mock_ax.set_ylim.assert_called_once_with(bottom=0.5, top=1.0)
         mock_ax.set_xticklabels.assert_called()
 
         # Check if xtick_labels_dict is applied correctly
@@ -253,6 +263,9 @@ def test_graph_pass_rates_multiple_runs():
     ) as mock_show, patch("matplotlib.pyplot.tight_layout") as mock_tight_layout:
         mock_fig, mock_ax = Mock(), Mock()
         mock_subplots.return_value = (mock_fig, mock_ax)
+
+        # Mock the get_ylim() method to return a tuple
+        mock_ax.get_ylim.return_value = (0, 1)
 
         AymaraAI.graph_pass_rates(score_runs)
 

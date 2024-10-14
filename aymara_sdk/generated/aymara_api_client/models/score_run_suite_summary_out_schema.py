@@ -24,6 +24,7 @@ class ScoreRunSuiteSummaryOutSchema:
         score_run_summaries (List['ScoreRunSummaryOutSchema']):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
+        remaining_summaries (Union[None, int]):
         overall_improvement_advice (Union[None, Unset, str]):
         overall_summary (Union[None, Unset, str]):
     """
@@ -33,6 +34,7 @@ class ScoreRunSuiteSummaryOutSchema:
     score_run_summaries: List["ScoreRunSummaryOutSchema"]
     created_at: datetime.datetime
     updated_at: datetime.datetime
+    remaining_summaries: Union[None, int]
     overall_improvement_advice: Union[None, Unset, str] = UNSET
     overall_summary: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -50,6 +52,9 @@ class ScoreRunSuiteSummaryOutSchema:
         created_at = self.created_at.isoformat()
 
         updated_at = self.updated_at.isoformat()
+
+        remaining_summaries: Union[None, int]
+        remaining_summaries = self.remaining_summaries
 
         overall_improvement_advice: Union[None, Unset, str]
         if isinstance(self.overall_improvement_advice, Unset):
@@ -72,6 +77,7 @@ class ScoreRunSuiteSummaryOutSchema:
                 "score_run_summaries": score_run_summaries,
                 "created_at": created_at,
                 "updated_at": updated_at,
+                "remaining_summaries": remaining_summaries,
             }
         )
         if overall_improvement_advice is not UNSET:
@@ -101,6 +107,13 @@ class ScoreRunSuiteSummaryOutSchema:
 
         updated_at = isoparse(d.pop("updated_at"))
 
+        def _parse_remaining_summaries(data: object) -> Union[None, int]:
+            if data is None:
+                return data
+            return cast(Union[None, int], data)
+
+        remaining_summaries = _parse_remaining_summaries(d.pop("remaining_summaries"))
+
         def _parse_overall_improvement_advice(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -125,6 +138,7 @@ class ScoreRunSuiteSummaryOutSchema:
             score_run_summaries=score_run_summaries,
             created_at=created_at,
             updated_at=updated_at,
+            remaining_summaries=remaining_summaries,
             overall_improvement_advice=overall_improvement_advice,
             overall_summary=overall_summary,
         )

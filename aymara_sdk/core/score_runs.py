@@ -240,6 +240,13 @@ class ScoreRunMixin(AymaraAIProtocol):
         score_run_uuid = score_response.score_run_uuid
         test_name = score_response.test.test_name
 
+        remaining_score_runs = score_response.remaining_score_runs
+
+        if remaining_score_runs is not None:
+            self.logger.warning(
+                f"You have {remaining_score_runs} score runs remaining. To upgrade, email us at upgrade@aymara.ai or visit https://aymara.ai/upgrade."
+            )
+
         with self.logger.progress_bar(
             test_name,
             score_run_uuid,
@@ -299,6 +306,13 @@ class ScoreRunMixin(AymaraAIProtocol):
         score_response = response.parsed
         score_run_uuid = score_response.score_run_uuid
         test_name = score_response.test.test_name
+
+        remaining_score_runs = score_response.remaining_score_runs
+
+        if remaining_score_runs is not None:
+            self.logger.warning(
+                f"You have {remaining_score_runs} score runs remaining. To upgrade, email us at upgrade@aymara.ai or visit https://aymara.ai/upgrade."
+            )
 
         with self.logger.progress_bar(
             test_name,

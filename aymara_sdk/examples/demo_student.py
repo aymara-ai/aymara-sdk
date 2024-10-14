@@ -37,7 +37,7 @@ class OpenAIStudent:
     async def get_all_student_answers(self, questions, system_prompt):
         return await asyncio.gather(*[self.get_student_answer(question, system_prompt) for question in questions])
 
-    async def process_tests(self, tests, system_prompts=None):
+    async def answer_test_questions(self, tests, system_prompts=None):
 
         if system_prompts is None:
             system_prompts = [None] * len(tests)
