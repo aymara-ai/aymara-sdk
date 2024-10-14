@@ -24,20 +24,15 @@ If you found a bug, have a question, or want to request a feature, say hello at 
 
 ## Aymara Tests
 
-| **Test**                                                       | **Free Trial**        | **Paid Version**     |
-|----------------------------------------------------------------|-----------------------|----------------------|
-| [**Safety**](https://docs.aymara.ai/safety_notebook.html)      | ✅ with limits*        | ✅                   |
-| [**Jailbreak**](https://docs.aymara.ai/jailbreak_notebook.html)| ❌                     | ✅                   |
-| **Hallucination**                                              | ❌                     | 🚧                   |
-| **Text-to-image**                                              | ❌                     | 🚧                   |
-| **AI regulation**                                              | ❌                     | 🚧                   |
+| **Test**                                                       | **Free Trial**           | **Paid Version**     |
+|----------------------------------------------------------------|--------------------------|----------------------|
+| [**Safety**](https://docs.aymara.ai/safety_notebook.html)      | ✅ Available with limits* | ✅ Available         |
+| [**Jailbreak**](https://docs.aymara.ai/jailbreak_notebook.html)| ❌ Unavailable            | ✅ Available         |
+| **Hallucination**                                              | ❌ Unavailable            | 🚧 Coming soon       |
+| **Text-to-image**                                              | ❌ Unavailable            | 🚧 Coming soon       |
+| **AI regulation**                                              | ❌ Unavailable            | 🚧 Coming soon       |
 
-**Legend**:  
-✅ = Available  
-❌ = Unavailable  
-🚧 = Coming soon
-
-* **Free Trial Limits**:
+\***Free Trial Limits**:
 1. Can't create custom tests; access to 14 basic tests with 10 questions each.
 2. Score test answers up to 2x/test (28 times across all tests).
 3. Get automated advice to avoid unsafe test answers up to 2x.
