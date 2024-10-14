@@ -18,25 +18,29 @@ If you found a bug, have a question, or want to request a feature, say hello at 
 
 ## Documentation
 
-[docs.aymara.ai/sdk_reference](https://docs.aymara.ai/sdk_reference.html) has our full library API.
+[docs.aymara.ai](https://docs.aymara.ai) has our [full library API](https://docs.aymara.ai/sdk_reference.html) and guides to walk you through [safety tests](https://docs.aymara.ai/safety_notebook.html) (including the [free trial version](https://docs.aymara.ai/free_trial_notebook.html)) and [jailbreak tests](https://docs.aymara.ai/jailbreak_notebook.html).
 
 <!-- sphinx-ignore-end -->
 
-## Features
+## Aymara Tests
 
-Now
+| **Test**                                                       | **Free Trial**        | **Paid Version**     |
+|----------------------------------------------------------------|-----------------------|----------------------|
+| [**Safety**](https://docs.aymara.ai/safety_notebook.html)      | ✅ with limits*        | ✅                   |
+| [**Jailbreak**](https://docs.aymara.ai/jailbreak_notebook.html)| ❌                     | ✅                   |
+| **Hallucination**                                              | ❌                     | 🚧                   |
+| **Text-to-image**                                              | ❌                     | 🚧                   |
+| **AI regulation**                                              | ❌                     | 🚧                   |
 
-- Create safety & jailbreak tests
-- Score test answers
-- Get and graph test scores
-- Summarize and get advice on non-passing test answers
-- Asynchronous & synchronous test creation and scoring
+**Legend**:  
+✅ = Available  
+❌ = Unavailable  
+🚧 = Coming soon
 
-Upcoming
-
-- Hallucination tests
-- Text-to-image tests
-- AI regulation tests
+* **Free Trial Limits**:
+1. Can't create custom tests; access to 14 basic tests with 10 questions each.
+2. Score test answers up to 2x/test (28 times across all tests).
+3. Get automated advice to avoid unsafe test answers up to 2x.
 
 ## Installation
 
@@ -48,7 +52,7 @@ pip install aymara-ai
 
 ## Configuration
 
-The SDK needs to know who you are. Create an env variable with your Aymara API key:
+The SDK needs to know who you are. [Get an Aymara API key](https://auth.aymara.ai/en/signup) and store it as an env variable:
 
 ```bash
 export AYMARA_API_KEY=[AYMARA_API_KEY]
@@ -57,16 +61,8 @@ export AYMARA_API_KEY=[AYMARA_API_KEY]
 Or supply your key directly to the client:
 
 ```python
-client = AymaraAI(api_key="your_api_key")
+client = AymaraAI(api_key="AYMARA_API_KEY")
 ```
-
-<!-- sphinx-ignore-start -->
-
-## Usage
-
-Refer to [this notebook](https://docs.aymara.ai/safety_notebook.html) for a walkthrough of how to use the SDK.
-
-<!-- sphinx-ignore-end -->
 
 ## Versioning
 
