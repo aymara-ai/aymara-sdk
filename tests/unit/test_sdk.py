@@ -5,17 +5,17 @@ from unittest.mock import AsyncMock, Mock, patch
 import pandas as pd
 import pytest
 
-from aymara_sdk import AymaraAI
-from aymara_sdk.generated.aymara_api_client.models.test_type import (
+from aymara_ai import AymaraAI
+from aymara_ai.generated.aymara_api_client.models.test_type import (
     TestType as AymaraTestType,
 )
-from aymara_sdk.types import (
+from aymara_ai.types import (
     BaseTestResponse,
     ScoredAnswerResponse,
     ScoreRunResponse,
     Status,
 )
-from aymara_sdk.utils.constants import DEFAULT_MAX_WAIT_TIME_SECS
+from aymara_ai.utils.constants import DEFAULT_MAX_WAIT_TIME_SECS
 
 
 def test_aymara_ai_initialization():

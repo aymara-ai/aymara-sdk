@@ -3,8 +3,8 @@ from unittest.mock import patch
 
 import pytest
 
-from aymara_sdk.generated.aymara_api_client import models
-from aymara_sdk.types import ScoreRunSuiteSummaryResponse, Status
+from aymara_ai.generated.aymara_api_client import models
+from aymara_ai.types import ScoreRunSuiteSummaryResponse, Status
 
 
 def test_create_summary(aymara_client):

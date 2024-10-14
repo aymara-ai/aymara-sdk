@@ -4,15 +4,15 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pandas as pd
 import pytest
 
-from aymara_sdk.generated.aymara_api_client import models
-from aymara_sdk.types import (
+from aymara_ai.generated.aymara_api_client import models
+from aymara_ai.types import (
     BaseTestResponse,
     JailbreakTestResponse,
     ListTestResponse,
     SafetyTestResponse,
     Status,
 )
-from aymara_sdk.utils.constants import (
+from aymara_ai.utils.constants import (
     DEFAULT_CHAR_TO_TOKEN_MULTIPLIER,
     DEFAULT_MAX_TOKENS,
     DEFAULT_NUM_QUESTIONS_MAX,

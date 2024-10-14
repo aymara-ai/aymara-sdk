@@ -2,8 +2,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from aymara_sdk.types import Status
-from aymara_sdk.utils.logger import SDKLogger
+from aymara_ai.types import Status
+from aymara_ai.utils.logger import SDKLogger
 
 
 @pytest.fixture

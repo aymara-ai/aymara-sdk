@@ -4,8 +4,8 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-from aymara_sdk.generated.aymara_api_client import models
-from aymara_sdk.types import (
+from aymara_ai.generated.aymara_api_client import models
+from aymara_ai.types import (
     ListScoreRunResponse,
     ScoreRunResponse,
     Status,

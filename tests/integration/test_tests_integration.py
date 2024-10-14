@@ -3,15 +3,15 @@ import asyncio
 import pandas as pd
 import pytest
 
-from aymara_sdk.core.sdk import AymaraAI
-from aymara_sdk.types import (
+from aymara_ai.core.sdk import AymaraAI
+from aymara_ai.types import (
     BaseTestResponse,
     JailbreakTestResponse,
     ListTestResponse,
     SafetyTestResponse,
     Status,
 )
-from aymara_sdk.utils.constants import AymaraTestPolicy
+from aymara_ai.utils.constants import AymaraTestPolicy
 
 
 class TestTestMixin:

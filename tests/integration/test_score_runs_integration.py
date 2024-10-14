@@ -3,8 +3,8 @@ from typing import List
 import pandas as pd
 import pytest
 
-from aymara_sdk.core.sdk import AymaraAI
-from aymara_sdk.types import (
+from aymara_ai.core.sdk import AymaraAI
+from aymara_ai.types import (
     ListScoreRunResponse,
     ScoreRunResponse,
     Status,

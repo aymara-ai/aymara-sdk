@@ -2,22 +2,22 @@ import asyncio
 import time
 from typing import Coroutine, List, Optional, Union
 
-from aymara_sdk.core.protocols import AymaraAIProtocol
-from aymara_sdk.generated.aymara_api_client import models
-from aymara_sdk.generated.aymara_api_client.api.score_runs import (
+from aymara_ai.core.protocols import AymaraAIProtocol
+from aymara_ai.generated.aymara_api_client import models
+from aymara_ai.generated.aymara_api_client.api.score_runs import (
     create_score_run,
     delete_score_run,
     get_score_run,
     get_score_run_answers,
     list_score_runs,
 )
-from aymara_sdk.types import (
+from aymara_ai.types import (
     ListScoreRunResponse,
     ScoreRunResponse,
     Status,
     StudentAnswerInput,
 )
-from aymara_sdk.utils.constants import POLLING_INTERVAL
+from aymara_ai.utils.constants import POLLING_INTERVAL
 
 
 class ScoreRunMixin(AymaraAIProtocol):

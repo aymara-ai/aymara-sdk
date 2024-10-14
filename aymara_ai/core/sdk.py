@@ -15,16 +15,16 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
-from aymara_sdk.core.protocols import AymaraAIProtocol
-from aymara_sdk.core.score_runs import ScoreRunMixin
-from aymara_sdk.core.summaries import SummaryMixin
-from aymara_sdk.core.tests import TestMixin
-from aymara_sdk.generated.aymara_api_client import (
+from aymara_ai.core.protocols import AymaraAIProtocol
+from aymara_ai.core.score_runs import ScoreRunMixin
+from aymara_ai.core.summaries import SummaryMixin
+from aymara_ai.core.tests import TestMixin
+from aymara_ai.generated.aymara_api_client import (
     client,
 )
-from aymara_sdk.types import ScoreRunResponse
-from aymara_sdk.utils.constants import DEFAULT_MAX_WAIT_TIME_SECS
-from aymara_sdk.utils.logger import SDKLogger
+from aymara_ai.types import ScoreRunResponse
+from aymara_ai.utils.constants import DEFAULT_MAX_WAIT_TIME_SECS
+from aymara_ai.utils.logger import SDKLogger
 
 
 class AymaraAI(
@@ -211,16 +211,18 @@ class AymaraAI(
 
         # y-axis
         ax.set_ylabel(ylabel, fontweight="bold")
-        
+
         if ylim_min is None:
             ylim_min = math.floor((min(pass_rates) - 0.001) * 10) / 10
         if ylim_max is None:
             ylim_max = min(1, ax.get_ylim()[1])
         ax.set_ylim(bottom=ylim_min, top=ylim_max)
-        
+
         if yaxis_is_percent:
+
             def to_percent(y, _):
                 return f"{y * 100:.0f}%"
+
             ax.yaxis.set_major_formatter(FuncFormatter(to_percent))
 
         plt.tight_layout()

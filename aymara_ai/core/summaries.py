@@ -2,23 +2,23 @@ import asyncio
 import time
 from typing import Coroutine, List, Union
 
-from aymara_sdk.core.protocols import AymaraAIProtocol
-from aymara_sdk.generated.aymara_api_client import models
-from aymara_sdk.generated.aymara_api_client.api.score_runs import (
+from aymara_ai.core.protocols import AymaraAIProtocol
+from aymara_ai.generated.aymara_api_client import models
+from aymara_ai.generated.aymara_api_client.api.score_runs import (
     create_score_run_suite_summary,
     delete_score_run_suite_summary,
     get_score_run_suite_summary,
     list_score_run_suite_summaries,
 )
-from aymara_sdk.generated.aymara_api_client.models.score_run_suite_summary_in_schema import (
+from aymara_ai.generated.aymara_api_client.models.score_run_suite_summary_in_schema import (
     ScoreRunSuiteSummaryInSchema,
 )
-from aymara_sdk.types import (
+from aymara_ai.types import (
     ScoreRunResponse,
     ScoreRunSuiteSummaryResponse,
     Status,
 )
-from aymara_sdk.utils.constants import POLLING_INTERVAL
+from aymara_ai.utils.constants import POLLING_INTERVAL
 
 
 class SummaryMixin(AymaraAIProtocol):

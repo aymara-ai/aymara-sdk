@@ -4,7 +4,7 @@ import pytest
 from dotenv import load_dotenv
 from pytest_asyncio import is_async_test
 
-from aymara_sdk import AymaraAI
+from aymara_ai import AymaraAI
 
 load_dotenv(override=True)
 

@@ -2,8 +2,8 @@ from typing import List
 
 import pytest
 
-from aymara_sdk.core.sdk import AymaraAI
-from aymara_sdk.types import ScoreRunSuiteSummaryResponse, Status, StudentAnswerInput
+from aymara_ai.core.sdk import AymaraAI
+from aymara_ai.types import ScoreRunSuiteSummaryResponse, Status, StudentAnswerInput
 
 
 class TestSummaryMixin:

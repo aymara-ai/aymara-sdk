@@ -9,29 +9,29 @@ from typing import Annotated, Iterator, List, Optional, Union
 import pandas as pd
 from pydantic import BaseModel, Field, RootModel
 
-from aymara_sdk.generated.aymara_api_client.models import ScoreRunSuiteSummaryOutSchema
-from aymara_sdk.generated.aymara_api_client.models.answer_in_schema import (
+from aymara_ai.generated.aymara_api_client.models import ScoreRunSuiteSummaryOutSchema
+from aymara_ai.generated.aymara_api_client.models.answer_in_schema import (
     AnswerInSchema,
 )
-from aymara_sdk.generated.aymara_api_client.models.answer_out_schema import (
+from aymara_ai.generated.aymara_api_client.models.answer_out_schema import (
     AnswerOutSchema,
 )
-from aymara_sdk.generated.aymara_api_client.models.question_schema import QuestionSchema
-from aymara_sdk.generated.aymara_api_client.models.score_run_out_schema import (
+from aymara_ai.generated.aymara_api_client.models.question_schema import QuestionSchema
+from aymara_ai.generated.aymara_api_client.models.score_run_out_schema import (
     ScoreRunOutSchema,
 )
-from aymara_sdk.generated.aymara_api_client.models.score_run_status import (
+from aymara_ai.generated.aymara_api_client.models.score_run_status import (
     ScoreRunStatus,
 )
-from aymara_sdk.generated.aymara_api_client.models.score_run_suite_summary_status import (
+from aymara_ai.generated.aymara_api_client.models.score_run_suite_summary_status import (
     ScoreRunSuiteSummaryStatus,
 )
-from aymara_sdk.generated.aymara_api_client.models.score_run_summary_out_schema import (
+from aymara_ai.generated.aymara_api_client.models.score_run_summary_out_schema import (
     ScoreRunSummaryOutSchema,
 )
-from aymara_sdk.generated.aymara_api_client.models.test_out_schema import TestOutSchema
-from aymara_sdk.generated.aymara_api_client.models.test_status import TestStatus
-from aymara_sdk.generated.aymara_api_client.models.test_type import TestType
+from aymara_ai.generated.aymara_api_client.models.test_out_schema import TestOutSchema
+from aymara_ai.generated.aymara_api_client.models.test_status import TestStatus
+from aymara_ai.generated.aymara_api_client.models.test_type import TestType
 
 
 class Status(Enum):

@@ -2,24 +2,24 @@ import asyncio
 import time
 from typing import Coroutine, List, Optional, Union
 
-from aymara_sdk.core.protocols import AymaraAIProtocol
-from aymara_sdk.generated.aymara_api_client import models
-from aymara_sdk.generated.aymara_api_client.api.tests import (
+from aymara_ai.core.protocols import AymaraAIProtocol
+from aymara_ai.generated.aymara_api_client import models
+from aymara_ai.generated.aymara_api_client.api.tests import (
     create_test,
     delete_test,
     get_test,
     get_test_questions,
     list_tests,
 )
-from aymara_sdk.generated.aymara_api_client.models.test_type import TestType
-from aymara_sdk.types import (
+from aymara_ai.generated.aymara_api_client.models.test_type import TestType
+from aymara_ai.types import (
     BaseTestResponse,
     JailbreakTestResponse,
     ListTestResponse,
     SafetyTestResponse,
     Status,
 )
-from aymara_sdk.utils.constants import (
+from aymara_ai.utils.constants import (
     AYMARA_TEST_POLICY_PREFIX,
     DEFAULT_CHAR_TO_TOKEN_MULTIPLIER,
     DEFAULT_MAX_TOKENS,
