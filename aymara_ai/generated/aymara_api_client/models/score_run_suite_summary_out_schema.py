@@ -24,9 +24,9 @@ class ScoreRunSuiteSummaryOutSchema:
         score_run_summaries (List['ScoreRunSummaryOutSchema']):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
-        remaining_summaries (Union[None, int]):
         overall_improvement_advice (Union[None, Unset, str]):
         overall_summary (Union[None, Unset, str]):
+        remaining_summaries (Union[None, Unset, int]):
     """
 
     score_run_suite_summary_uuid: str
@@ -34,9 +34,9 @@ class ScoreRunSuiteSummaryOutSchema:
     score_run_summaries: List["ScoreRunSummaryOutSchema"]
     created_at: datetime.datetime
     updated_at: datetime.datetime
-    remaining_summaries: Union[None, int]
     overall_improvement_advice: Union[None, Unset, str] = UNSET
     overall_summary: Union[None, Unset, str] = UNSET
+    remaining_summaries: Union[None, Unset, int] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -53,9 +53,6 @@ class ScoreRunSuiteSummaryOutSchema:
 
         updated_at = self.updated_at.isoformat()
 
-        remaining_summaries: Union[None, int]
-        remaining_summaries = self.remaining_summaries
-
         overall_improvement_advice: Union[None, Unset, str]
         if isinstance(self.overall_improvement_advice, Unset):
             overall_improvement_advice = UNSET
@@ -68,6 +65,12 @@ class ScoreRunSuiteSummaryOutSchema:
         else:
             overall_summary = self.overall_summary
 
+        remaining_summaries: Union[None, Unset, int]
+        if isinstance(self.remaining_summaries, Unset):
+            remaining_summaries = UNSET
+        else:
+            remaining_summaries = self.remaining_summaries
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -77,13 +80,14 @@ class ScoreRunSuiteSummaryOutSchema:
                 "score_run_summaries": score_run_summaries,
                 "created_at": created_at,
                 "updated_at": updated_at,
-                "remaining_summaries": remaining_summaries,
             }
         )
         if overall_improvement_advice is not UNSET:
             field_dict["overall_improvement_advice"] = overall_improvement_advice
         if overall_summary is not UNSET:
             field_dict["overall_summary"] = overall_summary
+        if remaining_summaries is not UNSET:
+            field_dict["remaining_summaries"] = remaining_summaries
 
         return field_dict
 
@@ -107,13 +111,6 @@ class ScoreRunSuiteSummaryOutSchema:
 
         updated_at = isoparse(d.pop("updated_at"))
 
-        def _parse_remaining_summaries(data: object) -> Union[None, int]:
-            if data is None:
-                return data
-            return cast(Union[None, int], data)
-
-        remaining_summaries = _parse_remaining_summaries(d.pop("remaining_summaries"))
-
         def _parse_overall_improvement_advice(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -132,15 +129,24 @@ class ScoreRunSuiteSummaryOutSchema:
 
         overall_summary = _parse_overall_summary(d.pop("overall_summary", UNSET))
 
+        def _parse_remaining_summaries(data: object) -> Union[None, Unset, int]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, int], data)
+
+        remaining_summaries = _parse_remaining_summaries(d.pop("remaining_summaries", UNSET))
+
         score_run_suite_summary_out_schema = cls(
             score_run_suite_summary_uuid=score_run_suite_summary_uuid,
             status=status,
             score_run_summaries=score_run_summaries,
             created_at=created_at,
             updated_at=updated_at,
-            remaining_summaries=remaining_summaries,
             overall_improvement_advice=overall_improvement_advice,
             overall_summary=overall_summary,
+            remaining_summaries=remaining_summaries,
         )
 
         score_run_suite_summary_out_schema.additional_properties = d

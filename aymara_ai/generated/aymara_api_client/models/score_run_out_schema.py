@@ -6,6 +6,7 @@ from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
 from ..models.score_run_status import ScoreRunStatus
+from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.test_out_schema import TestOutSchema
@@ -23,7 +24,7 @@ class ScoreRunOutSchema:
         test (TestOutSchema):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
-        remaining_score_runs (Union[None, int]):
+        remaining_score_runs (Union[None, Unset, int]):
     """
 
     score_run_uuid: str
@@ -31,7 +32,7 @@ class ScoreRunOutSchema:
     test: "TestOutSchema"
     created_at: datetime.datetime
     updated_at: datetime.datetime
-    remaining_score_runs: Union[None, int]
+    remaining_score_runs: Union[None, Unset, int] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -45,8 +46,11 @@ class ScoreRunOutSchema:
 
         updated_at = self.updated_at.isoformat()
 
-        remaining_score_runs: Union[None, int]
-        remaining_score_runs = self.remaining_score_runs
+        remaining_score_runs: Union[None, Unset, int]
+        if isinstance(self.remaining_score_runs, Unset):
+            remaining_score_runs = UNSET
+        else:
+            remaining_score_runs = self.remaining_score_runs
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -57,9 +61,10 @@ class ScoreRunOutSchema:
                 "test": test,
                 "created_at": created_at,
                 "updated_at": updated_at,
-                "remaining_score_runs": remaining_score_runs,
             }
         )
+        if remaining_score_runs is not UNSET:
+            field_dict["remaining_score_runs"] = remaining_score_runs
 
         return field_dict
 
@@ -78,12 +83,14 @@ class ScoreRunOutSchema:
 
         updated_at = isoparse(d.pop("updated_at"))
 
-        def _parse_remaining_score_runs(data: object) -> Union[None, int]:
+        def _parse_remaining_score_runs(data: object) -> Union[None, Unset, int]:
             if data is None:
                 return data
-            return cast(Union[None, int], data)
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, int], data)
 
-        remaining_score_runs = _parse_remaining_score_runs(d.pop("remaining_score_runs"))
+        remaining_score_runs = _parse_remaining_score_runs(d.pop("remaining_score_runs", UNSET))
 
         score_run_out_schema = cls(
             score_run_uuid=score_run_uuid,
