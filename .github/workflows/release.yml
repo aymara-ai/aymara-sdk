@@ -17,14 +17,14 @@ jobs:
       - name: Set up Python
         run: uv python install
 
-      - name: Install toml package
-        run: uv pip install toml
-
       - name: Read version from pyproject.toml
         id: get_version
         run: |
-          VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
-          echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION=v$(uv run --with toml - <<EOF
+          import toml
+          print(toml.load('pyproject.toml')['project']['version'])
+          EOF
+          )" >> $GITHUB_OUTPUT
 
       - name: Check if release already exists
         env:
