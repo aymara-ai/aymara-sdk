@@ -1,0 +1,50 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install toml package
+        run: uv add toml
+
+      - name: Read version from pyproject.toml
+        id: get_version
+        run: |
+          VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
+          echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check if release already exists
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view ${{ steps.get_version.outputs.VERSION }} &> /dev/null; then
+            echo "Error: Release ${{ steps.get_version.outputs.VERSION }} already exists!"
+            exit 1
+          fi
+
+      - name: Build project
+        run: uv build
+
+      - name: Publish project
+        run: uv publish
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ steps.get_version.outputs.VERSION }} \
+            --title "${{ steps.get_version.outputs.VERSION }}" \
+            --generate-notes
