@@ -4,7 +4,7 @@
 
 Hi! 👋 We're [Aymara](https://aymara.ai). We built this library to help you measure & improve the alignment of any text-to-text genAI model (e.g., a fine-tuned Llama model) or application (e.g., a chatbot powered by GPT).
 
-Use the Aymara REST API to create custom redteam tests.
+Use the Aymara REST API to create custom red team tests.
 
 1. 🦺 **Safety**. Input text describing the content your genAI is(n't) allowed to generate & get a test to assess your genAI's compliance. (Text-to-image coming soon.)
 
