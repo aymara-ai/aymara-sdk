@@ -560,6 +560,9 @@ class TestMixin(AymaraAIProtocol):
         if response.status_code == 404:
             raise ValueError(f"Test with UUID {test_uuid} not found")
 
+        if response.status_code == 422:
+            raise ValueError(f"{response.parsed.detail}")
+
     async def delete_test_async(self, test_uuid: str) -> None:
         """
         Delete a test asynchronously.
@@ -569,3 +572,6 @@ class TestMixin(AymaraAIProtocol):
         )
         if response.status_code == 404:
             raise ValueError(f"Test with UUID {test_uuid} not found")
+
+        if response.status_code == 422:
+            raise ValueError(f"{response.parsed.detail}")
