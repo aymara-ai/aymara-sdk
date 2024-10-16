@@ -43,7 +43,8 @@ html_theme_options = {
 }
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
-html_favicon = "_static/logo-square.png"
+html_favicon = "_static/favicon-light.png"
+html_js_files = ["favicon-switcher.js"]
 
 source_suffix = [".rst", ".md", ".ipynb"]
 
