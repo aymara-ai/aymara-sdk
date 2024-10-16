@@ -103,9 +103,11 @@ class SDKLogger(logging.Logger):
     def warning(self, msg, *args, **kwargs):
         if self.is_notebook:
             # Detect and create links if in notebook
-            link_pattern = r"(https?://\S+)"
+            link_pattern = r"(https?://\S+?)([.,;:!?])?(\s|$)"
             colored_msg = re.sub(
-                link_pattern, r'<a href="\1" target="_blank">\1</a>', msg
+                link_pattern,
+                lambda m: f'<a href="{m.group(1)}" target="_blank">{m.group(1)}</a>{m.group(2) or ""}{m.group(3)}',
+                msg,
             )
             colored_msg = f'<span style="color: orange;">{colored_msg}</span>'
             display(HTML(colored_msg))
