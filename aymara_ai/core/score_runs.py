@@ -424,6 +424,8 @@ class ScoreRunMixin(AymaraAIProtocol):
 
         if response.status_code == 404:
             raise ValueError(f"Score run with UUID {score_run_uuid} not found")
+        if response.status_code == 422:
+            raise ValueError(f"{response.parsed.detail}")
 
     async def delete_score_run_async(self, score_run_uuid: str) -> None:
         """
@@ -438,3 +440,5 @@ class ScoreRunMixin(AymaraAIProtocol):
 
         if response.status_code == 404:
             raise ValueError(f"Score run with UUID {score_run_uuid} not found")
+        if response.status_code == 422:
+            raise ValueError(f"{response.parsed.detail}")

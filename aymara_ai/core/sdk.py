@@ -25,6 +25,7 @@ from aymara_ai.generated.aymara_api_client import (
 from aymara_ai.types import ScoreRunResponse
 from aymara_ai.utils.constants import DEFAULT_MAX_WAIT_TIME_SECS
 from aymara_ai.utils.logger import SDKLogger
+from aymara_ai.version import __version__
 
 
 class AymaraAI(
@@ -47,6 +48,8 @@ class AymaraAI(
     :param max_wait_time_secs: Maximum wait time for test creation, defaults to 120 seconds.
     :type max_wait_time_secs: int, optional
     """
+
+    __version__ = __version__
 
     def __init__(
         self,

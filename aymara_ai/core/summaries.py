@@ -328,6 +328,8 @@ class SummaryMixin(AymaraAIProtocol):
 
         if response.status_code == 404:
             raise ValueError(f"Summary with UUID {summary_uuid} not found")
+        if response.status_code == 422:
+            raise ValueError(f"{response.parsed.detail}")
 
     async def delete_summary_async(self, summary_uuid: str) -> None:
         """
@@ -342,3 +344,5 @@ class SummaryMixin(AymaraAIProtocol):
 
         if response.status_code == 404:
             raise ValueError(f"Summary with UUID {summary_uuid} not found")
+        if response.status_code == 422:
+            raise ValueError(f"{response.parsed.detail}")
