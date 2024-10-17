@@ -216,7 +216,7 @@ class AymaraAI(
         ax.set_ylabel(ylabel, fontweight="bold")
 
         if ylim_min is None:
-            ylim_min = math.floor((min(pass_rates) - 0.001) * 10) / 10
+            ylim_min = max(0, math.floor((min(pass_rates) - 0.001) * 10) / 10)
         if ylim_max is None:
             ylim_max = min(1, ax.get_ylim()[1])
         ax.set_ylim(bottom=ylim_min, top=ylim_max)
