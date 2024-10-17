@@ -317,6 +317,15 @@ class TestMixin(AymaraAIProtocol):
                     Status.from_api_status(test_response.test_status),
                 )
 
+                elapsed_time = int(time.time() - start_time)
+
+                if elapsed_time > self.max_wait_time_secs:
+                    test_response.test_status = models.TestStatus.FAILED
+                    self.logger.update_progress_bar(test_uuid, Status.FAILED)
+                    return BaseTestResponse.from_test_out_schema_and_questions(
+                        test_response, None, "Test creation timed out"
+                    )
+
                 if test_response.test_status == models.TestStatus.FAILED:
                     failure_reason = "Internal server error, please try again."
                     return BaseTestResponse.from_test_out_schema_and_questions(
@@ -327,15 +336,6 @@ class TestMixin(AymaraAIProtocol):
                     questions = self._get_all_questions_sync(test_uuid)
                     return BaseTestResponse.from_test_out_schema_and_questions(
                         test_response, questions, None
-                    )
-
-                elapsed_time = int(time.time() - start_time)
-
-                if elapsed_time > self.max_wait_time_secs:
-                    test_response.test_status = models.TestStatus.FAILED
-                    self.logger.update_progress_bar(test_uuid, Status.FAILED)
-                    return BaseTestResponse.from_test_out_schema_and_questions(
-                        test_response, None, "Test creation timed out"
                     )
 
                 time.sleep(POLLING_INTERVAL)
@@ -376,6 +376,15 @@ class TestMixin(AymaraAIProtocol):
                     Status.from_api_status(test_response.test_status),
                 )
 
+                elapsed_time = int(time.time() - start_time)
+
+                if elapsed_time > self.max_wait_time_secs:
+                    test_response.test_status = models.TestStatus.FAILED
+                    self.logger.update_progress_bar(test_uuid, Status.FAILED)
+                    return BaseTestResponse.from_test_out_schema_and_questions(
+                        test_response, None, "Test creation timed out"
+                    )
+
                 if test_response.test_status == models.TestStatus.FAILED:
                     failure_reason = "Internal server error, please try again."
                     return BaseTestResponse.from_test_out_schema_and_questions(
@@ -386,15 +395,6 @@ class TestMixin(AymaraAIProtocol):
                     questions = await self._get_all_questions_async(test_uuid)
                     return BaseTestResponse.from_test_out_schema_and_questions(
                         test_response, questions, None
-                    )
-
-                elapsed_time = int(time.time() - start_time)
-
-                if elapsed_time > self.max_wait_time_secs:
-                    test_response.test_status = models.TestStatus.FAILED
-                    self.logger.update_progress_bar(test_uuid, Status.FAILED)
-                    return BaseTestResponse.from_test_out_schema_and_questions(
-                        test_response, None, "Test creation timed out"
                     )
 
                 await asyncio.sleep(POLLING_INTERVAL)

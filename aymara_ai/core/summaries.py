@@ -109,7 +109,7 @@ class SummaryMixin(AymaraAIProtocol):
                         "Internal server error. Please try again.",
                     )
 
-                elapsed_time = int(time.time() - start_time)
+                elapsed_time = time.time() - start_time
 
                 if elapsed_time > self.max_wait_time_secs:
                     summary_response.status = models.ScoreRunSuiteSummaryStatus.FAILED
@@ -170,6 +170,16 @@ class SummaryMixin(AymaraAIProtocol):
                     Status.from_api_status(summary_response.status),
                 )
 
+                elapsed_time = time.time() - start_time
+
+                if elapsed_time >= self.max_wait_time_secs:
+                    summary_response.status = models.ScoreRunSuiteSummaryStatus.FAILED
+                    self.logger.update_progress_bar(summary_uuid, Status.FAILED)
+                    return ScoreRunSuiteSummaryResponse.from_summary_out_schema_and_failure_reason(
+                        summary_response,
+                        failure_reason="Summary creation timed out.",
+                    )
+
                 if summary_response.status == models.ScoreRunSuiteSummaryStatus.FAILED:
                     return ScoreRunSuiteSummaryResponse.from_summary_out_schema_and_failure_reason(
                         summary_response,
@@ -182,16 +192,6 @@ class SummaryMixin(AymaraAIProtocol):
                 ):
                     return ScoreRunSuiteSummaryResponse.from_summary_out_schema_and_failure_reason(
                         summary_response
-                    )
-
-                elapsed_time = int(time.time() - start_time)
-
-                if elapsed_time > self.max_wait_time_secs:
-                    summary_response.status = models.ScoreRunSuiteSummaryStatus.FAILED
-                    self.logger.update_progress_bar(summary_uuid, Status.FAILED)
-                    return ScoreRunSuiteSummaryResponse.from_summary_out_schema_and_failure_reason(
-                        summary_response,
-                        failure_reason="Summary creation timed out.",
                     )
 
                 await asyncio.sleep(POLLING_INTERVAL)

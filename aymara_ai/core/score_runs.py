@@ -270,6 +270,14 @@ class ScoreRunMixin(AymaraAIProtocol):
                     Status.from_api_status(score_response.score_run_status),
                 )
 
+                elapsed_time = int(time.time() - start_time)
+
+                if elapsed_time > self.max_wait_time_secs:
+                    score_response.score_run_status = models.ScoreRunStatus.FAILED
+                    self.logger.update_progress_bar(score_run_uuid, Status.FAILED)
+                    return ScoreRunResponse.from_score_run_out_schema_and_answers(
+                        score_response, None, "Score run creation timed out."
+                    )
                 if score_response.score_run_status == models.ScoreRunStatus.FAILED:
                     return ScoreRunResponse.from_score_run_out_schema_and_answers(
                         score_response, None, "Internal server error. Please try again."
@@ -279,15 +287,6 @@ class ScoreRunMixin(AymaraAIProtocol):
                     answers = self._get_all_score_run_answers_sync(score_run_uuid)
                     return ScoreRunResponse.from_score_run_out_schema_and_answers(
                         score_response, answers
-                    )
-
-                elapsed_time = int(time.time() - start_time)
-
-                if elapsed_time > self.max_wait_time_secs:
-                    score_response.score_run_status = models.ScoreRunStatus.FAILED
-                    self.logger.update_progress_bar(score_run_uuid, Status.FAILED)
-                    return ScoreRunResponse.from_score_run_out_schema_and_answers(
-                        score_response, None, "Score run creation timed out."
                     )
 
                 time.sleep(POLLING_INTERVAL)
@@ -340,6 +339,15 @@ class ScoreRunMixin(AymaraAIProtocol):
                     Status.from_api_status(score_response.score_run_status),
                 )
 
+                elapsed_time = int(time.time() - start_time)
+
+                if elapsed_time > self.max_wait_time_secs:
+                    score_response.score_run_status = models.ScoreRunStatus.FAILED
+                    self.logger.update_progress_bar(score_run_uuid, Status.FAILED)
+                    return ScoreRunResponse.from_score_run_out_schema_and_answers(
+                        score_response, None, "Score run creation timed out."
+                    )
+
                 if score_response.score_run_status == models.ScoreRunStatus.FAILED:
                     return ScoreRunResponse.from_score_run_out_schema_and_answers(
                         score_response, None, "Internal server error. Please try again."
@@ -351,15 +359,6 @@ class ScoreRunMixin(AymaraAIProtocol):
                     )
                     return ScoreRunResponse.from_score_run_out_schema_and_answers(
                         score_response, answers
-                    )
-
-                elapsed_time = int(time.time() - start_time)
-
-                if elapsed_time > self.max_wait_time_secs:
-                    score_response.score_run_status = models.ScoreRunStatus.FAILED
-                    self.logger.update_progress_bar(score_run_uuid, Status.FAILED)
-                    return ScoreRunResponse.from_score_run_out_schema_and_answers(
-                        score_response, None, "Score run creation timed out."
                     )
 
                 await asyncio.sleep(POLLING_INTERVAL)
