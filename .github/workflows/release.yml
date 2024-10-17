@@ -51,9 +51,3 @@ jobs:
           gh release create ${{ steps.get_version.outputs.VERSION }} \
             --title "${{ steps.get_version.outputs.VERSION }}" \
             --generate-notes
-
-      - name: Trigger Test Workflow
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh workflow run test.yml -f version=${{ steps.get_version.outputs.VERSION }} -f api_test_env=production
