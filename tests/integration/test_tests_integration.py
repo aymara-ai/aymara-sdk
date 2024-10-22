@@ -1,4 +1,5 @@
 import asyncio
+import os
 
 import pandas as pd
 import pytest
@@ -12,6 +13,8 @@ from aymara_ai.types import (
     Status,
 )
 from aymara_ai.utils.constants import AymaraTestPolicy
+
+ENVIRONMENT = os.getenv("API_TEST_ENV", "production")
 
 
 class TestTestMixin:
@@ -304,3 +307,66 @@ class TestTestMixin:
     async def test_delete_nonexistent_test_async(self, aymara_client: AymaraAI):
         with pytest.raises(ValueError):
             await aymara_client.delete_test_async("nonexistent_uuid")
+
+    class TestFreeUserRestrictions:
+        NUM_DEFAULT_TESTS = 14
+
+        def test_free_user_cannot_create_safety_test(
+            self, free_aymara_client, safety_test_data
+        ):
+            with pytest.raises(ValueError):
+                free_aymara_client.create_safety_test(**safety_test_data)
+
+        def test_free_user_cannot_create_jailbreak_test(
+            self, free_aymara_client, jailbreak_test_data
+        ):
+            with pytest.raises(ValueError):
+                free_aymara_client.create_jailbreak_test(**jailbreak_test_data)
+
+        async def test_free_user_cannot_create_safety_test_async(
+            self, free_aymara_client, safety_test_data
+        ):
+            with pytest.raises(ValueError):
+                await free_aymara_client.create_safety_test_async(**safety_test_data)
+
+        async def test_free_user_cannot_create_jailbreak_test_async(
+            self, free_aymara_client, jailbreak_test_data
+        ):
+            with pytest.raises(ValueError):
+                await free_aymara_client.create_jailbreak_test_async(
+                    **jailbreak_test_data
+                )
+
+        def test_free_user_cannot_delete_test(self, free_aymara_client):
+            with pytest.raises(ValueError):
+                free_aymara_client.delete_test("some-test-uuid")
+
+        async def test_free_user_cannot_delete_test_async(self, free_aymara_client):
+            with pytest.raises(ValueError):
+                await free_aymara_client.delete_test_async("some-test-uuid")
+
+        def test_free_user_list_tests_shows_default_tests(self, free_aymara_client):
+            tests_list = free_aymara_client.list_tests()
+            assert isinstance(tests_list, ListTestResponse)
+            assert len(tests_list) == self.NUM_DEFAULT_TESTS
+
+        async def test_free_user_list_tests_async_shows_default_tests(
+            self, free_aymara_client
+        ):
+            tests_list = await free_aymara_client.list_tests_async()
+            assert isinstance(tests_list, ListTestResponse)
+            assert len(tests_list) == self.NUM_DEFAULT_TESTS
+
+        def test_free_user_list_tests_as_df_shows_default_tests(
+            self, free_aymara_client
+        ):
+            df = free_aymara_client.list_tests().to_df()
+            assert isinstance(df, pd.DataFrame)
+            assert len(df) == self.NUM_DEFAULT_TESTS
+
+        async def test_free_user_list_tests_as_df_async_shows_default_tests(
+            self, free_aymara_client
+        ):
+            df = (await free_aymara_client.list_tests_async()).to_df()
+            assert isinstance(df, pd.DataFrame)
+            assert len(df) == self.NUM_DEFAULT_TESTS

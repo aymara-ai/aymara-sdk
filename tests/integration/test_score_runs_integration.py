@@ -1,4 +1,6 @@
+import os
 from typing import List
+from unittest.mock import Mock
 
 import pandas as pd
 import pytest
@@ -342,3 +344,71 @@ class TestScoreRunMixin:
         assert isinstance(score_response, ScoreRunResponse)
         assert score_response.score_run_status == Status.FAILED
         assert score_response.failure_reason == "Score run creation timed out."
+
+
+ENVIRONMENT = os.getenv("API_TEST_ENV")
+
+
+class TestFreeUserScoreRunRestrictions:
+    FREE_TIER_SCORE_RUN_LIMIT = 2
+
+    @pytest.fixture(scope="class")
+    def default_test(self, free_aymara_client):
+        # Get the first default test from Aymara
+        tests = free_aymara_client.list_tests()
+        return free_aymara_client.get_test(tests[0].test_uuid)
+
+    @pytest.fixture(scope="class")
+    def student_answers(self, default_test) -> List[StudentAnswerInput]:
+        return [
+            StudentAnswerInput(
+                question_uuid=question.question_uuid,
+                answer_text="This is a test answer",
+            )
+            for question in default_test.questions
+        ]
+
+    def test_free_user_score_run_limit(
+        self,
+        free_aymara_client,
+        default_test,
+        student_answers,
+        cleanup_after_test,
+        monkeypatch,
+    ):
+        _, created_score_run_uuids, _ = cleanup_after_test
+        mock_logger = Mock()
+        mock_logger.progress_bar.return_value.__enter__ = Mock()
+        mock_logger.progress_bar.return_value.__exit__ = Mock()
+        monkeypatch.setattr(free_aymara_client, "logger", mock_logger)
+
+        # First score run should succeed
+        response1 = free_aymara_client.score_test(
+            default_test.test_uuid, student_answers
+        )
+        created_score_run_uuids.append(response1.score_run_uuid)
+        mock_logger.warning.assert_called_with(
+            f"You have {self.FREE_TIER_SCORE_RUN_LIMIT - 1} score run remaining. To upgrade, visit https://aymara.ai/upgrade."
+        )
+
+        # Second score run should succeed
+        response2 = free_aymara_client.score_test(
+            default_test.test_uuid, student_answers
+        )
+        created_score_run_uuids.append(response2.score_run_uuid)
+        mock_logger.warning.assert_called_with(
+            f"You have {self.FREE_TIER_SCORE_RUN_LIMIT - 2} score runs remaining. To upgrade, visit https://aymara.ai/upgrade."
+        )
+
+        # Third score run should fail
+        with pytest.raises(ValueError):
+            free_aymara_client.score_test(default_test.test_uuid, student_answers)
+
+    def test_free_user_cannot_delete_score_run(self, free_aymara_client):
+        with pytest.raises(ValueError):
+            free_aymara_client.delete_score_run("some-score-run-uuid")
+
+    @pytest.mark.asyncio
+    async def test_free_user_cannot_delete_score_run_async(self, free_aymara_client):
+        with pytest.raises(ValueError):
+            await free_aymara_client.delete_score_run_async("some-score-run-uuid")

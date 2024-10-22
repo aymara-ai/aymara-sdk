@@ -72,6 +72,10 @@ class SummaryMixin(AymaraAIProtocol):
                 score_run_uuids=score_run_uuids,
             ),
         )
+
+        if response.status_code == 422:
+            raise ValueError(f"{response.parsed.detail}")
+
         summary_response = response.parsed
         summary_uuid = summary_response.score_run_suite_summary_uuid
 
@@ -95,6 +99,9 @@ class SummaryMixin(AymaraAIProtocol):
 
                 if response.status_code == 404:
                     raise ValueError(f"Summary with UUID {summary_uuid} not found")
+
+                if response.status_code == 422:
+                    raise ValueError(f"{response.parsed.detail}")
 
                 summary_response = response.parsed
 
@@ -139,6 +146,10 @@ class SummaryMixin(AymaraAIProtocol):
                 score_run_uuids=score_run_uuids,
             ),
         )
+
+        if response.status_code == 422:
+            raise ValueError(f"{response.parsed.detail}")
+
         summary_response = response.parsed
         summary_uuid = summary_response.score_run_suite_summary_uuid
 
@@ -162,6 +173,9 @@ class SummaryMixin(AymaraAIProtocol):
 
                 if response.status_code == 404:
                     raise ValueError(f"Summary with UUID {summary_uuid} not found")
+
+                if response.status_code == 422:
+                    raise ValueError(f"{response.parsed.detail}")
 
                 summary_response = response.parsed
 

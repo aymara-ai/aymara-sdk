@@ -28,6 +28,21 @@ def aymara_client():
     return AymaraAI(api_key=testing_api_key, base_url=base_url)
 
 
+@pytest.fixture(scope="session")
+def free_aymara_client():
+    if ENVIRONMENT == "staging":
+        base_url = "https://staging-api.aymara.ai"
+        api_key = os.getenv("STAGING_FREE_INTEGRATION_TESTING_API_KEY")
+    elif ENVIRONMENT == "production":
+        base_url = "https://api.aymara.ai"
+        api_key = os.getenv("PROD_FREE_INTEGRATION_TESTING_API_KEY")
+    else:
+        base_url = "http://localhost:8000"
+        api_key = os.getenv("DEV_FREE_INTEGRATION_TESTING_API_KEY")
+
+    return AymaraAI(api_key=api_key, base_url=base_url)
+
+
 def pytest_collection_modifyitems(items):
     pytest_asyncio_tests = (item for item in items if is_async_test(item))
     session_scope_marker = pytest.mark.asyncio(loop_scope="session")
@@ -35,7 +50,7 @@ def pytest_collection_modifyitems(items):
         async_test.add_marker(session_scope_marker, append=False)
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture(autouse=True, scope="class")
 def cleanup_after_test(aymara_client: AymaraAI):
     created_test_uuids = []
     created_score_run_uuids = []

@@ -1,9 +1,13 @@
+import os
 from typing import List
+from unittest.mock import Mock
 
 import pytest
 
 from aymara_ai.core.sdk import AymaraAI
 from aymara_ai.types import ScoreRunSuiteSummaryResponse, Status, StudentAnswerInput
+
+ENVIRONMENT = os.getenv("API_TEST_ENV")
 
 
 class TestSummaryMixin:
@@ -183,3 +187,61 @@ class TestSummaryMixin:
     async def test_delete_non_existent_summary_async(self, aymara_client: AymaraAI):
         with pytest.raises(ValueError):
             await aymara_client.delete_summary_async("non-existent-uuid")
+
+    class TestFreeUserSummaryRestrictions:
+        FREE_TIER_SUMMARY_LIMIT = 2
+
+        @pytest.fixture(scope="class")
+        async def score_runs(
+            self, free_aymara_client, test_data, student_answers, cleanup_after_test
+        ):
+            _, created_score_run_uuids, __ = cleanup_after_test
+            test_uuid, _ = test_data
+            score_runs = []
+            for _ in range(2):  # Create 2 score runs
+                score_response = await free_aymara_client.score_test_async(
+                    test_uuid, student_answers
+                )
+                created_score_run_uuids.append(score_response.score_run_uuid)
+                score_runs.append(score_response)
+            return score_runs
+
+        def test_free_user_summary_limit(
+            self,
+            free_aymara_client,
+            score_runs,
+            cleanup_after_test,
+            monkeypatch,
+        ):
+            _, _, created_summary_uuids = cleanup_after_test
+            mock_logger = Mock()
+            mock_logger.progress_bar.return_value.__enter__ = Mock()
+            mock_logger.progress_bar.return_value.__exit__ = Mock()
+            monkeypatch.setattr(free_aymara_client, "logger", mock_logger)
+
+            # First summary should succeed
+            response1 = free_aymara_client.create_summary(score_runs)
+            created_summary_uuids.append(response1.score_run_suite_summary_uuid)
+            mock_logger.warning.assert_called_with(
+                f"You have {self.FREE_TIER_SUMMARY_LIMIT - 1} summary remaining. To upgrade, visit https://aymara.ai/upgrade."
+            )
+
+            # Second summary should succeed
+            response2 = free_aymara_client.create_summary(score_runs)
+            created_summary_uuids.append(response2.score_run_suite_summary_uuid)
+            mock_logger.warning.assert_called_with(
+                f"You have {self.FREE_TIER_SUMMARY_LIMIT - 2} summaries remaining. To upgrade, visit https://aymara.ai/upgrade."
+            )
+
+            # Third summary should fail
+            with pytest.raises(ValueError):
+                free_aymara_client.create_summary(score_runs)
+
+        def test_free_user_cannot_delete_summary(self, free_aymara_client):
+            with pytest.raises(ValueError):
+                free_aymara_client.delete_summary("some-summary-uuid")
+
+        @pytest.mark.asyncio
+        async def test_free_user_cannot_delete_summary_async(self, free_aymara_client):
+            with pytest.raises(ValueError):
+                await free_aymara_client.delete_summary_async("some-summary-uuid")
