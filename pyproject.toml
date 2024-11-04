@@ -19,7 +19,7 @@ dependencies = [
     "httpx==0.27.2",
     "multiprocess==0.70.16",
     "openai==1.40.1",
-    "pandas>=2.0.0",
+    "pandas>=1.5.0",
     "pydantic==2.1.1",
     "python-dotenv==1.0.1",
     "requests==2.32.3",
