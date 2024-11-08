@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from pytest_asyncio import is_async_test
 
 from aymara_ai import AymaraAI
+from aymara_ai.generated.aymara_api_client.api.integration_test import integration_test
 
 load_dotenv(override=True)
 
@@ -50,31 +51,8 @@ def pytest_collection_modifyitems(items):
         async_test.add_marker(session_scope_marker, append=False)
 
 
-@pytest.fixture(autouse=True, scope="class")
-def cleanup_after_test(aymara_client: AymaraAI):
-    created_test_uuids = []
-    created_score_run_uuids = []
-    created_summary_uuids = []
-
-    yield created_test_uuids, created_score_run_uuids, created_summary_uuids
-
-    for test_uuid in created_test_uuids:
-        try:
-            aymara_client.delete_test(test_uuid)
-        except ValueError:
-            pass
-    print("Deleted %s tests", len(created_test_uuids))
-
-    for score_run_uuid in created_score_run_uuids:
-        try:
-            aymara_client.delete_score_run(score_run_uuid)
-        except ValueError:
-            pass
-    print("Deleted %s score runs", len(created_score_run_uuids))
-
-    for summary_uuid in created_summary_uuids:
-        try:
-            aymara_client.delete_summary(summary_uuid)
-        except ValueError:
-            pass
-    print("Deleted %s summaries", len(created_summary_uuids))
+@pytest.fixture(scope="session", autouse=True)
+def cleanup(aymara_client):
+    yield
+    # Run integration test check endpoint to clean up test data
+    integration_test.sync_detailed(client=aymara_client.client)

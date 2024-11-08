@@ -39,6 +39,7 @@ def test_create_summary(aymara_client):
                         created_at=datetime.now(),
                         updated_at=datetime.now(),
                         remaining_score_runs=100,
+                        price=100,
                     ),
                 )
             ],
@@ -74,6 +75,7 @@ def test_create_summary(aymara_client):
                         created_at=datetime.now(),
                         updated_at=datetime.now(),
                         remaining_score_runs=100,
+                        price=100,
                     ),
                 )
             ],
@@ -124,6 +126,7 @@ async def test_create_summary_async(aymara_client):
                         created_at=datetime.now(),
                         updated_at=datetime.now(),
                         remaining_score_runs=100,
+                        price=100,
                     ),
                 )
             ],
@@ -159,6 +162,7 @@ async def test_create_summary_async(aymara_client):
                         created_at=datetime.now(),
                         updated_at=datetime.now(),
                         remaining_score_runs=100,
+                        price=100,
                     ),
                 )
             ],
@@ -208,6 +212,7 @@ def test_get_summary(aymara_client):
                         created_at=datetime.now(),
                         updated_at=datetime.now(),
                         remaining_score_runs=100,
+                        price=100,
                     ),
                 )
             ],
@@ -268,6 +273,7 @@ async def test_get_summary_async(aymara_client):
                         created_at=datetime.now(),
                         updated_at=datetime.now(),
                         remaining_score_runs=100,
+                        price=100,
                     ),
                 )
             ],
@@ -330,6 +336,7 @@ def test_list_summaries(aymara_client):
                                 created_at=datetime.now(),
                                 updated_at=datetime.now(),
                                 remaining_score_runs=100,
+                                price=100,
                             ),
                         )
                     ],
@@ -365,6 +372,7 @@ def test_list_summaries(aymara_client):
                                 created_at=datetime.now(),
                                 updated_at=datetime.now(),
                                 remaining_score_runs=100,
+                                price=100,
                             ),
                         )
                     ],
@@ -421,6 +429,7 @@ async def test_list_summaries_async(aymara_client):
                                 created_at=datetime.now(),
                                 updated_at=datetime.now(),
                                 remaining_score_runs=100,
+                                price=100,
                             ),
                         )
                     ],
@@ -456,6 +465,7 @@ async def test_list_summaries_async(aymara_client):
                                 created_at=datetime.now(),
                                 updated_at=datetime.now(),
                                 remaining_score_runs=100,
+                                price=100,
                             ),
                         )
                     ],

@@ -7,6 +7,7 @@ from dateutil.parser import isoparse
 
 from ..models.test_status import TestStatus
 from ..models.test_type import TestType
+from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="TestOutSchema")
 
@@ -19,24 +20,24 @@ class TestOutSchema:
         test_name (str):
         test_status (TestStatus): Test status.
         test_type (TestType): Test type.
-        organization_name (str):
         num_test_questions (Union[None, int]):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
         test_system_prompt (Union[None, str]):
         test_policy (Union[None, str]):
+        organization_name (Union[None, Unset, str]):
     """
 
     test_uuid: str
     test_name: str
     test_status: TestStatus
     test_type: TestType
-    organization_name: str
     num_test_questions: Union[None, int]
     created_at: datetime.datetime
     updated_at: datetime.datetime
     test_system_prompt: Union[None, str]
     test_policy: Union[None, str]
+    organization_name: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -47,8 +48,6 @@ class TestOutSchema:
         test_status = self.test_status.value
 
         test_type = self.test_type.value
-
-        organization_name = self.organization_name
 
         num_test_questions: Union[None, int]
         num_test_questions = self.num_test_questions
@@ -63,6 +62,12 @@ class TestOutSchema:
         test_policy: Union[None, str]
         test_policy = self.test_policy
 
+        organization_name: Union[None, Unset, str]
+        if isinstance(self.organization_name, Unset):
+            organization_name = UNSET
+        else:
+            organization_name = self.organization_name
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -71,7 +76,6 @@ class TestOutSchema:
                 "test_name": test_name,
                 "test_status": test_status,
                 "test_type": test_type,
-                "organization_name": organization_name,
                 "num_test_questions": num_test_questions,
                 "created_at": created_at,
                 "updated_at": updated_at,
@@ -79,6 +83,8 @@ class TestOutSchema:
                 "test_policy": test_policy,
             }
         )
+        if organization_name is not UNSET:
+            field_dict["organization_name"] = organization_name
 
         return field_dict
 
@@ -92,8 +98,6 @@ class TestOutSchema:
         test_status = TestStatus(d.pop("test_status"))
 
         test_type = TestType(d.pop("test_type"))
-
-        organization_name = d.pop("organization_name")
 
         def _parse_num_test_questions(data: object) -> Union[None, int]:
             if data is None:
@@ -120,17 +124,26 @@ class TestOutSchema:
 
         test_policy = _parse_test_policy(d.pop("test_policy"))
 
+        def _parse_organization_name(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        organization_name = _parse_organization_name(d.pop("organization_name", UNSET))
+
         test_out_schema = cls(
             test_uuid=test_uuid,
             test_name=test_name,
             test_status=test_status,
             test_type=test_type,
-            organization_name=organization_name,
             num_test_questions=num_test_questions,
             created_at=created_at,
             updated_at=updated_at,
             test_system_prompt=test_system_prompt,
             test_policy=test_policy,
+            organization_name=organization_name,
         )
 
         test_out_schema.additional_properties = d

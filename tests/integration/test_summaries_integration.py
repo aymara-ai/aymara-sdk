@@ -12,8 +12,7 @@ ENVIRONMENT = os.getenv("API_TEST_ENV")
 
 class TestSummaryMixin:
     @pytest.fixture(scope="class")
-    async def test_data(self, aymara_client: AymaraAI, cleanup_after_test):
-        created_test_uuids, _, __ = cleanup_after_test
+    async def test_data(self, aymara_client: AymaraAI):
         # Create a test and return its UUID and questions
         test_name = "Summary Integration Test"
         student_description = "An AI assistant for customer support"
@@ -26,7 +25,6 @@ class TestSummaryMixin:
             test_policy=test_policy,
             num_test_questions=num_test_questions,
         )
-        created_test_uuids.append(test_response.test_uuid)
         return test_response.test_uuid, test_response.questions
 
     @pytest.fixture(scope="class")
@@ -41,69 +39,45 @@ class TestSummaryMixin:
         ]
 
     @pytest.fixture(scope="class")
-    async def score_runs(
-        self, aymara_client: AymaraAI, test_data, student_answers, cleanup_after_test
-    ):
-        _, created_score_run_uuids, __ = cleanup_after_test
+    async def score_runs(self, aymara_client: AymaraAI, test_data, student_answers):
         test_uuid, _ = test_data
         score_runs = []
         for _ in range(3):  # Create 3 score runs
             score_response = await aymara_client.score_test_async(
                 test_uuid, student_answers
             )
-            created_score_run_uuids.append(score_response.score_run_uuid)
             score_runs.append(score_response)
         return score_runs
 
-    async def test_create_summary_async(
-        self, aymara_client: AymaraAI, score_runs, cleanup_after_test
-    ):
-        _, _, created_summary_uuids = cleanup_after_test
+    async def test_create_summary_async(self, aymara_client: AymaraAI, score_runs):
         summary_response = await aymara_client.create_summary_async(score_runs)
-        created_summary_uuids.append(summary_response.score_run_suite_summary_uuid)
         assert isinstance(summary_response, ScoreRunSuiteSummaryResponse)
         assert summary_response.score_run_suite_summary_status == Status.COMPLETED
         assert summary_response.score_run_suite_summary_uuid is not None
 
-    def test_create_summary_sync(
-        self, aymara_client: AymaraAI, score_runs, cleanup_after_test
-    ):
-        _, _, created_summary_uuids = cleanup_after_test
+    def test_create_summary_sync(self, aymara_client: AymaraAI, score_runs):
         summary_response = aymara_client.create_summary(score_runs)
-        created_summary_uuids.append(summary_response.score_run_suite_summary_uuid)
         assert isinstance(summary_response, ScoreRunSuiteSummaryResponse)
         assert summary_response.score_run_suite_summary_status == Status.COMPLETED
 
-    async def test_get_summary_async(
-        self, aymara_client: AymaraAI, score_runs, cleanup_after_test
-    ):
-        _, _, created_summary_uuids = cleanup_after_test
+    async def test_get_summary_async(self, aymara_client: AymaraAI, score_runs):
         summary_response = await aymara_client.create_summary_async(score_runs)
-        created_summary_uuids.append(summary_response.score_run_suite_summary_uuid)
         get_response = await aymara_client.get_summary_async(
             summary_response.score_run_suite_summary_uuid
         )
         assert isinstance(get_response, ScoreRunSuiteSummaryResponse)
         assert get_response.score_run_suite_summary_status == Status.COMPLETED
 
-    def test_get_summary_sync(
-        self, aymara_client: AymaraAI, score_runs, cleanup_after_test
-    ):
-        _, _, created_summary_uuids = cleanup_after_test
+    def test_get_summary_sync(self, aymara_client: AymaraAI, score_runs):
         summary_response = aymara_client.create_summary(score_runs)
-        created_summary_uuids.append(summary_response.score_run_suite_summary_uuid)
         get_response = aymara_client.get_summary(
             summary_response.score_run_suite_summary_uuid
         )
         assert isinstance(get_response, ScoreRunSuiteSummaryResponse)
         assert get_response.score_run_suite_summary_status == Status.COMPLETED
 
-    async def test_list_summaries_async(
-        self, aymara_client: AymaraAI, score_runs, cleanup_after_test
-    ):
-        _, _, created_summary_uuids = cleanup_after_test
-        summary_response = await aymara_client.create_summary_async(score_runs)
-        created_summary_uuids.append(summary_response.score_run_suite_summary_uuid)
+    async def test_list_summaries_async(self, aymara_client: AymaraAI, score_runs):
+        await aymara_client.create_summary_async(score_runs)
         summaries = await aymara_client.list_summaries_async()
         assert isinstance(summaries, list)
         assert len(summaries) > 0
@@ -111,12 +85,8 @@ class TestSummaryMixin:
             isinstance(summary, ScoreRunSuiteSummaryResponse) for summary in summaries
         )
 
-    def test_list_summaries_sync(
-        self, aymara_client: AymaraAI, score_runs, cleanup_after_test
-    ):
-        _, _, created_summary_uuids = cleanup_after_test
-        summary_response = aymara_client.create_summary(score_runs)
-        created_summary_uuids.append(summary_response.score_run_suite_summary_uuid)
+    def test_list_summaries_sync(self, aymara_client: AymaraAI, score_runs):
+        aymara_client.create_summary(score_runs)
         summaries = aymara_client.list_summaries()
         assert isinstance(summaries, list)
         assert len(summaries) > 0
@@ -146,26 +116,22 @@ class TestSummaryMixin:
 
     @pytest.mark.asyncio
     async def test_create_summary_async_timeout(
-        self, aymara_client: AymaraAI, score_runs, monkeypatch, cleanup_after_test
+        self, aymara_client: AymaraAI, score_runs, monkeypatch
     ):
-        _, _, created_summary_uuids = cleanup_after_test
         monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0.01)
         summary_response = await aymara_client.create_summary_async(score_runs)
-        created_summary_uuids.append(summary_response.score_run_suite_summary_uuid)
         assert isinstance(summary_response, ScoreRunSuiteSummaryResponse)
         assert summary_response.score_run_suite_summary_status == Status.FAILED
         assert summary_response.failure_reason == "Summary creation timed out."
 
     def test_create_summary_sync_timeout(
-        self, aymara_client: AymaraAI, score_runs, monkeypatch, cleanup_after_test
+        self, aymara_client: AymaraAI, score_runs, monkeypatch
     ):
-        _, _, created_summary_uuids = cleanup_after_test
         monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0.01)
 
         assert aymara_client.max_wait_time_secs == 0.01
 
         summary_response = aymara_client.create_summary(score_runs)
-        created_summary_uuids.append(summary_response.score_run_suite_summary_uuid)
         assert isinstance(summary_response, ScoreRunSuiteSummaryResponse)
         assert summary_response.score_run_suite_summary_status == Status.FAILED
         assert summary_response.failure_reason == "Summary creation timed out."
@@ -192,17 +158,13 @@ class TestSummaryMixin:
         FREE_TIER_SUMMARY_LIMIT = 2
 
         @pytest.fixture(scope="class")
-        async def score_runs(
-            self, free_aymara_client, test_data, student_answers, cleanup_after_test
-        ):
-            _, created_score_run_uuids, __ = cleanup_after_test
+        async def score_runs(self, free_aymara_client, test_data, student_answers):
             test_uuid, _ = test_data
             score_runs = []
             for _ in range(2):  # Create 2 score runs
                 score_response = await free_aymara_client.score_test_async(
                     test_uuid, student_answers
                 )
-                created_score_run_uuids.append(score_response.score_run_uuid)
                 score_runs.append(score_response)
             return score_runs
 
@@ -210,25 +172,21 @@ class TestSummaryMixin:
             self,
             free_aymara_client,
             score_runs,
-            cleanup_after_test,
             monkeypatch,
         ):
-            _, _, created_summary_uuids = cleanup_after_test
             mock_logger = Mock()
             mock_logger.progress_bar.return_value.__enter__ = Mock()
             mock_logger.progress_bar.return_value.__exit__ = Mock()
             monkeypatch.setattr(free_aymara_client, "logger", mock_logger)
 
             # First summary should succeed
-            response1 = free_aymara_client.create_summary(score_runs)
-            created_summary_uuids.append(response1.score_run_suite_summary_uuid)
+            free_aymara_client.create_summary(score_runs)
             mock_logger.warning.assert_called_with(
                 f"You have {self.FREE_TIER_SUMMARY_LIMIT - 1} summary remaining. To upgrade, visit https://aymara.ai/upgrade."
             )
 
             # Second summary should succeed
-            response2 = free_aymara_client.create_summary(score_runs)
-            created_summary_uuids.append(response2.score_run_suite_summary_uuid)
+            free_aymara_client.create_summary(score_runs)
             mock_logger.warning.assert_called_with(
                 f"You have {self.FREE_TIER_SUMMARY_LIMIT - 2} summaries remaining. To upgrade, visit https://aymara.ai/upgrade."
             )

@@ -16,8 +16,7 @@ from aymara_ai.types import (
 
 class TestScoreRunMixin:
     @pytest.fixture(scope="class")
-    async def test_data(self, aymara_client: AymaraAI, cleanup_after_test):
-        created_test_uuids, _, _ = cleanup_after_test
+    async def test_data(self, aymara_client: AymaraAI):
         # Create a test and return its UUID and questions
         test_name = "Score Run Integration Test"
         student_description = "An AI assistant for customer support"
@@ -30,7 +29,6 @@ class TestScoreRunMixin:
             test_policy=test_policy,
             num_test_questions=num_test_questions,
         )
-        created_test_uuids.append(test_response.test_uuid)
         return test_response.test_uuid, test_response.questions
 
     @pytest.fixture(scope="class")
@@ -52,15 +50,12 @@ class TestScoreRunMixin:
         aymara_client: AymaraAI,
         test_data: tuple,
         student_answers: List[StudentAnswerInput],
-        cleanup_after_test,
     ):
-        _, created_score_run_uuids, _ = cleanup_after_test
         test_uuid, _ = test_data
 
         score_response = await aymara_client.score_test_async(
             test_uuid, student_answers
         )
-        created_score_run_uuids.append(score_response.score_run_uuid)
         assert isinstance(score_response, ScoreRunResponse)
         assert score_response.score_run_status == Status.COMPLETED
         assert len(score_response.answers) == len(student_answers)
@@ -88,13 +83,10 @@ class TestScoreRunMixin:
         aymara_client: AymaraAI,
         test_data: tuple,
         student_answers: List[StudentAnswerInput],
-        cleanup_after_test,
     ):
-        _, created_score_run_uuids, _ = cleanup_after_test
         test_uuid, _ = test_data
 
         score_response = aymara_client.score_test(test_uuid, student_answers)
-        created_score_run_uuids.append(score_response.score_run_uuid)
         assert isinstance(score_response, ScoreRunResponse)
         assert score_response.score_run_status == Status.COMPLETED
         assert len(score_response.answers) == len(student_answers)
@@ -122,14 +114,11 @@ class TestScoreRunMixin:
         aymara_client: AymaraAI,
         test_data: tuple,
         student_answers: List[StudentAnswerInput],
-        cleanup_after_test,
     ):
-        _, created_score_run_uuids, _ = cleanup_after_test
         test_uuid, _ = test_data
         score_response = await aymara_client.score_test_async(
             test_uuid, student_answers
         )
-        created_score_run_uuids.append(score_response.score_run_uuid)
         get_response = await aymara_client.get_score_run_async(
             score_response.score_run_uuid
         )
@@ -160,12 +149,9 @@ class TestScoreRunMixin:
         aymara_client: AymaraAI,
         test_data: tuple,
         student_answers: List[StudentAnswerInput],
-        cleanup_after_test,
     ):
-        _, created_score_run_uuids, _ = cleanup_after_test
         test_uuid, _ = test_data
         score_response = aymara_client.score_test(test_uuid, student_answers)
-        created_score_run_uuids.append(score_response.score_run_uuid)
         get_response = aymara_client.get_score_run(score_response.score_run_uuid)
         assert isinstance(get_response, ScoreRunResponse)
         assert get_response.score_run_status == Status.COMPLETED
@@ -195,14 +181,9 @@ class TestScoreRunMixin:
         aymara_client: AymaraAI,
         test_data: tuple,
         student_answers: List[StudentAnswerInput],
-        cleanup_after_test,
     ):
-        _, created_score_run_uuids, _ = cleanup_after_test
         test_uuid, _ = test_data
-        score_response = await aymara_client.score_test_async(
-            test_uuid, student_answers
-        )
-        created_score_run_uuids.append(score_response.score_run_uuid)
+        await aymara_client.score_test_async(test_uuid, student_answers)
         score_runs = await aymara_client.list_score_runs_async(test_uuid)
         assert isinstance(score_runs, ListScoreRunResponse)
         assert len(score_runs) > 0
@@ -217,12 +198,9 @@ class TestScoreRunMixin:
         aymara_client: AymaraAI,
         test_data: tuple,
         student_answers: List[StudentAnswerInput],
-        cleanup_after_test,
     ):
-        _, created_score_run_uuids, _ = cleanup_after_test
         test_uuid, _ = test_data
-        score_response = aymara_client.score_test(test_uuid, student_answers)
-        created_score_run_uuids.append(score_response.score_run_uuid)
+        aymara_client.score_test(test_uuid, student_answers)
         score_runs = aymara_client.list_score_runs(test_uuid)
         assert isinstance(score_runs, ListScoreRunResponse)
         assert len(score_runs) > 0
@@ -233,9 +211,8 @@ class TestScoreRunMixin:
         assert len(df) > 0
 
     def test_score_test_with_partial_answers(
-        self, aymara_client: AymaraAI, test_data: tuple, cleanup_after_test
+        self, aymara_client: AymaraAI, test_data: tuple
     ):
-        _, created_score_run_uuids, _ = cleanup_after_test
         test_uuid, questions = test_data
 
         # Not all questions have been answered
@@ -274,7 +251,6 @@ class TestScoreRunMixin:
         ]
 
         response = aymara_client.score_test(test_uuid, unanswered_answers)
-        created_score_run_uuids.append(response.score_run_uuid)
         assert response.score_run_status == Status.COMPLETED
 
     def test_get_non_existent_score_run(self, aymara_client: AymaraAI):
@@ -311,9 +287,7 @@ class TestScoreRunMixin:
         test_data: tuple,
         student_answers: List[StudentAnswerInput],
         monkeypatch,
-        cleanup_after_test,
     ):
-        _, created_score_run_uuids, _ = cleanup_after_test
         test_uuid, _ = test_data
 
         monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0.1)
@@ -321,7 +295,6 @@ class TestScoreRunMixin:
         score_response = await aymara_client.score_test_async(
             test_uuid, student_answers
         )
-        created_score_run_uuids.append(score_response.score_run_uuid)
         assert isinstance(score_response, ScoreRunResponse)
         assert score_response.score_run_status == Status.FAILED
         assert score_response.failure_reason == "Score run creation timed out."
@@ -332,15 +305,12 @@ class TestScoreRunMixin:
         test_data: tuple,
         student_answers: List[StudentAnswerInput],
         monkeypatch,
-        cleanup_after_test,
     ):
-        _, created_score_run_uuids, _ = cleanup_after_test
         test_uuid, _ = test_data
 
         monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0.1)
 
         score_response = aymara_client.score_test(test_uuid, student_answers)
-        created_score_run_uuids.append(score_response.score_run_uuid)
         assert isinstance(score_response, ScoreRunResponse)
         assert score_response.score_run_status == Status.FAILED
         assert score_response.failure_reason == "Score run creation timed out."
@@ -373,29 +343,21 @@ class TestFreeUserScoreRunRestrictions:
         free_aymara_client,
         default_test,
         student_answers,
-        cleanup_after_test,
         monkeypatch,
     ):
-        _, created_score_run_uuids, _ = cleanup_after_test
         mock_logger = Mock()
         mock_logger.progress_bar.return_value.__enter__ = Mock()
         mock_logger.progress_bar.return_value.__exit__ = Mock()
         monkeypatch.setattr(free_aymara_client, "logger", mock_logger)
 
         # First score run should succeed
-        response1 = free_aymara_client.score_test(
-            default_test.test_uuid, student_answers
-        )
-        created_score_run_uuids.append(response1.score_run_uuid)
+        free_aymara_client.score_test(default_test.test_uuid, student_answers)
         mock_logger.warning.assert_called_with(
             f"You have {self.FREE_TIER_SCORE_RUN_LIMIT - 1} score run remaining. To upgrade, visit https://aymara.ai/upgrade."
         )
 
         # Second score run should succeed
-        response2 = free_aymara_client.score_test(
-            default_test.test_uuid, student_answers
-        )
-        created_score_run_uuids.append(response2.score_run_uuid)
+        free_aymara_client.score_test(default_test.test_uuid, student_answers)
         mock_logger.warning.assert_called_with(
             f"You have {self.FREE_TIER_SCORE_RUN_LIMIT - 2} score runs remaining. To upgrade, visit https://aymara.ai/upgrade."
         )

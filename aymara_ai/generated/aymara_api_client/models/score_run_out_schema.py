@@ -10,6 +10,7 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.test_out_schema import TestOutSchema
+    from ..models.user_out_schema import UserOutSchema
 
 
 T = TypeVar("T", bound="ScoreRunOutSchema")
@@ -24,7 +25,10 @@ class ScoreRunOutSchema:
         test (TestOutSchema):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
+        price (float):
         remaining_score_runs (Union[None, Unset, int]):
+        price_adjustment_note (Union[None, Unset, str]):
+        created_by (Union['UserOutSchema', None, Unset]):
     """
 
     score_run_uuid: str
@@ -32,10 +36,15 @@ class ScoreRunOutSchema:
     test: "TestOutSchema"
     created_at: datetime.datetime
     updated_at: datetime.datetime
+    price: float
     remaining_score_runs: Union[None, Unset, int] = UNSET
+    price_adjustment_note: Union[None, Unset, str] = UNSET
+    created_by: Union["UserOutSchema", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        from ..models.user_out_schema import UserOutSchema
+
         score_run_uuid = self.score_run_uuid
 
         score_run_status = self.score_run_status.value
@@ -46,11 +55,27 @@ class ScoreRunOutSchema:
 
         updated_at = self.updated_at.isoformat()
 
+        price = self.price
+
         remaining_score_runs: Union[None, Unset, int]
         if isinstance(self.remaining_score_runs, Unset):
             remaining_score_runs = UNSET
         else:
             remaining_score_runs = self.remaining_score_runs
+
+        price_adjustment_note: Union[None, Unset, str]
+        if isinstance(self.price_adjustment_note, Unset):
+            price_adjustment_note = UNSET
+        else:
+            price_adjustment_note = self.price_adjustment_note
+
+        created_by: Union[Dict[str, Any], None, Unset]
+        if isinstance(self.created_by, Unset):
+            created_by = UNSET
+        elif isinstance(self.created_by, UserOutSchema):
+            created_by = self.created_by.to_dict()
+        else:
+            created_by = self.created_by
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -61,16 +86,22 @@ class ScoreRunOutSchema:
                 "test": test,
                 "created_at": created_at,
                 "updated_at": updated_at,
+                "price": price,
             }
         )
         if remaining_score_runs is not UNSET:
             field_dict["remaining_score_runs"] = remaining_score_runs
+        if price_adjustment_note is not UNSET:
+            field_dict["price_adjustment_note"] = price_adjustment_note
+        if created_by is not UNSET:
+            field_dict["created_by"] = created_by
 
         return field_dict
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         from ..models.test_out_schema import TestOutSchema
+        from ..models.user_out_schema import UserOutSchema
 
         d = src_dict.copy()
         score_run_uuid = d.pop("score_run_uuid")
@@ -83,6 +114,8 @@ class ScoreRunOutSchema:
 
         updated_at = isoparse(d.pop("updated_at"))
 
+        price = d.pop("price")
+
         def _parse_remaining_score_runs(data: object) -> Union[None, Unset, int]:
             if data is None:
                 return data
@@ -92,13 +125,42 @@ class ScoreRunOutSchema:
 
         remaining_score_runs = _parse_remaining_score_runs(d.pop("remaining_score_runs", UNSET))
 
+        def _parse_price_adjustment_note(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        price_adjustment_note = _parse_price_adjustment_note(d.pop("price_adjustment_note", UNSET))
+
+        def _parse_created_by(data: object) -> Union["UserOutSchema", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                created_by_type_0 = UserOutSchema.from_dict(data)
+
+                return created_by_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["UserOutSchema", None, Unset], data)
+
+        created_by = _parse_created_by(d.pop("created_by", UNSET))
+
         score_run_out_schema = cls(
             score_run_uuid=score_run_uuid,
             score_run_status=score_run_status,
             test=test,
             created_at=created_at,
             updated_at=updated_at,
+            price=price,
             remaining_score_runs=remaining_score_runs,
+            price_adjustment_note=price_adjustment_note,
+            created_by=created_by,
         )
 
         score_run_out_schema.additional_properties = d
