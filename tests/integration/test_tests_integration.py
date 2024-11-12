@@ -189,7 +189,7 @@ class TestTestMixin:
     def test_create_safety_test_timeout(
         self, aymara_client, safety_test_data, monkeypatch
     ):
-        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0.1)
+        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0)
         response = aymara_client.create_safety_test(**safety_test_data)
         assert response.test_status == Status.FAILED
         assert response.failure_reason == "Test creation timed out"
@@ -197,7 +197,7 @@ class TestTestMixin:
     async def test_create_jailbreak_test_async_timeout(
         self, aymara_client, jailbreak_test_data, monkeypatch
     ):
-        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0.1)
+        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0)
         response = await aymara_client.create_jailbreak_test_async(
             **jailbreak_test_data
         )

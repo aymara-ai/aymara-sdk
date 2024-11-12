@@ -290,7 +290,7 @@ class TestScoreRunMixin:
     ):
         test_uuid, _ = test_data
 
-        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0.1)
+        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0)
 
         score_response = await aymara_client.score_test_async(
             test_uuid, student_answers
@@ -308,7 +308,7 @@ class TestScoreRunMixin:
     ):
         test_uuid, _ = test_data
 
-        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0.1)
+        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0)
 
         score_response = aymara_client.score_test(test_uuid, student_answers)
         assert isinstance(score_response, ScoreRunResponse)
