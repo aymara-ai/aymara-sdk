@@ -270,7 +270,7 @@ class ScoreRunMixin(AymaraAIProtocol):
                     Status.from_api_status(score_response.score_run_status),
                 )
 
-                elapsed_time = int(time.time() - start_time)
+                elapsed_time = time.time() - start_time
 
                 if elapsed_time > self.max_wait_time_secs:
                     score_response.score_run_status = models.ScoreRunStatus.FAILED
@@ -339,7 +339,7 @@ class ScoreRunMixin(AymaraAIProtocol):
                     Status.from_api_status(score_response.score_run_status),
                 )
 
-                elapsed_time = int(time.time() - start_time)
+                elapsed_time = float(time.time() - start_time)
 
                 if elapsed_time > self.max_wait_time_secs:
                     score_response.score_run_status = models.ScoreRunStatus.FAILED
