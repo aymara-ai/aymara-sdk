@@ -30,6 +30,7 @@ dependencies = [
     "ipykernel==6.29.5",
     "ipywidgets==8.1.5",
     "colorama>=0.4.6",
+    "sphinxcontrib-googleanalytics>=0.4",
 ]
 license = {file = "LICENSE"}
 keywords = ["ai", "alignment", "testing"]

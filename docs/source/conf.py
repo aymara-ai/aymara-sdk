@@ -22,7 +22,10 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "myst_nb",
+    "sphinxcontrib.googleanalytics",
 ]
+
+googleanalytics_id = "G-VYYZ5093ZM"
 
 nb_execution_mode = "off"
 pygments_style = "sphinx"
