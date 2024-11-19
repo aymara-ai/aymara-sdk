@@ -18,7 +18,10 @@ from aymara_ai.types import (
     ScoreRunSuiteSummaryResponse,
     Status,
 )
-from aymara_ai.utils.constants import POLLING_INTERVAL
+from aymara_ai.utils.constants import (
+    DEFAULT_SUMMARY_MAX_WAIT_TIME_SECS,
+    POLLING_INTERVAL,
+)
 
 
 class SummaryMixin(AymaraAIProtocol):
@@ -118,7 +121,7 @@ class SummaryMixin(AymaraAIProtocol):
 
                 elapsed_time = time.time() - start_time
 
-                if elapsed_time > self.max_wait_time_secs:
+                if elapsed_time >= DEFAULT_SUMMARY_MAX_WAIT_TIME_SECS:
                     summary_response.status = models.ScoreRunSuiteSummaryStatus.FAILED
                     self.logger.update_progress_bar(summary_uuid, Status.FAILED)
                     return ScoreRunSuiteSummaryResponse.from_summary_out_schema_and_failure_reason(
@@ -186,7 +189,7 @@ class SummaryMixin(AymaraAIProtocol):
 
                 elapsed_time = time.time() - start_time
 
-                if elapsed_time >= self.max_wait_time_secs:
+                if elapsed_time >= DEFAULT_SUMMARY_MAX_WAIT_TIME_SECS:
                     summary_response.status = models.ScoreRunSuiteSummaryStatus.FAILED
                     self.logger.update_progress_bar(summary_uuid, Status.FAILED)
                     return ScoreRunSuiteSummaryResponse.from_summary_out_schema_and_failure_reason(

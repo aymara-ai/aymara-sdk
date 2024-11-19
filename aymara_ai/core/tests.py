@@ -22,10 +22,12 @@ from aymara_ai.types import (
 from aymara_ai.utils.constants import (
     AYMARA_TEST_POLICY_PREFIX,
     DEFAULT_CHAR_TO_TOKEN_MULTIPLIER,
+    DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
     DEFAULT_MAX_TOKENS,
     DEFAULT_NUM_QUESTIONS,
     DEFAULT_NUM_QUESTIONS_MAX,
     DEFAULT_NUM_QUESTIONS_MIN,
+    DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
     DEFAULT_TEST_LANGUAGE,
     DEFAULT_TEST_NAME_LEN_MAX,
     DEFAULT_TEST_NAME_LEN_MIN,
@@ -44,6 +46,7 @@ class TestMixin(AymaraAIProtocol):
         test_policy: Union[str, AymaraTestPolicy],
         test_language: str = DEFAULT_TEST_LANGUAGE,
         num_test_questions: int = DEFAULT_NUM_QUESTIONS,
+        max_wait_time_secs: int = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
     ) -> SafetyTestResponse:
         """
         Create an Aymara safety test synchronously and wait for completion.
@@ -58,6 +61,8 @@ class TestMixin(AymaraAIProtocol):
         :type test_language: str, optional
         :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
         :type num_test_questions: int, optional
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
+        :type max_wait_time_secs: int, optional
         :return: Test response containing test details and generated questions.
         :rtype: SafetyTestResponse
 
@@ -74,6 +79,7 @@ class TestMixin(AymaraAIProtocol):
             num_test_questions=num_test_questions,
             is_async=False,
             test_type=TestType.SAFETY,
+            max_wait_time_secs=max_wait_time_secs,
         )
 
     async def create_safety_test_async(
@@ -83,6 +89,7 @@ class TestMixin(AymaraAIProtocol):
         test_policy: Union[str, AymaraTestPolicy],
         test_language: str = DEFAULT_TEST_LANGUAGE,
         num_test_questions: int = DEFAULT_NUM_QUESTIONS,
+        max_wait_time_secs: Optional[int] = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
     ) -> SafetyTestResponse:
         """
         Create an Aymara safety test asynchronously and wait for completion.
@@ -97,6 +104,8 @@ class TestMixin(AymaraAIProtocol):
         :type test_language: str, optional
         :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
         :type num_test_questions: int, optional
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
+        :type max_wait_time_secs: int, optional
         :return: Test response containing test details and generated questions.
         :rtype: SafetyTestResponse
 
@@ -113,6 +122,7 @@ class TestMixin(AymaraAIProtocol):
             num_test_questions=num_test_questions,
             is_async=True,
             test_type=TestType.SAFETY,
+            max_wait_time_secs=max_wait_time_secs,
         )
 
     # Create Jailbreak Test Methods
@@ -122,6 +132,7 @@ class TestMixin(AymaraAIProtocol):
         student_description: str,
         test_system_prompt: str,
         test_language: str = DEFAULT_TEST_LANGUAGE,
+        max_wait_time_secs: int = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
     ) -> JailbreakTestResponse:
         """
         Create an Aymara jailbreak test synchronously and wait for completion.
@@ -134,6 +145,8 @@ class TestMixin(AymaraAIProtocol):
         :type test_system_prompt: str
         :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
         :type test_language: str, optional
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS}.
+        :type max_wait_time_secs: int, optional
         :return: Test response containing test details and generated questions.
         :rtype: JailbreakTestResponse
 
@@ -149,6 +162,7 @@ class TestMixin(AymaraAIProtocol):
             test_language=test_language,
             is_async=False,
             test_type=TestType.JAILBREAK,
+            max_wait_time_secs=max_wait_time_secs,
         )
 
     async def create_jailbreak_test_async(
@@ -157,6 +171,7 @@ class TestMixin(AymaraAIProtocol):
         student_description: str,
         test_system_prompt: str,
         test_language: str = DEFAULT_TEST_LANGUAGE,
+        max_wait_time_secs: int = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
     ) -> JailbreakTestResponse:
         """
         Create an Aymara jailbreak test asynchronously and wait for completion.
@@ -169,6 +184,8 @@ class TestMixin(AymaraAIProtocol):
         :type test_system_prompt: str
         :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
         :type test_language: str, optional
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS}.
+        :type max_wait_time_secs: int, optional
         :return: Test response containing test details and generated questions.
         :rtype: JailbreakTestResponse
 
@@ -184,6 +201,7 @@ class TestMixin(AymaraAIProtocol):
             test_language=test_language,
             is_async=True,
             test_type=TestType.JAILBREAK,
+            max_wait_time_secs=max_wait_time_secs,
         )
 
     def _create_test(
@@ -196,6 +214,7 @@ class TestMixin(AymaraAIProtocol):
         is_async: bool,
         test_type: TestType,
         num_test_questions: Optional[int] = None,
+        max_wait_time_secs: Optional[int] = None,
     ) -> Union[BaseTestResponse, Coroutine[BaseTestResponse, None, None]]:
         # Convert AymaraTestPolicy to string and prefix with "aymara_test_policy:" for safety tests
         if test_type == TestType.SAFETY and isinstance(test_policy, AymaraTestPolicy):
@@ -224,9 +243,13 @@ class TestMixin(AymaraAIProtocol):
         )
 
         if is_async:
-            return self._create_and_wait_for_test_impl_async(test_data)
+            return self._create_and_wait_for_test_impl_async(
+                test_data, max_wait_time_secs
+            )
         else:
-            return self._create_and_wait_for_test_impl_sync(test_data)
+            return self._create_and_wait_for_test_impl_sync(
+                test_data, max_wait_time_secs
+            )
 
     def _validate_test_inputs(
         self,
@@ -284,7 +307,7 @@ class TestMixin(AymaraAIProtocol):
             )
 
     def _create_and_wait_for_test_impl_sync(
-        self, test_data: models.TestInSchema
+        self, test_data: models.TestInSchema, max_wait_time_secs: Optional[int]
     ) -> BaseTestResponse:
         start_time = time.time()
         response = create_test.sync_detailed(client=self.client, body=test_data)
@@ -319,7 +342,7 @@ class TestMixin(AymaraAIProtocol):
 
                 elapsed_time = time.time() - start_time
 
-                if elapsed_time > self.max_wait_time_secs:
+                if elapsed_time > max_wait_time_secs:
                     test_response.test_status = models.TestStatus.FAILED
                     self.logger.update_progress_bar(test_uuid, Status.FAILED)
                     return BaseTestResponse.from_test_out_schema_and_questions(
@@ -341,7 +364,7 @@ class TestMixin(AymaraAIProtocol):
                 time.sleep(POLLING_INTERVAL)
 
     async def _create_and_wait_for_test_impl_async(
-        self, test_data: models.TestInSchema
+        self, test_data: models.TestInSchema, max_wait_time_secs: Optional[int]
     ) -> BaseTestResponse:
         start_time = time.time()
         response = await create_test.asyncio_detailed(
@@ -378,7 +401,7 @@ class TestMixin(AymaraAIProtocol):
 
                 elapsed_time = time.time() - start_time
 
-                if elapsed_time > self.max_wait_time_secs:
+                if elapsed_time > max_wait_time_secs:
                     test_response.test_status = models.TestStatus.FAILED
                     self.logger.update_progress_bar(test_uuid, Status.FAILED)
                     return BaseTestResponse.from_test_out_schema_and_questions(

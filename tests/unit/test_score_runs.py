@@ -5,12 +5,18 @@ import pandas as pd
 import pytest
 
 from aymara_ai.generated.aymara_api_client import models
+from aymara_ai.generated.aymara_api_client.models.test_type import TestType
 from aymara_ai.types import (
     ListScoreRunResponse,
     ScoreRunResponse,
     Status,
     StudentAnswerInput,
 )
+from aymara_ai.utils.constants import (
+    DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+)
+
+TestType.__test__ = False  # type: ignore
 
 
 def test_score_test(aymara_client):
@@ -79,7 +85,11 @@ def test_score_test(aymara_client):
         )
 
         result = aymara_client.score_test(
-            "test123", [StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")]
+            test_uuid="test123",
+            test_type=TestType.SAFETY,
+            student_answers=[
+                StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")
+            ],
         )
 
         assert isinstance(result, ScoreRunResponse)
@@ -155,7 +165,11 @@ async def test_score_test_async(aymara_client):
         )
 
         result = await aymara_client.score_test_async(
-            "test123", [StudentAnswerInput(question_uuid="q1", answer_text="Anser 1")]
+            test_uuid="test123",
+            test_type=TestType.SAFETY,
+            student_answers=[
+                StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")
+            ],
         )
 
         assert isinstance(result, ScoreRunResponse)
@@ -438,7 +452,11 @@ def test_score_test_failed(aymara_client):
         )
 
         result = aymara_client.score_test(
-            "test123", [StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")]
+            test_uuid="test123",
+            test_type=TestType.SAFETY,
+            student_answers=[
+                StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")
+            ],
         )
 
         assert isinstance(result, ScoreRunResponse)
@@ -452,7 +470,7 @@ def test_score_test_timeout(aymara_client):
 
     def mock_time():
         nonlocal start_time
-        start_time += aymara_client.max_wait_time_secs + 1
+        start_time += DEFAULT_SAFETY_MAX_WAIT_TIME_SECS + 1
         return start_time
 
     with patch(
@@ -504,7 +522,11 @@ def test_score_test_timeout(aymara_client):
         )
 
         result = aymara_client.score_test(
-            "test123", [StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")]
+            test_uuid="test123",
+            test_type=TestType.SAFETY,
+            student_answers=[
+                StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")
+            ],
         )
 
         assert isinstance(result, ScoreRunResponse)
@@ -562,7 +584,11 @@ async def test_score_test_async_failed(aymara_client):
         )
 
         result = await aymara_client.score_test_async(
-            "test123", [StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")]
+            test_uuid="test123",
+            test_type=TestType.SAFETY,
+            student_answers=[
+                StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")
+            ],
         )
 
         assert isinstance(result, ScoreRunResponse)
@@ -577,7 +603,7 @@ async def test_score_test_async_timeout(aymara_client):
 
     def mock_time():
         nonlocal start_time
-        start_time += aymara_client.max_wait_time_secs + 1
+        start_time += DEFAULT_SAFETY_MAX_WAIT_TIME_SECS + 1
         return start_time
 
     with patch(
@@ -629,7 +655,11 @@ async def test_score_test_async_timeout(aymara_client):
         )
 
         result = await aymara_client.score_test_async(
-            "test123", [StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")]
+            test_uuid="test123",
+            test_type=TestType.JAILBREAK,
+            student_answers=[
+                StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")
+            ],
         )
 
         assert isinstance(result, ScoreRunResponse)

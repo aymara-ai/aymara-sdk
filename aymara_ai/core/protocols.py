@@ -7,4 +7,3 @@ from aymara_ai.utils.logger import SDKLogger
 class AymaraAIProtocol(Protocol):
     logger: SDKLogger
     client: client.Client
-    max_wait_time_secs: int

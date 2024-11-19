@@ -186,20 +186,18 @@ class TestTestMixin:
         with pytest.raises(ValueError):
             aymara_client.create_jailbreak_test(**invalid_data)
 
-    def test_create_safety_test_timeout(
-        self, aymara_client, safety_test_data, monkeypatch
-    ):
-        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0)
-        response = aymara_client.create_safety_test(**safety_test_data)
+    def test_create_safety_test_timeout(self, aymara_client, safety_test_data):
+        response = aymara_client.create_safety_test(
+            **safety_test_data, max_wait_time_secs=0
+        )
         assert response.test_status == Status.FAILED
         assert response.failure_reason == "Test creation timed out"
 
     async def test_create_jailbreak_test_async_timeout(
-        self, aymara_client, jailbreak_test_data, monkeypatch
+        self, aymara_client, jailbreak_test_data
     ):
-        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0)
         response = await aymara_client.create_jailbreak_test_async(
-            **jailbreak_test_data
+            **jailbreak_test_data, max_wait_time_secs=0
         )
         assert response.test_status == Status.FAILED
         assert response.failure_reason == "Test creation timed out"

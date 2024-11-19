@@ -15,7 +15,6 @@ from aymara_ai.types import (
     ScoreRunResponse,
     Status,
 )
-from aymara_ai.utils.constants import DEFAULT_MAX_WAIT_TIME_SECS
 
 
 def test_aymara_ai_initialization():
@@ -27,15 +26,12 @@ def test_aymara_ai_initialization():
 
     ai = AymaraAI(api_key="test_api_key")
     assert ai.client is not None
-    assert ai.max_wait_time_secs == DEFAULT_MAX_WAIT_TIME_SECS
 
     ai_custom = AymaraAI(
         api_key="test_api_key",
         base_url="https://custom.api.com",
-        max_wait_time_secs=300,
     )
     assert ai_custom.client._base_url == "https://custom.api.com"
-    assert ai_custom.max_wait_time_secs == 300
 
 
 def test_aymara_ai_context_manager():

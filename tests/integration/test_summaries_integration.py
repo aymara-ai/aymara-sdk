@@ -5,7 +5,10 @@ from unittest.mock import Mock
 import pytest
 
 from aymara_ai.core.sdk import AymaraAI
+from aymara_ai.generated.aymara_api_client.models.test_type import TestType
 from aymara_ai.types import ScoreRunSuiteSummaryResponse, Status, StudentAnswerInput
+
+TestType.__test__ = False  # type: ignore
 
 ENVIRONMENT = os.getenv("API_TEST_ENV")
 
@@ -44,7 +47,9 @@ class TestSummaryMixin:
         score_runs = []
         for _ in range(3):  # Create 3 score runs
             score_response = await aymara_client.score_test_async(
-                test_uuid, student_answers
+                test_uuid=test_uuid,
+                test_type=TestType.SAFETY,
+                student_answers=student_answers,
             )
             score_runs.append(score_response)
         return score_runs
@@ -118,7 +123,9 @@ class TestSummaryMixin:
     async def test_create_summary_async_timeout(
         self, aymara_client: AymaraAI, score_runs, monkeypatch
     ):
-        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0.01)
+        monkeypatch.setattr(
+            "aymara_ai.core.summaries.DEFAULT_SUMMARY_MAX_WAIT_TIME_SECS", 0.01
+        )
         summary_response = await aymara_client.create_summary_async(score_runs)
         assert isinstance(summary_response, ScoreRunSuiteSummaryResponse)
         assert summary_response.score_run_suite_summary_status == Status.FAILED
@@ -127,10 +134,9 @@ class TestSummaryMixin:
     def test_create_summary_sync_timeout(
         self, aymara_client: AymaraAI, score_runs, monkeypatch
     ):
-        monkeypatch.setattr(aymara_client, "max_wait_time_secs", 0.01)
-
-        assert aymara_client.max_wait_time_secs == 0.01
-
+        monkeypatch.setattr(
+            "aymara_ai.core.summaries.DEFAULT_SUMMARY_MAX_WAIT_TIME_SECS", 0.01
+        )
         summary_response = aymara_client.create_summary(score_runs)
         assert isinstance(summary_response, ScoreRunSuiteSummaryResponse)
         assert summary_response.score_run_suite_summary_status == Status.FAILED
@@ -163,7 +169,9 @@ class TestSummaryMixin:
             score_runs = []
             for _ in range(2):  # Create 2 score runs
                 score_response = await free_aymara_client.score_test_async(
-                    test_uuid, student_answers
+                    test_uuid=test_uuid,
+                    test_type=TestType.SAFETY,
+                    student_answers=student_answers,
                 )
                 score_runs.append(score_response)
             return score_runs

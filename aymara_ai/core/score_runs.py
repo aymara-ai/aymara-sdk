@@ -11,13 +11,18 @@ from aymara_ai.generated.aymara_api_client.api.score_runs import (
     get_score_run_answers,
     list_score_runs,
 )
+from aymara_ai.generated.aymara_api_client.models.test_type import TestType
 from aymara_ai.types import (
     ListScoreRunResponse,
     ScoreRunResponse,
     Status,
     StudentAnswerInput,
 )
-from aymara_ai.utils.constants import POLLING_INTERVAL
+from aymara_ai.utils.constants import (
+    DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
+    DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+    POLLING_INTERVAL,
+)
 
 
 class ScoreRunMixin(AymaraAIProtocol):
@@ -25,7 +30,9 @@ class ScoreRunMixin(AymaraAIProtocol):
     def score_test(
         self,
         test_uuid: str,
+        test_type: TestType,
         student_answers: List[StudentAnswerInput],
+        max_wait_time_secs: Optional[int] = None,
     ) -> ScoreRunResponse:
         """
         Score a test synchronously.
@@ -37,12 +44,25 @@ class ScoreRunMixin(AymaraAIProtocol):
         :return: Score response.
         :rtype: ScoreRunResponse
         """
-        return self._score_test(test_uuid, student_answers, is_async=False)
+        if max_wait_time_secs is None:
+            if test_type == TestType.SAFETY:
+                max_wait_time_secs = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS
+            elif test_type == TestType.JAILBREAK:
+                max_wait_time_secs = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS
+
+        return self._score_test(
+            test_uuid,
+            student_answers,
+            is_async=False,
+            max_wait_time_secs=max_wait_time_secs,
+        )
 
     async def score_test_async(
         self,
         test_uuid: str,
+        test_type: TestType,
         student_answers: List[StudentAnswerInput],
+        max_wait_time_secs: Optional[int] = None,
     ) -> ScoreRunResponse:
         """
         Score a test asynchronously.
@@ -54,13 +74,24 @@ class ScoreRunMixin(AymaraAIProtocol):
         :return: Score response.
         :rtype: ScoreRunResponse
         """
-        return await self._score_test(test_uuid, student_answers, is_async=True)
+        if max_wait_time_secs is None:
+            if test_type == TestType.SAFETY:
+                max_wait_time_secs = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS
+            elif test_type == TestType.JAILBREAK:
+                max_wait_time_secs = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS
+        return await self._score_test(
+            test_uuid,
+            student_answers,
+            is_async=True,
+            max_wait_time_secs=max_wait_time_secs,
+        )
 
     def _score_test(
         self,
         test_uuid: str,
         student_answers: List[StudentAnswerInput],
         is_async: bool,
+        max_wait_time_secs: Optional[int] = None,
     ) -> Union[ScoreRunResponse, Coroutine[ScoreRunResponse, None, None]]:
         self._validate_student_answers(student_answers)
 
@@ -73,9 +104,13 @@ class ScoreRunMixin(AymaraAIProtocol):
         )
 
         if is_async:
-            return self._create_and_wait_for_score_impl_async(score_data)
+            return self._create_and_wait_for_score_impl_async(
+                score_data, max_wait_time_secs
+            )
         else:
-            return self._create_and_wait_for_score_impl_sync(score_data)
+            return self._create_and_wait_for_score_impl_sync(
+                score_data, max_wait_time_secs
+            )
 
     # Get Score Run Methods
     def get_score_run(self, score_run_uuid: str) -> ScoreRunResponse:
@@ -226,7 +261,7 @@ class ScoreRunMixin(AymaraAIProtocol):
 
     # Helper Methods
     def _create_and_wait_for_score_impl_sync(
-        self, score_data: models.ScoreRunInSchema
+        self, score_data: models.ScoreRunInSchema, max_wait_time_secs: Optional[int]
     ) -> ScoreRunResponse:
         start_time = time.time()
         response = create_score_run.sync_detailed(client=self.client, body=score_data)
@@ -272,7 +307,7 @@ class ScoreRunMixin(AymaraAIProtocol):
 
                 elapsed_time = time.time() - start_time
 
-                if elapsed_time > self.max_wait_time_secs:
+                if elapsed_time > max_wait_time_secs:
                     score_response.score_run_status = models.ScoreRunStatus.FAILED
                     self.logger.update_progress_bar(score_run_uuid, Status.FAILED)
                     return ScoreRunResponse.from_score_run_out_schema_and_answers(
@@ -292,7 +327,7 @@ class ScoreRunMixin(AymaraAIProtocol):
                 time.sleep(POLLING_INTERVAL)
 
     async def _create_and_wait_for_score_impl_async(
-        self, score_data: models.ScoreRunInSchema
+        self, score_data: models.ScoreRunInSchema, max_wait_time_secs: Optional[int]
     ) -> ScoreRunResponse:
         start_time = time.time()
         response = await create_score_run.asyncio_detailed(
@@ -341,7 +376,7 @@ class ScoreRunMixin(AymaraAIProtocol):
 
                 elapsed_time = float(time.time() - start_time)
 
-                if elapsed_time > self.max_wait_time_secs:
+                if elapsed_time > max_wait_time_secs:
                     score_response.score_run_status = models.ScoreRunStatus.FAILED
                     self.logger.update_progress_bar(score_run_uuid, Status.FAILED)
                     return ScoreRunResponse.from_score_run_out_schema_and_answers(

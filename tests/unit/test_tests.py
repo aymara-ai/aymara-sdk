@@ -17,6 +17,7 @@ from aymara_ai.utils.constants import (
     DEFAULT_MAX_TOKENS,
     DEFAULT_NUM_QUESTIONS_MAX,
     DEFAULT_NUM_QUESTIONS_MIN,
+    DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
     DEFAULT_TEST_NAME_LEN_MAX,
 )
 
@@ -428,7 +429,7 @@ def test_create_and_wait_for_test_impl_sync_success(aymara_client):
     ), patch(
         "aymara_ai.core.tests.get_test_questions.sync_detailed", mock_get_questions
     ):
-        result = aymara_client._create_and_wait_for_test_impl_sync(test_data)
+        result = aymara_client._create_and_wait_for_test_impl_sync(test_data, 60)
 
         assert isinstance(result, SafetyTestResponse)
         assert result.test_uuid == "test123"
@@ -489,7 +490,7 @@ async def test_create_and_wait_for_test_impl_async_success(aymara_client):
     ), patch(
         "aymara_ai.core.tests.get_test_questions.asyncio_detailed", mock_get_questions
     ):
-        result = await aymara_client._create_and_wait_for_test_impl_async(test_data)
+        result = await aymara_client._create_and_wait_for_test_impl_async(test_data, 60)
 
         assert isinstance(result, JailbreakTestResponse)
         assert result.test_uuid == "test123"
@@ -539,7 +540,7 @@ def test_create_and_wait_for_test_impl_failure_sync(aymara_client):
     with patch("aymara_ai.core.tests.create_test.sync_detailed", mock_create), patch(
         "aymara_ai.core.tests.get_test.sync_detailed", mock_get
     ):
-        result = aymara_client._create_and_wait_for_test_impl_sync(test_data)
+        result = aymara_client._create_and_wait_for_test_impl_sync(test_data, 60)
 
         assert isinstance(result, SafetyTestResponse)
         assert result.test_uuid == "test123"
@@ -591,7 +592,7 @@ async def test_create_and_wait_for_test_impl_failure_async(aymara_client):
     with patch("aymara_ai.core.tests.create_test.asyncio_detailed", mock_create), patch(
         "aymara_ai.core.tests.get_test.asyncio_detailed", mock_get
     ):
-        result = await aymara_client._create_and_wait_for_test_impl_async(test_data)
+        result = await aymara_client._create_and_wait_for_test_impl_async(test_data, 60)
 
         assert isinstance(result, JailbreakTestResponse)
         assert result.test_uuid == "test123"
@@ -649,7 +650,7 @@ def test_create_and_wait_for_test_impl_timeout_sync(aymara_client):
 
     def mock_time():
         nonlocal start_time
-        start_time += aymara_client.max_wait_time_secs + 1
+        start_time += 61  # More than max_wait_time_secs
         return start_time
 
     with patch("aymara_ai.core.tests.create_test.sync_detailed", mock_create), patch(
@@ -657,7 +658,7 @@ def test_create_and_wait_for_test_impl_timeout_sync(aymara_client):
     ), patch("time.time", side_effect=mock_time), patch(
         "time.sleep", return_value=None
     ):
-        result = aymara_client._create_and_wait_for_test_impl_sync(test_data)
+        result = aymara_client._create_and_wait_for_test_impl_sync(test_data, 60)
 
         assert isinstance(result, SafetyTestResponse)
         assert result.test_uuid == "test123"
@@ -717,7 +718,7 @@ async def test_create_and_wait_for_test_impl_timeout_async(aymara_client):
 
     def mock_time():
         nonlocal start_time
-        start_time += aymara_client.max_wait_time_secs + 1
+        start_time += 61  # More than max_wait_time_secs
         return start_time
 
     with patch("aymara_ai.core.tests.create_test.asyncio_detailed", mock_create), patch(
@@ -727,7 +728,7 @@ async def test_create_and_wait_for_test_impl_timeout_async(aymara_client):
     ), patch("time.time", side_effect=mock_time), patch(
         "time.sleep", return_value=None
     ):
-        result = await aymara_client._create_and_wait_for_test_impl_async(test_data)
+        result = await aymara_client._create_and_wait_for_test_impl_async(test_data, 60)
 
         assert isinstance(result, JailbreakTestResponse)
         assert result.test_uuid == "test123"
@@ -963,7 +964,12 @@ def test_logger_progress_bar(aymara_client):
         )
         mock_get_questions.return_value.status_code = 200
 
-        aymara_client.create_safety_test("Test 1", "Student description", "Test policy")
+        aymara_client.create_safety_test(
+            "Test 1",
+            "Student description",
+            "Test policy",
+            max_wait_time_secs=DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+        )
 
         mock_logger.progress_bar.assert_called_once_with(
             "Test 1", "test123", Status.PENDING
@@ -974,8 +980,6 @@ def test_logger_progress_bar(aymara_client):
 
 
 def test_max_wait_time_secs_exceeded(aymara_client):
-    aymara_client.max_wait_time_secs = 1  # Set a short timeout for testing
-
     with patch(
         "aymara_ai.core.tests.create_test.sync_detailed"
     ) as mock_create_test, patch(
@@ -1011,7 +1015,10 @@ def test_max_wait_time_secs_exceeded(aymara_client):
         mock_get_test.return_value.status_code = 200
 
         result = aymara_client.create_safety_test(
-            "Test 1", "Student description", "Test policy"
+            "Test 1",
+            "Student description",
+            "Test policy",
+            max_wait_time_secs=1,  # Set a short timeout for testing
         )
 
         assert isinstance(result, SafetyTestResponse)
