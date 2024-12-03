@@ -1,6 +1,5 @@
 import os
 from typing import List
-from unittest.mock import Mock
 
 import pandas as pd
 import pytest
@@ -49,6 +48,22 @@ class TestScoreRunMixin:
         return test_response
 
     @pytest.fixture(scope="class")
+    async def image_safety_test_data(self, aymara_client: AymaraAI):
+        # Create an image safety test and return its UUID and questions
+        test_name = "Image Safety Score Run Integration Test"
+        student_description = "An AI image generation model"
+        test_policy = "No explicit content or violence"
+        num_test_questions = 2
+
+        test_response = await aymara_client.create_image_safety_test_async(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=test_policy,
+            num_test_questions=num_test_questions,
+        )
+        return test_response
+
+    @pytest.fixture(scope="class")
     def safety_student_answers(self, safety_test_data) -> List[StudentAnswerInput]:
         questions = safety_test_data.questions
 
@@ -76,6 +91,33 @@ class TestScoreRunMixin:
             for question in questions
         ]
         return answers
+
+    @pytest.fixture(scope="class")
+    def image_safety_student_answers(
+        self, image_safety_test_data, test_image_path
+    ) -> List[StudentAnswerInput]:
+        questions = image_safety_test_data.questions
+
+        answers = [
+            StudentAnswerInput(
+                question_uuid=question.question_uuid,
+                answer_image_path=test_image_path,  # Use the test image for all answers
+            )
+            for question in questions
+        ]
+
+        return answers
+
+    @pytest.fixture(scope="class")
+    def test_image_path(self, tmp_path_factory) -> str:
+        # Create a temporary mock image file
+        temp_dir = tmp_path_factory.mktemp("test_data")
+        mock_image = temp_dir / "mock_image.jpg"
+
+        # Create an empty file with some random bytes to simulate an image
+        mock_image.write_bytes(b"mock image content")
+
+        return str(mock_image)
 
     async def test_score_safety_test_async(
         self,
@@ -286,7 +328,7 @@ class TestScoreRunMixin:
         safety_test_data: SafetyTestResponse,
         safety_student_answers: List[StudentAnswerInput],
     ):
-        score_response = await aymara_client.score_test_async(
+        await aymara_client.score_test_async(
             safety_test_data.test_uuid,
             TestType.SAFETY,
             safety_student_answers,
@@ -470,6 +512,129 @@ class TestScoreRunMixin:
         assert score_response.score_run_status == Status.FAILED
         assert score_response.failure_reason == "Score run creation timed out."
 
+    async def test_score_image_safety_test_async(
+        self,
+        aymara_client: AymaraAI,
+        image_safety_test_data: SafetyTestResponse,
+        image_safety_student_answers: List[StudentAnswerInput],
+    ):
+        score_response = await aymara_client.score_test_async(
+            image_safety_test_data.test_uuid,
+            TestType.IMAGE_SAFETY,
+            image_safety_student_answers,
+        )
+        assert isinstance(score_response, ScoreRunResponse)
+        assert score_response.score_run_status == Status.COMPLETED
+        assert len(score_response.answers) == len(image_safety_student_answers)
+
+        # Check that all answers have a confidence score
+        assert all(
+            hasattr(answer, "confidence") and answer.confidence is not None
+            for answer in score_response.answers
+        ), "Not all answers have a confidence score"
+
+        # Check if there are any non-passing answers
+        non_passing_answers = [
+            answer for answer in score_response.answers if not answer.is_passed
+        ]
+
+        # If there are non-passing answers, check that they have explanations
+        if non_passing_answers:
+            assert all(
+                hasattr(answer, "explanation") and answer.explanation is not None
+                for answer in non_passing_answers
+            ), "Not all non-passing answers have an explanation"
+
+    def test_score_image_safety_test_sync(
+        self,
+        aymara_client: AymaraAI,
+        image_safety_test_data: SafetyTestResponse,
+        image_safety_student_answers: List[StudentAnswerInput],
+    ):
+        score_response = aymara_client.score_test(
+            image_safety_test_data.test_uuid,
+            TestType.IMAGE_SAFETY,
+            image_safety_student_answers,
+        )
+        assert isinstance(score_response, ScoreRunResponse)
+        assert score_response.score_run_status == Status.COMPLETED
+        assert len(score_response.answers) == len(image_safety_student_answers)
+
+        # Check that all answers have a confidence score
+        assert all(
+            hasattr(answer, "confidence") and answer.confidence is not None
+            for answer in score_response.answers
+        ), "Not all answers have a confidence score"
+
+        # Check if there are any non-passing answers
+        non_passing_answers = [
+            answer for answer in score_response.answers if not answer.is_passed
+        ]
+
+        # If there are non-passing answers, check that they have explanations
+        if non_passing_answers:
+            assert all(
+                hasattr(answer, "explanation") and answer.explanation is not None
+                for answer in non_passing_answers
+            ), "Not all non-passing answers have an explanation"
+
+    def test_score_image_safety_test_with_invalid_file(
+        self,
+        aymara_client: AymaraAI,
+        image_safety_test_data: SafetyTestResponse,
+    ):
+        # Test with non-existent file
+        invalid_answers = [
+            StudentAnswerInput(
+                question_uuid=image_safety_test_data.questions[0].question_uuid,
+                answer_image_path="non_existent_file.jpg",
+            ),
+        ]
+        with pytest.raises(ValueError) as exc_info:
+            aymara_client.score_test(
+                image_safety_test_data.test_uuid,
+                TestType.IMAGE_SAFETY,
+                invalid_answers,
+            )
+        assert "Image path does not exist" in str(exc_info.value)
+
+    def test_score_image_safety_test_with_text_answer(
+        self,
+        aymara_client: AymaraAI,
+        image_safety_test_data: SafetyTestResponse,
+    ):
+        # Test with text answer instead of image
+        text_answers = [
+            StudentAnswerInput(
+                question_uuid=image_safety_test_data.questions[0].question_uuid,
+                answer_text="This is a text answer",
+            ),
+        ]
+        with pytest.raises(ValueError) as exc_info:
+            aymara_client.score_test(
+                image_safety_test_data.test_uuid,
+                TestType.IMAGE_SAFETY,
+                text_answers,
+            )
+        assert "Image path is required" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_score_image_safety_test_async_timeout(
+        self,
+        aymara_client: AymaraAI,
+        image_safety_test_data: SafetyTestResponse,
+        image_safety_student_answers: List[StudentAnswerInput],
+    ):
+        score_response = await aymara_client.score_test_async(
+            image_safety_test_data.test_uuid,
+            TestType.IMAGE_SAFETY,
+            image_safety_student_answers,
+            max_wait_time_secs=0,
+        )
+        assert isinstance(score_response, ScoreRunResponse)
+        assert score_response.score_run_status == Status.FAILED
+        assert score_response.failure_reason == "Score run creation timed out."
+
 
 ENVIRONMENT = os.getenv("API_TEST_ENV")
 
@@ -500,25 +665,30 @@ class TestFreeUserScoreRunRestrictions:
         student_answers,
         monkeypatch,
     ):
-        mock_logger = Mock()
-        mock_logger.progress_bar.return_value.__enter__ = Mock()
-        mock_logger.progress_bar.return_value.__exit__ = Mock()
-        monkeypatch.setattr(free_aymara_client, "logger", mock_logger)
+        # Mock the logger's warning method
+        warning_calls = []
+
+        def mock_warning(msg, *args, **kwargs):
+            warning_calls.append(msg)
+
+        monkeypatch.setattr(free_aymara_client.logger, "warning", mock_warning)
 
         # First score run should succeed
         free_aymara_client.score_test(
             default_test.test_uuid, TestType.SAFETY, student_answers
         )
-        mock_logger.warning.assert_called_with(
-            f"You have {self.FREE_TIER_SCORE_RUN_LIMIT - 1} score run remaining. To upgrade, visit https://aymara.ai/upgrade."
+        assert (
+            warning_calls[-1]
+            == f"You have {self.FREE_TIER_SCORE_RUN_LIMIT - 1} score run remaining. To upgrade, visit https://aymara.ai/upgrade."
         )
 
         # Second score run should succeed
         free_aymara_client.score_test(
             default_test.test_uuid, TestType.SAFETY, student_answers
         )
-        mock_logger.warning.assert_called_with(
-            f"You have {self.FREE_TIER_SCORE_RUN_LIMIT - 2} score runs remaining. To upgrade, visit https://aymara.ai/upgrade."
+        assert (
+            warning_calls[-1]
+            == f"You have {self.FREE_TIER_SCORE_RUN_LIMIT - 2} score runs remaining. To upgrade, visit https://aymara.ai/upgrade."
         )
 
         # Third score run should fail

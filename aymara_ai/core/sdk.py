@@ -19,6 +19,7 @@ from aymara_ai.core.protocols import AymaraAIProtocol
 from aymara_ai.core.score_runs import ScoreRunMixin
 from aymara_ai.core.summaries import SummaryMixin
 from aymara_ai.core.tests import TestMixin
+from aymara_ai.core.uploads import UploadMixin
 from aymara_ai.generated.aymara_api_client import (
     client,
 )
@@ -31,6 +32,7 @@ class AymaraAI(
     TestMixin,
     ScoreRunMixin,
     SummaryMixin,
+    UploadMixin,
     AymaraAIProtocol,
 ):
     """

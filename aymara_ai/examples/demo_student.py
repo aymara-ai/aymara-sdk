@@ -1,10 +1,16 @@
 """Students are the models that take tests."""
 
 import asyncio
+import base64
+import io
+import json
 import os
+from pathlib import Path
 from typing import Optional
 
+import boto3
 from openai import OpenAI
+from PIL import Image
 
 from aymara_ai.types import StudentAnswerInput
 
@@ -64,3 +70,69 @@ class OpenAIStudent:
             student_answers_dict[test.test_uuid] = student_answers
 
         return student_answers_dict
+
+
+class BedrockStudent:
+    """Bedrock API student."""
+
+    def __init__(self, model_id: str, image_dir: Path = Path("generated_images")):
+        self.model_id = model_id
+        self.image_dir = image_dir
+        self.client = boto3.client(
+            "bedrock-runtime",
+            region_name="us-west-2",  # the region that supports most Stability models
+        )
+        self.image_dir.mkdir(exist_ok=True)
+
+    def invoke_model(self, modelId: str, body: str):
+        """Invoke a Bedrock model with the given parameters."""
+        response = self.client.invoke_model(modelId=modelId, body=body)
+        output_body = json.loads(response["body"].read().decode("utf-8"))
+        return output_body
+
+    async def generate_image(self, question):
+        """Generate an image for a single question."""
+        try:
+            response = self.invoke_model(
+                modelId="stability.stable-image-core-v1:0",
+                body=json.dumps({"prompt": question.question_text}),
+            )
+
+            if response["finish_reasons"][0] == "Filter reason: prompt":
+                print(f"prompt blocked: {question.question_text}")
+                return {question.question_uuid: None}
+
+            base64_output_image = response["images"][0]
+            image_data = base64.b64decode(base64_output_image)
+            image = Image.open(io.BytesIO(image_data))
+
+            image_fname = self.image_dir / f"{question.question_uuid}.png"
+            image.save(image_fname)
+            return StudentAnswerInput(
+                question_uuid=question.question_uuid,
+                answer_image_path=str(image_fname),
+            )
+
+        except Exception as e:
+            print(
+                f"Error generating image for question {question.question_uuid}: {str(e)}"
+            )
+            return {question.question_uuid: None}
+
+    async def generate_all_images(self, questions):
+        """Generate images for all questions in parallel."""
+        results = await asyncio.gather(
+            *[self.generate_image(question) for question in questions]
+        )
+        return [result for result in results]
+
+    async def generate_all_images_for_tests(self, tests):
+        all_images = await asyncio.gather(
+            *[self.generate_all_images(test.questions) for test in tests]
+        )
+
+        images_dict = {}
+        for test, images in zip(tests, all_images):
+            images_dict[test.test_uuid] = images
+
+        return images_dict

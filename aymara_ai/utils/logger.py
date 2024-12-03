@@ -3,8 +3,8 @@ import re
 import time
 from contextlib import contextmanager
 
+import IPython
 from colorama import Fore, Style, init
-from IPython import get_ipython
 from IPython.display import HTML, display
 from tqdm.auto import tqdm
 
@@ -31,23 +31,25 @@ class SDKLogger(logging.Logger):
     @staticmethod
     def _is_running_in_notebook():
         try:
-            shell = get_ipython().__class__.__name__
+            shell = IPython.get_ipython().__class__.__name__
             if shell == "ZMQInteractiveShell":
                 return True  # Jupyter notebook or qtconsole
             elif shell == "TerminalInteractiveShell":
                 return False  # Terminal running IPython
             else:
                 return False  # Other type (?)
-        except NameError:
+        except (NameError, ImportError):
             return False  # Probably standard Python interpreter
 
     @contextmanager
-    def progress_bar(self, test_name, uuid, status):
+    def progress_bar(self, test_name, uuid, status, upload_total=None):
         self.tasks[uuid] = {
             "test_name": test_name,
             "uuid": uuid,
             "status": status,
             "start_time": time.time(),
+            "upload_progress": 0,
+            "upload_total": upload_total,
         }
         desc = self._get_progress_description(uuid)
         with tqdm(
@@ -59,10 +61,57 @@ class SDKLogger(logging.Logger):
         ) as pbar:
             pbar.update()
             self.tasks[uuid]["pbar"] = pbar
+
+            # Add methods to the progress bar object
+            def update_upload_progress(n):
+                self.tasks[uuid]["upload_progress"] = n
+                self._update_progress_description(uuid)
+
+            def update_uuid(new_uuid):
+                old_task = self.tasks.pop(uuid)
+                self.tasks[new_uuid] = old_task
+                self.tasks[new_uuid]["uuid"] = new_uuid
+                self._update_progress_description(new_uuid)
+
+            pbar.update_upload_progress = update_upload_progress
+            pbar.update_uuid = update_uuid
+
             try:
                 yield pbar
             finally:
-                del self.tasks[uuid]
+                if uuid in self.tasks:
+                    del self.tasks[uuid]
+
+    def _get_progress_description(self, uuid: str) -> str:
+        task = self.tasks[uuid]
+        elapsed_time = int(time.time() - task["start_time"])
+        status_str = task["status"]
+
+        if not self.is_notebook:
+            if task["status"] == Status.FAILED:
+                status_str = f"{Fore.RED}{status_str}{Style.RESET_ALL}"
+            elif task["status"] == Status.COMPLETED:
+                status_str = f"{Fore.GREEN}{status_str}{Style.RESET_ALL}"
+            elif task["status"] == Status.UPLOADING:
+                status_str = f"{Fore.YELLOW}{status_str}{Style.RESET_ALL}"
+            else:
+                status_str = f"{Fore.YELLOW}{status_str}{Style.RESET_ALL}"
+
+        description = (
+            f"{task['test_name']} | {task['uuid']} | {elapsed_time}s | {status_str}"
+        )
+
+        # Only add upload progress if we're in the UPLOADING status
+        if task.get("upload_total") and task["status"] == Status.UPLOADING:
+            upload_progress = f" | {task['upload_progress']}/{task['upload_total']}"
+            description += upload_progress
+
+        return description
+
+    def _update_progress_description(self, uuid: str):
+        task = self.tasks[uuid]
+        task["pbar"].set_description_str(self._get_progress_description(uuid))
+        task["pbar"].update()
 
     def update_progress_bar(self, uuid, status):
         task = self.tasks[uuid]
@@ -76,29 +125,6 @@ class SDKLogger(logging.Logger):
             else:
                 task["pbar"].colour = "orange"
         task["pbar"].update()
-
-    def _get_progress_description(
-        self,
-        uuid: str,
-    ) -> str:
-        task = self.tasks[uuid]
-        elapsed_time = int(time.time() - task["start_time"])
-        status_str = task["status"]
-
-        if not self.is_notebook:
-            if task["status"] == Status.FAILED:
-                status_str = f"{Fore.RED}{status_str}{Style.RESET_ALL}"
-            elif task["status"] == Status.COMPLETED:
-                status_str = f"{Fore.GREEN}{status_str}{Style.RESET_ALL}"
-            else:
-                status_str = f"{Fore.YELLOW}{status_str}{Style.RESET_ALL}"
-
-        return (
-            f"{task['test_name']} | "
-            f"{task['uuid']} | "
-            f"{elapsed_time}s | "
-            f"{status_str}"
-        )
 
     def warning(self, msg, *args, **kwargs):
         if self.is_notebook:

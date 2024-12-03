@@ -18,14 +18,14 @@ class BillingCycleUsageSchema:
     Attributes:
         billing_cycle_uuid (str):
         billing_cycle_start_date (datetime.date):
-        billing_cycle_end_date (Union[None, datetime.date]):
+        billing_cycle_end_date (datetime.date):
         paid_amount_usd (Union[float, str]):
         score_runs (List['ScoreRunOutSchema']):
     """
 
     billing_cycle_uuid: str
     billing_cycle_start_date: datetime.date
-    billing_cycle_end_date: Union[None, datetime.date]
+    billing_cycle_end_date: datetime.date
     paid_amount_usd: Union[float, str]
     score_runs: List["ScoreRunOutSchema"]
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -35,11 +35,7 @@ class BillingCycleUsageSchema:
 
         billing_cycle_start_date = self.billing_cycle_start_date.isoformat()
 
-        billing_cycle_end_date: Union[None, str]
-        if isinstance(self.billing_cycle_end_date, datetime.date):
-            billing_cycle_end_date = self.billing_cycle_end_date.isoformat()
-        else:
-            billing_cycle_end_date = self.billing_cycle_end_date
+        billing_cycle_end_date = self.billing_cycle_end_date.isoformat()
 
         paid_amount_usd: Union[float, str]
         paid_amount_usd = self.paid_amount_usd
@@ -72,20 +68,7 @@ class BillingCycleUsageSchema:
 
         billing_cycle_start_date = isoparse(d.pop("billing_cycle_start_date")).date()
 
-        def _parse_billing_cycle_end_date(data: object) -> Union[None, datetime.date]:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, str):
-                    raise TypeError()
-                billing_cycle_end_date_type_0 = isoparse(data).date()
-
-                return billing_cycle_end_date_type_0
-            except:  # noqa: E722
-                pass
-            return cast(Union[None, datetime.date], data)
-
-        billing_cycle_end_date = _parse_billing_cycle_end_date(d.pop("billing_cycle_end_date"))
+        billing_cycle_end_date = isoparse(d.pop("billing_cycle_end_date")).date()
 
         def _parse_paid_amount_usd(data: object) -> Union[float, str]:
             return cast(Union[float, str], data)

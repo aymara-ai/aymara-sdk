@@ -3,6 +3,7 @@ import time
 from typing import Coroutine, List, Optional, Union
 
 from aymara_ai.core.protocols import AymaraAIProtocol
+from aymara_ai.core.uploads import UploadMixin
 from aymara_ai.generated.aymara_api_client import models
 from aymara_ai.generated.aymara_api_client.api.score_runs import (
     create_score_run,
@@ -11,6 +12,7 @@ from aymara_ai.generated.aymara_api_client.api.score_runs import (
     get_score_run_answers,
     list_score_runs,
 )
+from aymara_ai.generated.aymara_api_client.api.tests import get_test
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
 from aymara_ai.types import (
     ListScoreRunResponse,
@@ -25,7 +27,12 @@ from aymara_ai.utils.constants import (
 )
 
 
-class ScoreRunMixin(AymaraAIProtocol):
+class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
+    """
+    Mixin class that provides score run functionality.
+    Inherits from UploadMixin to get image upload capabilities.
+    """
+
     # Score Test Methods
     def score_test(
         self,
@@ -45,14 +52,14 @@ class ScoreRunMixin(AymaraAIProtocol):
         :rtype: ScoreRunResponse
         """
         if max_wait_time_secs is None:
-            if test_type == TestType.SAFETY:
+            if test_type == TestType.SAFETY or test_type == TestType.IMAGE_SAFETY:
                 max_wait_time_secs = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS
             elif test_type == TestType.JAILBREAK:
                 max_wait_time_secs = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS
 
         return self._score_test(
-            test_uuid,
-            student_answers,
+            test_uuid=test_uuid,
+            student_answers=student_answers,
             is_async=False,
             max_wait_time_secs=max_wait_time_secs,
         )
@@ -75,13 +82,13 @@ class ScoreRunMixin(AymaraAIProtocol):
         :rtype: ScoreRunResponse
         """
         if max_wait_time_secs is None:
-            if test_type == TestType.SAFETY:
+            if test_type == TestType.SAFETY or test_type == TestType.IMAGE_SAFETY:
                 max_wait_time_secs = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS
             elif test_type == TestType.JAILBREAK:
                 max_wait_time_secs = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS
         return await self._score_test(
-            test_uuid,
-            student_answers,
+            test_uuid=test_uuid,
+            student_answers=student_answers,
             is_async=True,
             max_wait_time_secs=max_wait_time_secs,
         )
@@ -261,35 +268,63 @@ class ScoreRunMixin(AymaraAIProtocol):
 
     # Helper Methods
     def _create_and_wait_for_score_impl_sync(
-        self, score_data: models.ScoreRunInSchema, max_wait_time_secs: Optional[int]
+        self,
+        score_data: models.ScoreRunInSchema,
+        max_wait_time_secs: Optional[int],
     ) -> ScoreRunResponse:
         start_time = time.time()
-        response = create_score_run.sync_detailed(client=self.client, body=score_data)
 
-        if response.status_code == 404:
-            raise ValueError("Failed to create score run")
-        elif response.status_code == 422:
-            message = response.parsed.detail
-            raise ValueError(message)
-        score_response = response.parsed
-        score_run_uuid = score_response.score_run_uuid
-        test_name = score_response.test.test_name
+        test = get_test.sync_detailed(
+            client=self.client, test_uuid=score_data.test_uuid
+        )
 
-        remaining_score_runs = score_response.remaining_score_runs
-
-        if remaining_score_runs is not None:
-            score_run_plural = (
-                "score run" if remaining_score_runs == 1 else "score runs"
-            )
-            self.logger.warning(
-                f"You have {remaining_score_runs} {score_run_plural} remaining. To upgrade, visit https://aymara.ai/upgrade."
-            )
-
+        # Create progress bar once at the start
         with self.logger.progress_bar(
-            test_name,
-            score_run_uuid,
-            Status.from_api_status(score_response.score_run_status),
-        ):
+            test.parsed.test_name,
+            "pending",  # Will be updated with real UUID after creation
+            Status.UPLOADING
+            if any(a.answer_image_path for a in score_data.answers)
+            else Status.PENDING,
+            upload_total=len([a for a in score_data.answers if a.answer_image_path]),
+        ) as pbar:
+            if test.parsed.test_type == TestType.IMAGE_SAFETY:
+                uploaded_keys = self.upload_images(
+                    score_data.test_uuid,
+                    score_data.answers,
+                    progress_callback=lambda n: pbar.update_upload_progress(n),
+                )
+
+                for answer in score_data.answers:
+                    if (
+                        answer.answer_image_path
+                        and answer.question_uuid in uploaded_keys
+                    ):
+                        answer.answer_image_path = uploaded_keys[answer.question_uuid]
+
+            response = create_score_run.sync_detailed(
+                client=self.client, body=score_data
+            )
+
+            if response.status_code == 404:
+                raise ValueError("Failed to create score run")
+            elif response.status_code == 422:
+                message = response.parsed.detail
+                raise ValueError(message)
+
+            score_response = response.parsed
+            score_run_uuid = response.parsed.score_run_uuid
+            pbar.update_uuid(score_run_uuid)
+
+            remaining_score_runs = score_response.remaining_score_runs
+            if remaining_score_runs is not None:
+                score_run_plural = (
+                    "score run" if remaining_score_runs == 1 else "score runs"
+                )
+                self.logger.warning(
+                    f"You have {remaining_score_runs} {score_run_plural} remaining. To upgrade, visit https://aymara.ai/upgrade."
+                )
+
+            # Continue with polling loop
             while True:
                 response = get_score_run.sync_detailed(
                     client=self.client, score_run_uuid=score_run_uuid
@@ -327,38 +362,67 @@ class ScoreRunMixin(AymaraAIProtocol):
                 time.sleep(POLLING_INTERVAL)
 
     async def _create_and_wait_for_score_impl_async(
-        self, score_data: models.ScoreRunInSchema, max_wait_time_secs: Optional[int]
+        self,
+        score_data: models.ScoreRunInSchema,
+        max_wait_time_secs: Optional[int],
     ) -> ScoreRunResponse:
         start_time = time.time()
-        response = await create_score_run.asyncio_detailed(
-            client=self.client, body=score_data
+
+        # Generate a unique temporary UUID for the progress bar
+        temp_uuid = f"pending_{id(score_data)}"  # Use object id to make unique
+
+        # Get test info first
+        test = await get_test.asyncio_detailed(
+            client=self.client, test_uuid=score_data.test_uuid
         )
 
-        if response.status_code == 404:
-            raise ValueError("Failed to create score run")
-        elif response.status_code == 422:
-            message = response.parsed.detail
-            raise ValueError(message)
-
-        score_response = response.parsed
-        score_run_uuid = score_response.score_run_uuid
-        test_name = score_response.test.test_name
-
-        remaining_score_runs = score_response.remaining_score_runs
-
-        if remaining_score_runs is not None:
-            score_run_plural = (
-                "score run" if remaining_score_runs == 1 else "score runs"
-            )
-            self.logger.warning(
-                f"You have {remaining_score_runs} {score_run_plural} remaining. To upgrade, visit https://aymara.ai/upgrade."
-            )
-
+        # Create progress bar once at the start
         with self.logger.progress_bar(
-            test_name,
-            score_run_uuid,
-            Status.from_api_status(score_response.score_run_status),
-        ):
+            test.parsed.test_name,
+            temp_uuid,  # Will be updated with real UUID after creation
+            Status.UPLOADING
+            if any(a.answer_image_path for a in score_data.answers)
+            else Status.PENDING,
+            upload_total=len([a for a in score_data.answers if a.answer_image_path]),
+        ) as pbar:
+            if test.parsed.test_type == TestType.IMAGE_SAFETY:
+                uploaded_keys = await self.upload_images_async(
+                    score_data.test_uuid,
+                    score_data.answers,
+                    progress_callback=lambda n: pbar.update_upload_progress(n),
+                )
+
+                for answer in score_data.answers:
+                    if (
+                        answer.answer_image_path
+                        and answer.question_uuid in uploaded_keys
+                    ):
+                        answer.answer_image_path = uploaded_keys[answer.question_uuid]
+
+            response = await create_score_run.asyncio_detailed(
+                client=self.client, body=score_data
+            )
+
+            if response.status_code == 404:
+                raise ValueError("Failed to create score run")
+            elif response.status_code == 422:
+                message = response.parsed.detail
+                raise ValueError(message)
+
+            score_response = response.parsed
+            score_run_uuid = response.parsed.score_run_uuid
+            pbar.update_uuid(score_run_uuid)
+
+            remaining_score_runs = score_response.remaining_score_runs
+            if remaining_score_runs is not None:
+                score_run_plural = (
+                    "score run" if remaining_score_runs == 1 else "score runs"
+                )
+                self.logger.warning(
+                    f"You have {remaining_score_runs} {score_run_plural} remaining. To upgrade, visit https://aymara.ai/upgrade."
+                )
+
+            # Continue with polling loop
             while True:
                 response = await get_score_run.asyncio_detailed(
                     client=self.client, score_run_uuid=score_run_uuid
@@ -374,7 +438,7 @@ class ScoreRunMixin(AymaraAIProtocol):
                     Status.from_api_status(score_response.score_run_status),
                 )
 
-                elapsed_time = float(time.time() - start_time)
+                elapsed_time = time.time() - start_time
 
                 if elapsed_time > max_wait_time_secs:
                     score_response.score_run_status = models.ScoreRunStatus.FAILED
@@ -382,7 +446,6 @@ class ScoreRunMixin(AymaraAIProtocol):
                     return ScoreRunResponse.from_score_run_out_schema_and_answers(
                         score_response, None, "Score run creation timed out."
                     )
-
                 if score_response.score_run_status == models.ScoreRunStatus.FAILED:
                     return ScoreRunResponse.from_score_run_out_schema_and_answers(
                         score_response, None, "Internal server error. Please try again."
@@ -410,7 +473,6 @@ class ScoreRunMixin(AymaraAIProtocol):
 
             if response.status_code == 404:
                 raise ValueError(f"Score run with UUID {score_run_uuid} not found")
-
             paged_response = response.parsed
             answers.extend(paged_response.items)
             if len(answers) >= paged_response.count:
@@ -443,6 +505,12 @@ class ScoreRunMixin(AymaraAIProtocol):
         if not all(
             isinstance(answer, StudentAnswerInput) for answer in student_answers
         ):
+            non_student_answers = [
+                answer
+                for answer in student_answers
+                if not isinstance(answer, StudentAnswerInput)
+            ]
+            self.logger.error(f"Invalid answers: {non_student_answers}")
             raise ValueError("All items in student answers must be StudentAnswerInput.")
 
     def delete_score_run(self, score_run_uuid: str) -> None:

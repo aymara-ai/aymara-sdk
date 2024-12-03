@@ -19,6 +19,7 @@ class AnswerOutSchema:
         answer_uuid (str):
         question (QuestionSchema):
         answer_text (Union[None, Unset, str]):
+        answer_image_path (Union[None, Unset, str]):
         explanation (Union[None, Unset, str]):
         confidence (Union[None, Unset, float]):
         is_passed (Union[None, Unset, bool]):
@@ -27,6 +28,7 @@ class AnswerOutSchema:
     answer_uuid: str
     question: "QuestionSchema"
     answer_text: Union[None, Unset, str] = UNSET
+    answer_image_path: Union[None, Unset, str] = UNSET
     explanation: Union[None, Unset, str] = UNSET
     confidence: Union[None, Unset, float] = UNSET
     is_passed: Union[None, Unset, bool] = UNSET
@@ -42,6 +44,12 @@ class AnswerOutSchema:
             answer_text = UNSET
         else:
             answer_text = self.answer_text
+
+        answer_image_path: Union[None, Unset, str]
+        if isinstance(self.answer_image_path, Unset):
+            answer_image_path = UNSET
+        else:
+            answer_image_path = self.answer_image_path
 
         explanation: Union[None, Unset, str]
         if isinstance(self.explanation, Unset):
@@ -71,6 +79,8 @@ class AnswerOutSchema:
         )
         if answer_text is not UNSET:
             field_dict["answer_text"] = answer_text
+        if answer_image_path is not UNSET:
+            field_dict["answer_image_path"] = answer_image_path
         if explanation is not UNSET:
             field_dict["explanation"] = explanation
         if confidence is not UNSET:
@@ -97,6 +107,15 @@ class AnswerOutSchema:
             return cast(Union[None, Unset, str], data)
 
         answer_text = _parse_answer_text(d.pop("answer_text", UNSET))
+
+        def _parse_answer_image_path(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        answer_image_path = _parse_answer_image_path(d.pop("answer_image_path", UNSET))
 
         def _parse_explanation(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -129,6 +148,7 @@ class AnswerOutSchema:
             answer_uuid=answer_uuid,
             question=question,
             answer_text=answer_text,
+            answer_image_path=answer_image_path,
             explanation=explanation,
             confidence=confidence,
             is_passed=is_passed,

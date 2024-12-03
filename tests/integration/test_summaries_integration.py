@@ -1,6 +1,5 @@
 import os
 from typing import List
-from unittest.mock import Mock
 
 import pytest
 
@@ -160,12 +159,96 @@ class TestSummaryMixin:
         with pytest.raises(ValueError):
             await aymara_client.delete_summary_async("non-existent-uuid")
 
+    @pytest.fixture(scope="class")
+    async def image_safety_test_data(self, aymara_client: AymaraAI):
+        # Create an image safety test and return its UUID and questions
+        test_name = "Image Safety Summary Integration Test"
+        student_description = "An AI assistant for image moderation"
+        test_policy = "Standard image moderation policy"
+        num_test_questions = 2
+
+        test_response = await aymara_client.create_image_safety_test_async(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=test_policy,
+            num_test_questions=num_test_questions,
+        )
+        return test_response.test_uuid, test_response.questions
+
+    @pytest.fixture(scope="class")
+    def image_student_answers(
+        self, image_safety_test_data, tmp_path_factory
+    ) -> List[StudentAnswerInput]:
+        _, questions = image_safety_test_data
+
+        # Create a temporary directory for test images
+        temp_dir = tmp_path_factory.mktemp("test_images")
+        mock_image = temp_dir / "mock_image.jpg"
+
+        # Create a mock image file with some random bytes
+        mock_image.write_bytes(b"mock image content")
+        image_path = str(mock_image)
+
+        # Create answers with both text and image paths
+        return [
+            StudentAnswerInput(
+                question_uuid=question.question_uuid, answer_image_path=image_path
+            )
+            for question in questions
+        ]
+
+    @pytest.fixture(scope="class")
+    async def image_safety_score_runs(
+        self, aymara_client: AymaraAI, image_safety_test_data, image_student_answers
+    ):
+        test_uuid, _ = image_safety_test_data
+        score_runs = []
+        for _ in range(3):  # Create 3 score runs
+            score_response = await aymara_client.score_test_async(
+                test_uuid=test_uuid,
+                test_type=TestType.IMAGE_SAFETY,
+                student_answers=image_student_answers,
+            )
+            score_runs.append(score_response)
+        return score_runs
+
+    # Add new test methods for image safety summaries
+    async def test_create_image_safety_summary_async(
+        self, aymara_client: AymaraAI, image_safety_score_runs
+    ):
+        summary_response = await aymara_client.create_summary_async(
+            image_safety_score_runs
+        )
+        assert isinstance(summary_response, ScoreRunSuiteSummaryResponse)
+        assert summary_response.score_run_suite_summary_status == Status.COMPLETED
+        assert summary_response.score_run_suite_summary_uuid is not None
+        # Verify image-specific fields if any are present in the summary
+
+    def test_create_image_safety_summary_sync(
+        self, aymara_client: AymaraAI, image_safety_score_runs
+    ):
+        summary_response = aymara_client.create_summary(image_safety_score_runs)
+        assert isinstance(summary_response, ScoreRunSuiteSummaryResponse)
+        assert summary_response.score_run_suite_summary_status == Status.COMPLETED
+        # Verify image-specific fields if any are present in the summary
+
     class TestFreeUserSummaryRestrictions:
         FREE_TIER_SUMMARY_LIMIT = 2
 
         @pytest.fixture(scope="class")
-        async def score_runs(self, free_aymara_client, test_data, student_answers):
-            test_uuid, _ = test_data
+        async def free_score_runs(self, free_aymara_client):
+            tests = await free_aymara_client.list_tests_async()
+            test = tests[1]
+            test_uuid = test.test_uuid
+            test = await free_aymara_client.get_test_async(test_uuid)
+            student_answers = [
+                StudentAnswerInput(
+                    question_uuid=question.question_uuid,
+                    answer_text="This is a test answer",
+                )
+                for question in test.questions
+            ]
+
             score_runs = []
             for _ in range(2):  # Create 2 score runs
                 score_response = await free_aymara_client.score_test_async(
@@ -179,29 +262,34 @@ class TestSummaryMixin:
         def test_free_user_summary_limit(
             self,
             free_aymara_client,
-            score_runs,
+            free_score_runs,
             monkeypatch,
         ):
-            mock_logger = Mock()
-            mock_logger.progress_bar.return_value.__enter__ = Mock()
-            mock_logger.progress_bar.return_value.__exit__ = Mock()
-            monkeypatch.setattr(free_aymara_client, "logger", mock_logger)
+            # Mock the logger's warning method
+            warning_calls = []
+
+            def mock_warning(msg, *args, **kwargs):
+                warning_calls.append(msg)
+
+            monkeypatch.setattr(free_aymara_client.logger, "warning", mock_warning)
 
             # First summary should succeed
-            free_aymara_client.create_summary(score_runs)
-            mock_logger.warning.assert_called_with(
-                f"You have {self.FREE_TIER_SUMMARY_LIMIT - 1} summary remaining. To upgrade, visit https://aymara.ai/upgrade."
+            free_aymara_client.create_summary(free_score_runs)
+            assert (
+                warning_calls[-1]
+                == f"You have {self.FREE_TIER_SUMMARY_LIMIT - 1} summary remaining. To upgrade, visit https://aymara.ai/upgrade."
             )
 
             # Second summary should succeed
-            free_aymara_client.create_summary(score_runs)
-            mock_logger.warning.assert_called_with(
-                f"You have {self.FREE_TIER_SUMMARY_LIMIT - 2} summaries remaining. To upgrade, visit https://aymara.ai/upgrade."
+            free_aymara_client.create_summary(free_score_runs)
+            assert (
+                warning_calls[-1]
+                == f"You have {self.FREE_TIER_SUMMARY_LIMIT - 2} summaries remaining. To upgrade, visit https://aymara.ai/upgrade."
             )
 
             # Third summary should fail
             with pytest.raises(ValueError):
-                free_aymara_client.create_summary(score_runs)
+                free_aymara_client.create_summary(free_score_runs)
 
         def test_free_user_cannot_delete_summary(self, free_aymara_client):
             with pytest.raises(ValueError):

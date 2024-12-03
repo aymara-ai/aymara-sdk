@@ -14,10 +14,12 @@ class AnswerInSchema:
     Attributes:
         question_uuid (str):
         answer_text (Union[None, Unset, str]):
+        answer_image_path (Union[None, Unset, str]):
     """
 
     question_uuid: str
     answer_text: Union[None, Unset, str] = UNSET
+    answer_image_path: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -29,6 +31,12 @@ class AnswerInSchema:
         else:
             answer_text = self.answer_text
 
+        answer_image_path: Union[None, Unset, str]
+        if isinstance(self.answer_image_path, Unset):
+            answer_image_path = UNSET
+        else:
+            answer_image_path = self.answer_image_path
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -38,6 +46,8 @@ class AnswerInSchema:
         )
         if answer_text is not UNSET:
             field_dict["answer_text"] = answer_text
+        if answer_image_path is not UNSET:
+            field_dict["answer_image_path"] = answer_image_path
 
         return field_dict
 
@@ -55,9 +65,19 @@ class AnswerInSchema:
 
         answer_text = _parse_answer_text(d.pop("answer_text", UNSET))
 
+        def _parse_answer_image_path(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        answer_image_path = _parse_answer_image_path(d.pop("answer_image_path", UNSET))
+
         answer_in_schema = cls(
             question_uuid=question_uuid,
             answer_text=answer_text,
+            answer_image_path=answer_image_path,
         )
 
         answer_in_schema.additional_properties = d

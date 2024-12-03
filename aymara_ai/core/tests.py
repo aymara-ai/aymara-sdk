@@ -162,6 +162,7 @@ class TestMixin(AymaraAIProtocol):
             test_language=test_language,
             is_async=False,
             test_type=TestType.JAILBREAK,
+            num_test_questions=None,
             max_wait_time_secs=max_wait_time_secs,
         )
 
@@ -201,6 +202,93 @@ class TestMixin(AymaraAIProtocol):
             test_language=test_language,
             is_async=True,
             test_type=TestType.JAILBREAK,
+            num_test_questions=None,
+            max_wait_time_secs=max_wait_time_secs,
+        )
+
+    def create_image_safety_test(
+        self,
+        test_name: str,
+        student_description: str,
+        test_policy: Union[str, AymaraTestPolicy],
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        num_test_questions: int = DEFAULT_NUM_QUESTIONS,
+        max_wait_time_secs: Optional[int] = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+    ):
+        """
+        Create an Aymara image safety test synchronously and wait for completion.
+
+        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
+        :type test_name: str
+        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
+        :type student_description: str
+        :param test_policy: Policy of the test, which will measure compliance against this policy (required for safety tests).
+        :type test_policy: str
+        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
+        :type test_language: str, optional
+        :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
+        :type num_test_questions: int, optional
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
+        :type max_wait_time_secs: int, optional
+        :return: Test response containing test details and generated questions.
+        :rtype: SafetyTestResponse
+
+        :raises ValueError: If the test_name length is not within the allowed range.
+        :raises ValueError: If num_test_questions is not within the allowed range.
+        :raises ValueError: If test_policy is not provided for safety tests.
+        """
+        return self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=test_policy,
+            is_async=False,
+            test_system_prompt=None,
+            test_language=test_language,
+            test_type=TestType.IMAGE_SAFETY,
+            num_test_questions=num_test_questions,
+            max_wait_time_secs=max_wait_time_secs,
+        )
+
+    async def create_image_safety_test_async(
+        self,
+        test_name: str,
+        student_description: str,
+        test_policy: Union[str, AymaraTestPolicy],
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        num_test_questions: int = DEFAULT_NUM_QUESTIONS,
+        max_wait_time_secs: Optional[int] = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+    ):
+        """
+        Create an Aymara image safety test asynchronously and wait for completion.
+
+        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
+        :type test_name: str
+        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
+        :type student_description: str
+        :param test_policy: Policy of the test, which will measure compliance against this policy (required for safety tests).
+        :type test_policy: str
+        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
+        :type test_language: str, optional
+        :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
+        :type num_test_questions: int, optional
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
+        :type max_wait_time_secs: int, optional
+        :return: Test response containing test details and generated questions.
+        :rtype: SafetyTestResponse
+
+        :raises ValueError: If the test_name length is not within the allowed range.
+        :raises ValueError: If num_test_questions is not within the allowed range.
+        :raises ValueError: If test_policy is not provided for safety tests.
+        """
+        return await self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=test_policy,
+            is_async=True,
+            test_system_prompt=None,
+            test_language=test_language,
+            test_type=TestType.IMAGE_SAFETY,
+            num_test_questions=num_test_questions,
             max_wait_time_secs=max_wait_time_secs,
         )
 
@@ -208,35 +296,39 @@ class TestMixin(AymaraAIProtocol):
         self,
         test_name: str,
         student_description: str,
-        test_policy: Union[str, AymaraTestPolicy],
-        test_system_prompt: str,
-        test_language: str,
         is_async: bool,
         test_type: TestType,
-        num_test_questions: Optional[int] = None,
-        max_wait_time_secs: Optional[int] = None,
+        test_language: str,
+        test_system_prompt: Optional[str],
+        test_policy: Optional[Union[str, AymaraTestPolicy]],
+        num_test_questions: Optional[int],
+        max_wait_time_secs: Optional[int],
     ) -> Union[BaseTestResponse, Coroutine[BaseTestResponse, None, None]]:
         # Convert AymaraTestPolicy to string and prefix with "aymara_test_policy:" for safety tests
-        if test_type == TestType.SAFETY and isinstance(test_policy, AymaraTestPolicy):
-            test_policy = f"{AYMARA_TEST_POLICY_PREFIX}{test_policy.value}"
+
+        if isinstance(test_policy, AymaraTestPolicy):
+            if test_type == TestType.SAFETY:
+                test_policy = f"{AYMARA_TEST_POLICY_PREFIX}{test_policy.value}"
+            else:
+                raise ValueError(
+                    "test_policy must be a string for image safety tests or jailbreak tests"
+                )
 
         self._validate_test_inputs(
-            test_name,
-            student_description,
-            test_policy,
-            test_system_prompt,
-            test_language,
-            num_test_questions,
-            test_type,
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=test_policy,
+            test_system_prompt=test_system_prompt,
+            test_language=test_language,
+            num_test_questions=num_test_questions,
+            test_type=test_type,
         )
 
         test_data = models.TestInSchema(
             test_name=test_name,
             student_description=student_description,
-            test_policy=test_policy if test_type == TestType.SAFETY else None,
-            test_system_prompt=test_system_prompt
-            if test_type == TestType.JAILBREAK
-            else None,
+            test_policy=test_policy,
+            test_system_prompt=test_system_prompt,
             test_language=test_language,
             num_test_questions=num_test_questions,
             test_type=test_type,
@@ -267,7 +359,9 @@ class TestMixin(AymaraAIProtocol):
         if test_language not in SUPPORTED_LANGUAGES:
             raise ValueError(f"test_language must be one of {SUPPORTED_LANGUAGES}")
 
-        if test_type == TestType.SAFETY and test_policy is None:
+        if (
+            test_type == TestType.SAFETY or test_type == TestType.IMAGE_SAFETY
+        ) and test_policy is None:
             raise ValueError("test_policy is required for safety tests")
 
         if test_type == TestType.JAILBREAK and test_system_prompt is None:
@@ -292,11 +386,13 @@ class TestMixin(AymaraAIProtocol):
         token1 = len(student_description) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
 
         token_2_field = (
-            "test_policy" if test_type == TestType.SAFETY else "test_system_prompt"
+            "test_policy"
+            if test_type == TestType.SAFETY or test_type == TestType.IMAGE_SAFETY
+            else "test_system_prompt"
         )
         token2 = (
             len(test_policy) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
-            if test_type == TestType.SAFETY
+            if test_type == TestType.SAFETY or test_type == TestType.IMAGE_SAFETY
             else len(test_system_prompt) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
         )
 

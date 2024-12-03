@@ -30,7 +30,7 @@ def aymara_client():
 
 
 @pytest.fixture(scope="session")
-def free_aymara_client():
+def free_aymara_client() -> AymaraAI:
     if ENVIRONMENT == "staging":
         base_url = "https://staging-api.aymara.ai"
         api_key = os.getenv("STAGING_FREE_INTEGRATION_TESTING_API_KEY")
