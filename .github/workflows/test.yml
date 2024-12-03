@@ -65,6 +65,6 @@ jobs:
           VERSION=${{ github.event.inputs.version || github.event.client_payload.sdk_version }}
           echo "Running tests against API environment: $API_TEST_ENV"
           if [ -z "$VERSION" ]; then
-            echo "Running tests on $(git rev-parse --abbrev-ref HEAD) branch"
+            echo "Running tests on ${GITHUB_REF#refs/heads/} branch"
           fi
           uv run pytest
