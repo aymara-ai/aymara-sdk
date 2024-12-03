@@ -34,12 +34,14 @@ from aymara_ai.generated.aymara_api_client.models.test_status import TestStatus
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
 
 
-class Status(Enum):
+class Status(str, Enum):
     """Status for Test or Score Run"""
 
-    FAILED = "failed"
-    PENDING = "pending"
-    COMPLETED = "completed"
+    UPLOADING = "UPLOADING"
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
 
     @classmethod
     def from_api_status(
@@ -63,6 +65,7 @@ class Status(Enum):
         elif isinstance(api_status, ScoreRunStatus):
             status_mapping = {
                 ScoreRunStatus.RECORD_CREATED: cls.PENDING,
+                ScoreRunStatus.IMAGE_UPLOADING: cls.UPLOADING,
                 ScoreRunStatus.SCORING: cls.PENDING,
                 ScoreRunStatus.FINISHED: cls.COMPLETED,
                 ScoreRunStatus.FAILED: cls.FAILED,
@@ -89,14 +92,23 @@ class StudentAnswerInput(BaseModel):
     answer_text: Annotated[
         Optional[str], Field(None, description="Answer text provided by the student")
     ]
+    answer_image_path: Annotated[
+        Optional[str], Field(None, description="Path to the image")
+    ]
 
     @classmethod
     def from_answer_in_schema(cls, answer: AnswerInSchema) -> "StudentAnswerInput":
-        return cls(question_uuid=answer.question_uuid, answer_text=answer.answer_text)
+        return cls(
+            question_uuid=answer.question_uuid,
+            answer_text=answer.answer_text,
+            answer_image_path=answer.answer_image_path,
+        )
 
     def to_answer_in_schema(self) -> AnswerInSchema:
         return AnswerInSchema(
-            question_uuid=self.question_uuid, answer_text=self.answer_text
+            question_uuid=self.question_uuid,
+            answer_text=self.answer_text,
+            answer_image_path=self.answer_image_path,
         )
 
 
@@ -195,7 +207,7 @@ class BaseTestResponse(BaseModel):
             "failure_reason": failure_reason,
         }
 
-        if test.test_type == TestType.SAFETY:
+        if test.test_type == TestType.SAFETY or test.test_type == TestType.IMAGE_SAFETY:
             return SafetyTestResponse(**base_attributes, test_policy=test.test_policy)
         elif test.test_type == TestType.JAILBREAK:
             return JailbreakTestResponse(

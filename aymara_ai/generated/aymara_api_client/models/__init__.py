@@ -4,6 +4,8 @@ from .answer_in_schema import AnswerInSchema
 from .answer_out_schema import AnswerOutSchema
 from .billing_cycle_usage_schema import BillingCycleUsageSchema
 from .error_schema import ErrorSchema
+from .get_image_presigned_urls_response import GetImagePresignedUrlsResponse
+from .image_upload_request_in_schema import ImageUploadRequestInSchema
 from .input_ import Input
 from .organization_out_schema import OrganizationOutSchema
 from .paged_answer_out_schema import PagedAnswerOutSchema
@@ -34,6 +36,8 @@ __all__ = (
     "AnswerOutSchema",
     "BillingCycleUsageSchema",
     "ErrorSchema",
+    "GetImagePresignedUrlsResponse",
+    "ImageUploadRequestInSchema",
     "Input",
     "OrganizationOutSchema",
     "PagedAnswerOutSchema",
