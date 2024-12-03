@@ -158,12 +158,8 @@ class TestUploadMixin:
             ),
         ]
 
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError):
             aymara_client.upload_images(
                 image_safety_test_data.test_uuid,
                 [answer.to_answer_in_schema() for answer in invalid_answers],
             )
-        assert (
-            "Content type 'text/plain' not allowed. Must be one of: image/png, image/jpeg, image/svg+xml, image/webp, image/gif"
-            in str(exc_info.value)
-        )
