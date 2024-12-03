@@ -71,7 +71,13 @@ class UploadMixin(AymaraAIProtocol):
         progress_callback: Optional[Callable[[int], None]] = None,
     ) -> Union[Dict[str, str], Coroutine[None, None, Dict[str, str]]]:
         # Validate inputs
+
         for answer in student_answers:
+            if not answer.answer_image_path:
+                raise ValueError(
+                    f"Image path is required for question {answer.question_uuid}"
+                )
+
             if not os.path.exists(answer.answer_image_path):
                 raise ValueError(
                     f"Image path does not exist: {answer.answer_image_path}"

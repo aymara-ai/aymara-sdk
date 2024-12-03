@@ -1,5 +1,5 @@
 from datetime import datetime
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 
 import pandas as pd
 import pytest
@@ -1236,3 +1236,117 @@ async def test_delete_score_run_async(aymara_client):
             ValueError, match="Score run with UUID not_found_uuid not found"
         ):
             await aymara_client.delete_score_run_async("not_found_uuid")
+
+
+def test_score_image_safety_test(aymara_client):
+    with patch(
+        "aymara_ai.core.score_runs.create_score_run.sync_detailed"
+    ) as mock_create_score_run, patch(
+        "aymara_ai.core.score_runs.get_score_run.sync_detailed"
+    ) as mock_get_score_run, patch(
+        "aymara_ai.core.score_runs.get_score_run_answers.sync_detailed"
+    ) as mock_get_answers, patch(
+        "aymara_ai.core.score_runs.get_test.sync_detailed"
+    ) as mock_get_test, patch(
+        "aymara_ai.core.uploads.UploadMixin.upload_images"
+    ) as mock_upload_images:
+        # Mock the upload images method
+        mock_upload_images.return_value = {"q1": "test-key"}
+
+        mock_create_score_run.return_value.parsed = models.ScoreRunOutSchema(
+            score_run_uuid="score123",
+            score_run_status=models.ScoreRunStatus.RECORD_CREATED,
+            test=models.TestOutSchema(
+                test_name="Test 1",
+                test_uuid="test123",
+                test_status=models.TestStatus.FINISHED,
+                test_type=models.TestType.IMAGE_SAFETY,
+                organization_name="Organization 1",
+                num_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+                test_policy="Don't allow any unsafe image responses",
+                test_system_prompt=None,
+            ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            remaining_score_runs=100,
+            price=100,
+        )
+        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
+            score_run_uuid="score123",
+            score_run_status=models.ScoreRunStatus.FINISHED,
+            test=models.TestOutSchema(
+                test_name="Test 1",
+                test_uuid="test123",
+                test_status=models.TestStatus.FINISHED,
+                test_type=models.TestType.IMAGE_SAFETY,
+                organization_name="Organization 1",
+                num_test_questions=10,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+                test_policy="Don't allow any unsafe image responses",
+                test_system_prompt=None,
+            ),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            remaining_score_runs=100,
+            price=100,
+        )
+        mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
+            items=[
+                models.AnswerOutSchema(
+                    answer_uuid="a1",
+                    answer_text="Answer 1",
+                    question=models.QuestionSchema(
+                        question_uuid="q1",
+                        question_text="Question 1",
+                    ),
+                    explanation="Explanation 1",
+                    confidence=0.5,
+                    is_passed=True,
+                )
+            ],
+            count=1,
+        )
+        mock_get_test.return_value.parsed = models.TestOutSchema(
+            test_name="Test 1",
+            test_uuid="test123",
+            test_status=models.TestStatus.FINISHED,
+            test_type=models.TestType.IMAGE_SAFETY,
+            num_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            test_policy="Don't allow any unsafe image responses",
+            test_system_prompt=None,
+        )
+
+        result = aymara_client.score_test(
+            test_uuid="test123",
+            test_type=TestType.IMAGE_SAFETY,
+            student_answers=[
+                StudentAnswerInput(
+                    question_uuid="q1",
+                    answer_text="Answer 1",
+                    answer_image_path="test_image.jpg",
+                )
+            ],
+        )
+
+        assert isinstance(result, ScoreRunResponse)
+        assert result.score_run_uuid == "score123"
+        assert result.score_run_status == Status.COMPLETED
+        assert len(result.answers) == 1
+
+        # Update the verification to match the actual implementation
+        mock_upload_images.assert_called_once_with(
+            "test123",
+            [
+                models.AnswerInSchema(
+                    question_uuid="q1",
+                    answer_text="Answer 1",
+                    answer_image_path="test-key",
+                )
+            ],
+            progress_callback=ANY,
+        )

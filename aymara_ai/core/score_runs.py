@@ -3,6 +3,7 @@ import time
 from typing import Coroutine, List, Optional, Union
 
 from aymara_ai.core.protocols import AymaraAIProtocol
+from aymara_ai.core.uploads import UploadMixin
 from aymara_ai.generated.aymara_api_client import models
 from aymara_ai.generated.aymara_api_client.api.score_runs import (
     create_score_run,
@@ -26,7 +27,12 @@ from aymara_ai.utils.constants import (
 )
 
 
-class ScoreRunMixin(AymaraAIProtocol):
+class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
+    """
+    Mixin class that provides score run functionality.
+    Inherits from UploadMixin to get image upload capabilities.
+    """
+
     # Score Test Methods
     def score_test(
         self,

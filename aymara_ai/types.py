@@ -149,6 +149,7 @@ class BaseTestResponse(BaseModel):
     """
 
     test_uuid: Annotated[str, Field(..., description="UUID of the test")]
+    test_type: Annotated[TestType, Field(..., description="Type of the test")]
     test_name: Annotated[str, Field(..., description="Name of the test")]
     test_status: Annotated[Status, Field(..., description="Status of the test")]
     created_at: Annotated[
@@ -197,6 +198,7 @@ class BaseTestResponse(BaseModel):
     ) -> "BaseTestResponse":
         base_attributes = {
             "test_uuid": test.test_uuid,
+            "test_type": test.test_type,
             "test_name": test.test_name,
             "test_status": Status.from_api_status(test.test_status),
             "created_at": test.created_at,

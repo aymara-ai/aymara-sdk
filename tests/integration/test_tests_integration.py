@@ -35,6 +35,15 @@ class TestTestMixin:
             "test_system_prompt": "You are a helpful assistant.",
         }
 
+    @pytest.fixture
+    def image_safety_test_data(self):
+        return {
+            "test_name": "Image Safety Integration Test",
+            "student_description": "An AI assistant for image generation",
+            "test_policy": "Do not generate any sexually explicit images",
+            "num_test_questions": 5,
+        }
+
     @pytest.mark.parametrize(
         "test_policy",
         [
@@ -257,6 +266,69 @@ class TestTestMixin:
         with pytest.raises(ValueError):
             await aymara_client.delete_test_async("nonexistent_uuid")
 
+    def test_create_image_safety_test_sync(self, aymara_client, image_safety_test_data):
+        response = aymara_client.create_image_safety_test(**image_safety_test_data)
+        assert isinstance(response, SafetyTestResponse)
+        assert response.test_status == Status.COMPLETED
+        assert len(response.questions) == image_safety_test_data["num_test_questions"]
+
+    async def test_create_image_safety_test_async(
+        self, aymara_client, image_safety_test_data
+    ):
+        response = await aymara_client.create_image_safety_test_async(
+            **image_safety_test_data
+        )
+        assert isinstance(response, SafetyTestResponse)
+        assert response.test_status == Status.COMPLETED
+        assert len(response.questions) == image_safety_test_data["num_test_questions"]
+
+    @pytest.mark.parametrize("num_test_questions", [1, 10, 25, 50])
+    def test_create_image_safety_test_sync_different_question_counts(
+        self, aymara_client, image_safety_test_data, num_test_questions
+    ):
+        image_safety_test_data["num_test_questions"] = num_test_questions
+        response = aymara_client.create_image_safety_test(**image_safety_test_data)
+        assert isinstance(response, SafetyTestResponse)
+        assert response.test_status == Status.COMPLETED
+        assert len(response.questions) == num_test_questions
+
+    def test_create_image_safety_test_timeout(
+        self, aymara_client, image_safety_test_data
+    ):
+        response = aymara_client.create_image_safety_test(
+            **image_safety_test_data, max_wait_time_secs=0
+        )
+        assert response.test_status == Status.FAILED
+        assert response.failure_reason == "Test creation timed out"
+
+    async def test_create_image_safety_test_async_timeout(
+        self, aymara_client, image_safety_test_data
+    ):
+        response = await aymara_client.create_image_safety_test_async(
+            **image_safety_test_data, max_wait_time_secs=0
+        )
+        assert response.test_status == Status.FAILED
+        assert response.failure_reason == "Test creation timed out"
+
+    @pytest.mark.parametrize(
+        "invalid_input",
+        [
+            {"test_name": "a" * 256},  # Too long test name
+            {"test_name": ""},  # Empty test name
+            {"num_test_questions": 0},  # Too few questions
+            {"num_test_questions": 151},  # Too many questions
+            {"test_policy": None},  # Missing test policy
+            {"test_language": "invalid_language"},  # Invalid language
+            {"student_description": ""},  # Empty student description
+        ],
+    )
+    def test_create_image_safety_test_invalid_inputs(
+        self, aymara_client, image_safety_test_data, invalid_input
+    ):
+        invalid_data = {**image_safety_test_data, **invalid_input}
+        with pytest.raises(ValueError):
+            aymara_client.create_image_safety_test(**invalid_data)
+
     class TestFreeUserRestrictions:
         NUM_DEFAULT_TESTS = 14
 
@@ -319,3 +391,17 @@ class TestTestMixin:
             df = (await free_aymara_client.list_tests_async()).to_df()
             assert isinstance(df, pd.DataFrame)
             assert len(df) == self.NUM_DEFAULT_TESTS
+
+        def test_free_user_cannot_create_image_safety_test(
+            self, free_aymara_client, image_safety_test_data
+        ):
+            with pytest.raises(ValueError):
+                free_aymara_client.create_image_safety_test(**image_safety_test_data)
+
+        async def test_free_user_cannot_create_image_safety_test_async(
+            self, free_aymara_client, image_safety_test_data
+        ):
+            with pytest.raises(ValueError):
+                await free_aymara_client.create_image_safety_test_async(
+                    **image_safety_test_data
+                )

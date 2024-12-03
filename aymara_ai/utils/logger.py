@@ -3,8 +3,8 @@ import re
 import time
 from contextlib import contextmanager
 
+import IPython
 from colorama import Fore, Style, init
-from IPython import get_ipython
 from IPython.display import HTML, display
 from tqdm.auto import tqdm
 
@@ -31,14 +31,14 @@ class SDKLogger(logging.Logger):
     @staticmethod
     def _is_running_in_notebook():
         try:
-            shell = get_ipython().__class__.__name__
+            shell = IPython.get_ipython().__class__.__name__
             if shell == "ZMQInteractiveShell":
                 return True  # Jupyter notebook or qtconsole
             elif shell == "TerminalInteractiveShell":
                 return False  # Terminal running IPython
             else:
                 return False  # Other type (?)
-        except NameError:
+        except (NameError, ImportError):
             return False  # Probably standard Python interpreter
 
     @contextmanager
@@ -140,24 +140,3 @@ class SDKLogger(logging.Logger):
         else:
             msg = f"{Fore.YELLOW}{msg}{Style.RESET_ALL}"
             super().warning(msg, *args, **kwargs)
-
-    @contextmanager
-    def batch_progress_bar(self, operation_name: str, total: int):
-        """Context manager for batch operations with progress bar."""
-        with tqdm(
-            total=total,
-            desc=operation_name,
-            unit="files",
-            colour="orange" if self.is_notebook else None,
-        ) as pbar:
-            yield pbar
-
-    def update_batch_progress(self, status: Status, message: str = None):
-        """Update batch progress status and optionally display a message."""
-        if status == Status.FAILED:
-            if self.is_notebook:
-                msg = f'<span style="color: red;">{message}</span>'
-                display(HTML(msg))
-            else:
-                msg = f"{Fore.RED}{message}{Style.RESET_ALL}"
-                self.warning(msg)

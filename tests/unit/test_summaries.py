@@ -306,7 +306,7 @@ def test_list_summaries(aymara_client):
         "aymara_ai.core.summaries.list_score_run_suite_summaries.sync_detailed"
     ) as mock_list_summaries:
         mock_list_summaries.return_value.parsed = models.PagedScoreRunSuiteSummaryOutSchema(
-            count=2,
+            count=3,
             items=[
                 models.ScoreRunSuiteSummaryOutSchema(
                     score_run_suite_summary_uuid="sum1",
@@ -368,6 +368,42 @@ def test_list_summaries(aymara_client):
                                     updated_at=datetime.now(),
                                     test_policy=None,
                                     test_system_prompt="You are a helpful assistant",
+                                ),
+                                created_at=datetime.now(),
+                                updated_at=datetime.now(),
+                                remaining_score_runs=100,
+                                price=100,
+                            ),
+                        )
+                    ],
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                    remaining_summaries=50,
+                ),
+                models.ScoreRunSuiteSummaryOutSchema(
+                    score_run_suite_summary_uuid="sum3",
+                    status=models.ScoreRunSuiteSummaryStatus.FINISHED,
+                    overall_summary="Overall summary 3",
+                    overall_improvement_advice="Overall improvement advice 3",
+                    score_run_summaries=[
+                        models.ScoreRunSummaryOutSchema(
+                            score_run_summary_uuid="sum3",
+                            explanation_summary="Summary 3",
+                            improvement_advice="Improvement advice 3",
+                            score_run=models.ScoreRunOutSchema(
+                                score_run_uuid="score3",
+                                score_run_status=models.ScoreRunStatus.RECORD_CREATED,
+                                test=models.TestOutSchema(
+                                    test_name="Test 3",
+                                    test_uuid="test3",
+                                    test_status=models.TestStatus.RECORD_CREATED,
+                                    test_type=models.TestType.IMAGE_SAFETY,
+                                    num_test_questions=10,
+                                    organization_name="Organization 3",
+                                    created_at=datetime.now(),
+                                    updated_at=datetime.now(),
+                                    test_policy="Don't allow any unsafe image responses",
+                                    test_system_prompt=None,
                                 ),
                                 created_at=datetime.now(),
                                 updated_at=datetime.now(),
@@ -386,7 +422,7 @@ def test_list_summaries(aymara_client):
         result = aymara_client.list_summaries()
 
         assert isinstance(result, list)
-        assert len(result) == 2
+        assert len(result) == 3
         assert all(isinstance(item, ScoreRunSuiteSummaryResponse) for item in result)
         mock_list_summaries.assert_called_once_with(
             client=aymara_client.client, offset=0
@@ -399,7 +435,7 @@ async def test_list_summaries_async(aymara_client):
         "aymara_ai.core.summaries.list_score_run_suite_summaries.asyncio_detailed"
     ) as mock_list_summaries:
         mock_list_summaries.return_value.parsed = models.PagedScoreRunSuiteSummaryOutSchema(
-            count=2,
+            count=3,
             items=[
                 models.ScoreRunSuiteSummaryOutSchema(
                     score_run_suite_summary_uuid="sum1",
@@ -473,13 +509,49 @@ async def test_list_summaries_async(aymara_client):
                     updated_at=datetime.now(),
                     remaining_summaries=50,
                 ),
+                models.ScoreRunSuiteSummaryOutSchema(
+                    score_run_suite_summary_uuid="sum3",
+                    status=models.ScoreRunSuiteSummaryStatus.FINISHED,
+                    overall_summary="Overall summary 3",
+                    overall_improvement_advice="Overall improvement advice 3",
+                    score_run_summaries=[
+                        models.ScoreRunSummaryOutSchema(
+                            score_run_summary_uuid="sum3",
+                            explanation_summary="Summary 3",
+                            improvement_advice="Improvement advice 3",
+                            score_run=models.ScoreRunOutSchema(
+                                score_run_uuid="score3",
+                                score_run_status=models.ScoreRunStatus.RECORD_CREATED,
+                                test=models.TestOutSchema(
+                                    test_name="Test 3",
+                                    test_uuid="test3",
+                                    test_status=models.TestStatus.RECORD_CREATED,
+                                    test_type=models.TestType.IMAGE_SAFETY,
+                                    num_test_questions=10,
+                                    organization_name="Organization 3",
+                                    created_at=datetime.now(),
+                                    updated_at=datetime.now(),
+                                    test_policy="Don't allow any unsafe image responses",
+                                    test_system_prompt=None,
+                                ),
+                                created_at=datetime.now(),
+                                updated_at=datetime.now(),
+                                remaining_score_runs=100,
+                                price=100,
+                            ),
+                        )
+                    ],
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                    remaining_summaries=50,
+                ),
             ],
         )
 
         result = await aymara_client.list_summaries_async()
 
         assert isinstance(result, list)
-        assert len(result) == 2
+        assert len(result) == 3
         assert all(isinstance(item, ScoreRunSuiteSummaryResponse) for item in result)
         mock_list_summaries.assert_called_once_with(
             client=aymara_client.client, offset=0

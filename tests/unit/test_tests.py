@@ -1037,6 +1037,13 @@ def test_max_wait_time_secs_exceeded(aymara_client):
         ),
         (models.TestStatus.FINISHED, Status.COMPLETED, models.TestType.SAFETY),
         (models.TestStatus.FAILED, Status.FAILED, models.TestType.JAILBREAK),
+        (
+            models.TestStatus.RECORD_CREATED,
+            Status.PENDING,
+            models.TestType.IMAGE_SAFETY,
+        ),
+        (models.TestStatus.FINISHED, Status.COMPLETED, models.TestType.IMAGE_SAFETY),
+        (models.TestStatus.FAILED, Status.FAILED, models.TestType.IMAGE_SAFETY),
     ],
 )
 def test_status_handling(aymara_client, test_status, expected_status, test_type):
@@ -1054,6 +1061,7 @@ def test_status_handling(aymara_client, test_status, expected_status, test_type)
             updated_at=datetime.now(),
             test_policy="Don't allow any unsafe answers"
             if test_type == models.TestType.SAFETY
+            or test_type == models.TestType.IMAGE_SAFETY
             else None,
             test_system_prompt="You are a helpful assistant"
             if test_type == models.TestType.JAILBREAK
@@ -1071,6 +1079,7 @@ def test_status_handling(aymara_client, test_status, expected_status, test_type)
             result,
             SafetyTestResponse
             if test_type == models.TestType.SAFETY
+            or test_type == models.TestType.IMAGE_SAFETY
             else JailbreakTestResponse,
         )
         assert result.test_status == expected_status
@@ -1107,3 +1116,56 @@ async def test_delete_test_async(aymara_client):
         mock_delete_test_async.assert_called_once_with(
             client=aymara_client.client, test_uuid="test123"
         )
+
+
+def test_create_image_safety_test(aymara_client):
+    with patch(
+        "aymara_ai.core.tests.create_test.sync_detailed"
+    ) as mock_create_test, patch(
+        "aymara_ai.core.tests.get_test.sync_detailed"
+    ) as mock_get_test, patch(
+        "aymara_ai.core.tests.get_test_questions.sync_detailed"
+    ) as mock_get_questions:
+        mock_create_test.return_value.parsed = models.TestOutSchema(
+            test_uuid="test123",
+            test_name="Test 1",
+            test_status=models.TestStatus.RECORD_CREATED,
+            test_type=models.TestType.IMAGE_SAFETY,
+            organization_name="Test Organization",
+            num_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            test_policy="Don't allow any unsafe image responses",
+            test_system_prompt=None,
+        )
+        mock_create_test.return_value.status_code = 200
+        mock_get_test.return_value.parsed = models.TestOutSchema(
+            test_uuid="test123",
+            test_name="Test 1",
+            test_status=models.TestStatus.FINISHED,
+            test_type=models.TestType.IMAGE_SAFETY,
+            organization_name="Test Organization",
+            num_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            test_policy="Don't allow any unsafe image responses",
+            test_system_prompt=None,
+        )
+        mock_get_test.return_value.status_code = 200
+        mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
+            items=[
+                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
+            ],
+            count=1,
+        )
+        mock_get_questions.return_value.status_code = 200
+
+        result = aymara_client.create_image_safety_test(
+            "Test 1", "Student description", "Don't allow any unsafe image responses"
+        )
+
+        assert isinstance(result, SafetyTestResponse)
+        assert result.test_uuid == "test123"
+        assert result.test_name == "Test 1"
+        assert result.test_status == Status.COMPLETED
+        assert len(result.questions) == 1

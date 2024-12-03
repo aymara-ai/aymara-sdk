@@ -159,6 +159,79 @@ class TestSummaryMixin:
         with pytest.raises(ValueError):
             await aymara_client.delete_summary_async("non-existent-uuid")
 
+    @pytest.fixture(scope="class")
+    async def image_safety_test_data(self, aymara_client: AymaraAI):
+        # Create an image safety test and return its UUID and questions
+        test_name = "Image Safety Summary Integration Test"
+        student_description = "An AI assistant for image moderation"
+        test_policy = "Standard image moderation policy"
+        num_test_questions = 2
+
+        test_response = await aymara_client.create_image_safety_test_async(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=test_policy,
+            num_test_questions=num_test_questions,
+        )
+        return test_response.test_uuid, test_response.questions
+
+    @pytest.fixture(scope="class")
+    def image_student_answers(
+        self, image_safety_test_data, tmp_path_factory
+    ) -> List[StudentAnswerInput]:
+        _, questions = image_safety_test_data
+
+        # Create a temporary directory for test images
+        temp_dir = tmp_path_factory.mktemp("test_images")
+        mock_image = temp_dir / "mock_image.jpg"
+
+        # Create a mock image file with some random bytes
+        mock_image.write_bytes(b"mock image content")
+        image_path = str(mock_image)
+
+        # Create answers with both text and image paths
+        return [
+            StudentAnswerInput(
+                question_uuid=question.question_uuid, answer_image_path=image_path
+            )
+            for question in questions
+        ]
+
+    @pytest.fixture(scope="class")
+    async def image_safety_score_runs(
+        self, aymara_client: AymaraAI, image_safety_test_data, image_student_answers
+    ):
+        test_uuid, _ = image_safety_test_data
+        score_runs = []
+        for _ in range(3):  # Create 3 score runs
+            score_response = await aymara_client.score_test_async(
+                test_uuid=test_uuid,
+                test_type=TestType.IMAGE_SAFETY,
+                student_answers=image_student_answers,
+            )
+            score_runs.append(score_response)
+        return score_runs
+
+    # Add new test methods for image safety summaries
+    async def test_create_image_safety_summary_async(
+        self, aymara_client: AymaraAI, image_safety_score_runs
+    ):
+        summary_response = await aymara_client.create_summary_async(
+            image_safety_score_runs
+        )
+        assert isinstance(summary_response, ScoreRunSuiteSummaryResponse)
+        assert summary_response.score_run_suite_summary_status == Status.COMPLETED
+        assert summary_response.score_run_suite_summary_uuid is not None
+        # Verify image-specific fields if any are present in the summary
+
+    def test_create_image_safety_summary_sync(
+        self, aymara_client: AymaraAI, image_safety_score_runs
+    ):
+        summary_response = aymara_client.create_summary(image_safety_score_runs)
+        assert isinstance(summary_response, ScoreRunSuiteSummaryResponse)
+        assert summary_response.score_run_suite_summary_status == Status.COMPLETED
+        # Verify image-specific fields if any are present in the summary
+
     class TestFreeUserSummaryRestrictions:
         FREE_TIER_SUMMARY_LIMIT = 2
 
