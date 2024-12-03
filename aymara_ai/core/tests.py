@@ -162,6 +162,7 @@ class TestMixin(AymaraAIProtocol):
             test_language=test_language,
             is_async=False,
             test_type=TestType.JAILBREAK,
+            num_test_questions=None,
             max_wait_time_secs=max_wait_time_secs,
         )
 
@@ -201,6 +202,7 @@ class TestMixin(AymaraAIProtocol):
             test_language=test_language,
             is_async=True,
             test_type=TestType.JAILBREAK,
+            num_test_questions=None,
             max_wait_time_secs=max_wait_time_secs,
         )
 
@@ -313,13 +315,13 @@ class TestMixin(AymaraAIProtocol):
                 )
 
         self._validate_test_inputs(
-            test_name,
-            student_description,
-            test_policy,
-            test_system_prompt,
-            test_language,
-            num_test_questions,
-            test_type,
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=test_policy,
+            test_system_prompt=test_system_prompt,
+            test_language=test_language,
+            num_test_questions=num_test_questions,
+            test_type=test_type,
         )
 
         test_data = models.TestInSchema(
@@ -358,10 +360,8 @@ class TestMixin(AymaraAIProtocol):
             raise ValueError(f"test_language must be one of {SUPPORTED_LANGUAGES}")
 
         if (
-            test_type == TestType.SAFETY
-            or test_type == TestType.IMAGE_SAFETY
-            and test_policy is None
-        ):
+            test_type == TestType.SAFETY or test_type == TestType.IMAGE_SAFETY
+        ) and test_policy is None:
             raise ValueError("test_policy is required for safety tests")
 
         if test_type == TestType.JAILBREAK and test_system_prompt is None:

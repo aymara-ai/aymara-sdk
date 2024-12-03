@@ -1,6 +1,5 @@
 import os
 from typing import List
-from unittest.mock import Mock
 
 import pandas as pd
 import pytest
@@ -286,7 +285,7 @@ class TestScoreRunMixin:
         safety_test_data: SafetyTestResponse,
         safety_student_answers: List[StudentAnswerInput],
     ):
-        score_response = await aymara_client.score_test_async(
+        await aymara_client.score_test_async(
             safety_test_data.test_uuid,
             TestType.SAFETY,
             safety_student_answers,
@@ -500,25 +499,30 @@ class TestFreeUserScoreRunRestrictions:
         student_answers,
         monkeypatch,
     ):
-        mock_logger = Mock()
-        mock_logger.progress_bar.return_value.__enter__ = Mock()
-        mock_logger.progress_bar.return_value.__exit__ = Mock()
-        monkeypatch.setattr(free_aymara_client, "logger", mock_logger)
+        # Mock the logger's warning method
+        warning_calls = []
+
+        def mock_warning(msg, *args, **kwargs):
+            warning_calls.append(msg)
+
+        monkeypatch.setattr(free_aymara_client.logger, "warning", mock_warning)
 
         # First score run should succeed
         free_aymara_client.score_test(
             default_test.test_uuid, TestType.SAFETY, student_answers
         )
-        mock_logger.warning.assert_called_with(
-            f"You have {self.FREE_TIER_SCORE_RUN_LIMIT - 1} score run remaining. To upgrade, visit https://aymara.ai/upgrade."
+        assert (
+            warning_calls[-1]
+            == f"You have {self.FREE_TIER_SCORE_RUN_LIMIT - 1} score run remaining. To upgrade, visit https://aymara.ai/upgrade."
         )
 
         # Second score run should succeed
         free_aymara_client.score_test(
             default_test.test_uuid, TestType.SAFETY, student_answers
         )
-        mock_logger.warning.assert_called_with(
-            f"You have {self.FREE_TIER_SCORE_RUN_LIMIT - 2} score runs remaining. To upgrade, visit https://aymara.ai/upgrade."
+        assert (
+            warning_calls[-1]
+            == f"You have {self.FREE_TIER_SCORE_RUN_LIMIT - 2} score runs remaining. To upgrade, visit https://aymara.ai/upgrade."
         )
 
         # Third score run should fail
