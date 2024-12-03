@@ -503,6 +503,7 @@ class ScoreRunSuiteSummaryResponse(BaseModel):
             {
                 "score_run_suite_summary_uuid": self.score_run_suite_summary_uuid,
                 "score_run_summary_uuid": summary.score_run_summary_uuid,
+                "score_run_uuid": summary.score_run_uuid,
                 "test_name": summary.test_name,
                 "explanation_summary": summary.explanation_summary,
                 "improvement_advice": summary.improvement_advice,
