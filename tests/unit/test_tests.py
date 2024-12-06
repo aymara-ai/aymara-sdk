@@ -19,6 +19,7 @@ from aymara_ai.utils.constants import (
     DEFAULT_NUM_QUESTIONS_MIN,
     DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
     DEFAULT_TEST_NAME_LEN_MAX,
+    MAX_ADDITIONAL_INSTRUCTIONS_LENGTH,
 )
 
 
@@ -41,6 +42,7 @@ def test_create_safety_test(aymara_client):
             updated_at=datetime.now(),
             test_policy="Don't allow any unsafe answers",
             test_system_prompt=None,
+            additional_instructions=None,
         )
         mock_create_test.return_value.status_code = 200
         mock_get_test.return_value.parsed = models.TestOutSchema(
@@ -54,6 +56,7 @@ def test_create_safety_test(aymara_client):
             updated_at=datetime.now(),
             test_policy="Don't allow any unsafe answers",
             test_system_prompt=None,
+            additional_instructions=None,
         )
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
@@ -95,6 +98,7 @@ async def test_create_jailbreak_test_async(aymara_client):
             updated_at=datetime.now(),
             test_policy=None,
             test_system_prompt="You are a helpful assistant",
+            additional_instructions="Test guidelines",
         )
         mock_create_test.return_value.status_code = 200
         mock_get_test.return_value.parsed = models.TestOutSchema(
@@ -108,6 +112,7 @@ async def test_create_jailbreak_test_async(aymara_client):
             updated_at=datetime.now(),
             test_policy=None,
             test_system_prompt="You are a helpful assistant",
+            additional_instructions="Test guidelines",
         )
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
@@ -149,6 +154,28 @@ def test_create_test_validation(aymara_client):
     with pytest.raises(ValueError, match="test_system_prompt is required"):
         aymara_client.create_jailbreak_test("Test 1", "Student description", None)
 
+    with pytest.raises(ValueError, match="additional_instructions must be less than"):
+        aymara_client.create_safety_test(
+            "Test 1",
+            "Student description",
+            "Don't allow any unsafe answers",
+            additional_instructions="A" * (MAX_ADDITIONAL_INSTRUCTIONS_LENGTH + 1),
+        )
+
+    long_desc = "A" * int(DEFAULT_MAX_TOKENS / DEFAULT_CHAR_TO_TOKEN_MULTIPLIER / 2)
+    long_instructions = "B" * int(
+        DEFAULT_MAX_TOKENS / DEFAULT_CHAR_TO_TOKEN_MULTIPLIER / 2
+    )
+    with pytest.raises(
+        ValueError, match="tokens in total but they should be less than"
+    ):
+        aymara_client.create_safety_test(
+            "Test 1",
+            long_desc,
+            "Don't allow any unsafe answers",
+            additional_instructions=long_instructions,
+        )
+
 
 def test_get_test(aymara_client):
     with patch("aymara_ai.core.tests.get_test.sync_detailed") as mock_get_test, patch(
@@ -165,6 +192,7 @@ def test_get_test(aymara_client):
             updated_at=datetime.now(),
             test_policy=None,
             test_system_prompt="You are a helpful assistant",
+            additional_instructions="Follow these guidelines",
         )
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
@@ -202,6 +230,7 @@ async def test_get_test_async(aymara_client):
             updated_at=datetime.now(),
             test_policy="Don't allow any unsafe answers",
             test_system_prompt=None,
+            additional_instructions="Test guidelines",
         )
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
@@ -236,6 +265,7 @@ def test_list_tests(aymara_client):
                     updated_at=datetime.now(),
                     test_policy="Don't allow any unsafe answers",
                     test_system_prompt=None,
+                    additional_instructions="Safety guidelines",
                 ),
                 models.TestOutSchema(
                     test_uuid="test2",
@@ -248,6 +278,7 @@ def test_list_tests(aymara_client):
                     updated_at=datetime.now(),
                     test_policy=None,
                     test_system_prompt="You are a helpful assistant",
+                    additional_instructions="Jailbreak guidelines",
                 ),
             ],
             count=2,
@@ -281,6 +312,7 @@ async def test_list_tests_async(aymara_client):
                     updated_at=datetime.now(),
                     test_policy=None,
                     test_system_prompt="You are a helpful assistant",
+                    additional_instructions=None,
                 ),
                 models.TestOutSchema(
                     test_uuid="test2",
@@ -293,6 +325,7 @@ async def test_list_tests_async(aymara_client):
                     updated_at=datetime.now(),
                     test_policy="Don't allow any unsafe answers",
                     test_system_prompt=None,
+                    additional_instructions=None,
                 ),
             ],
             count=2,
@@ -319,6 +352,7 @@ def test_validate_test_inputs_valid(aymara_client):
         "en",
         10,
         models.TestType.SAFETY,
+        additional_instructions="Valid additional instructions",
     )
     # If no exception is raised, the test passes
 
@@ -399,6 +433,7 @@ def test_create_and_wait_for_test_impl_sync_success(aymara_client):
         updated_at=datetime.now(),
         test_policy="Don't allow any unsafe answers",
         test_system_prompt=None,
+        additional_instructions=None,
     )
     mock_create.return_value.status_code = 200
 
@@ -414,6 +449,7 @@ def test_create_and_wait_for_test_impl_sync_success(aymara_client):
         updated_at=datetime.now(),
         test_policy="Don't allow any unsafe answers",
         test_system_prompt=None,
+        additional_instructions=None,
     )
     mock_get.return_value.status_code = 200
 
@@ -460,6 +496,7 @@ async def test_create_and_wait_for_test_impl_async_success(aymara_client):
         updated_at=datetime.now(),
         test_policy=None,
         test_system_prompt="You are a helpful assistant",
+        additional_instructions=None,
     )
     mock_create.return_value.status_code = 200
 
@@ -475,6 +512,7 @@ async def test_create_and_wait_for_test_impl_async_success(aymara_client):
         updated_at=datetime.now(),
         test_policy=None,
         test_system_prompt="You are a helpful assistant",
+        additional_instructions=None,
     )
     mock_get.return_value.status_code = 200
 
@@ -519,6 +557,7 @@ def test_create_and_wait_for_test_impl_failure_sync(aymara_client):
         updated_at=datetime.now(),
         test_policy="Don't allow any unsafe answers",
         test_system_prompt=None,
+        additional_instructions=None,
     )
     mock_create.return_value.status_code = 200
 
@@ -534,6 +573,7 @@ def test_create_and_wait_for_test_impl_failure_sync(aymara_client):
         updated_at=datetime.now(),
         test_policy="Don't allow any unsafe answers",
         test_system_prompt=None,
+        additional_instructions=None,
     )
     mock_get.return_value.status_code = 200
 
@@ -571,6 +611,7 @@ async def test_create_and_wait_for_test_impl_failure_async(aymara_client):
         updated_at=datetime.now(),
         test_policy=None,
         test_system_prompt="You are a helpful assistant",
+        additional_instructions=None,
     )
     mock_create.return_value.status_code = 200
 
@@ -586,6 +627,7 @@ async def test_create_and_wait_for_test_impl_failure_async(aymara_client):
         updated_at=datetime.now(),
         test_policy=None,
         test_system_prompt="You are a helpful assistant",
+        additional_instructions=None,
     )
     mock_get.return_value.status_code = 200
 
@@ -621,6 +663,7 @@ def test_create_and_wait_for_test_impl_timeout_sync(aymara_client):
         updated_at=datetime.now(),
         test_policy="Don't allow any unsafe answers",
         test_system_prompt=None,
+        additional_instructions=None,
     )
     mock_create.return_value.status_code = 200
 
@@ -636,6 +679,7 @@ def test_create_and_wait_for_test_impl_timeout_sync(aymara_client):
         updated_at=datetime.now(),
         test_policy="Don't allow any unsafe answers",
         test_system_prompt=None,
+        additional_instructions=None,
     )
     mock_get.return_value.status_code = 200
 
@@ -689,6 +733,7 @@ async def test_create_and_wait_for_test_impl_timeout_async(aymara_client):
         updated_at=datetime.now(),
         test_policy=None,
         test_system_prompt="You are a helpful assistant",
+        additional_instructions=None,
     )
     mock_create.return_value.status_code = 200
 
@@ -704,6 +749,7 @@ async def test_create_and_wait_for_test_impl_timeout_async(aymara_client):
         updated_at=datetime.now(),
         test_policy=None,
         test_system_prompt="You are a helpful assistant",
+        additional_instructions=None,
     )
     mock_get.return_value.status_code = 200
 
@@ -873,6 +919,7 @@ def test_list_tests_pagination(aymara_client):
                     updated_at=datetime.now(),
                     test_policy="Don't allow any unsafe answers",
                     test_system_prompt=None,
+                    additional_instructions=None,
                 ),
                 models.TestOutSchema(
                     test_uuid="test2",
@@ -885,6 +932,7 @@ def test_list_tests_pagination(aymara_client):
                     updated_at=datetime.now(),
                     test_policy=None,
                     test_system_prompt="You are a helpful assistant",
+                    additional_instructions=None,
                 ),
             ],
             count=2,
@@ -922,6 +970,7 @@ def test_logger_progress_bar(aymara_client):
             updated_at=datetime.now(),
             test_policy="Don't allow any unsafe answers",
             test_system_prompt=None,
+            additional_instructions="Test guidelines",
         )
         mock_create_test.return_value.status_code = 200
         mock_get_test.side_effect = [
@@ -937,6 +986,7 @@ def test_logger_progress_bar(aymara_client):
                     updated_at=datetime.now(),
                     test_policy="Don't allow any unsafe answers",
                     test_system_prompt=None,
+                    additional_instructions="Test guidelines",
                 ),
                 status_code=200,
             ),
@@ -952,6 +1002,7 @@ def test_logger_progress_bar(aymara_client):
                     updated_at=datetime.now(),
                     test_policy="Don't allow any unsafe answers",
                     test_system_prompt=None,
+                    additional_instructions="Test guidelines",
                 ),
                 status_code=200,
             ),
@@ -998,6 +1049,7 @@ def test_max_wait_time_secs_exceeded(aymara_client):
             updated_at=datetime.now(),
             test_policy="Don't allow any unsafe answers",
             test_system_prompt=None,
+            additional_instructions=None,
         )
         mock_create_test.return_value.status_code = 200
         mock_get_test.return_value.parsed = models.TestOutSchema(
@@ -1011,6 +1063,7 @@ def test_max_wait_time_secs_exceeded(aymara_client):
             updated_at=datetime.now(),
             test_policy="Don't allow any unsafe answers",
             test_system_prompt=None,
+            additional_instructions=None,
         )
         mock_get_test.return_value.status_code = 200
 
@@ -1066,6 +1119,7 @@ def test_status_handling(aymara_client, test_status, expected_status, test_type)
             test_system_prompt="You are a helpful assistant"
             if test_type == models.TestType.JAILBREAK
             else None,
+            additional_instructions="Test specific guidelines",
         )
         mock_get_test.return_value.status_code = 200
 
@@ -1137,6 +1191,7 @@ def test_create_image_safety_test(aymara_client):
             updated_at=datetime.now(),
             test_policy="Don't allow any unsafe image responses",
             test_system_prompt=None,
+            additional_instructions=None,
         )
         mock_create_test.return_value.status_code = 200
         mock_get_test.return_value.parsed = models.TestOutSchema(
@@ -1150,6 +1205,7 @@ def test_create_image_safety_test(aymara_client):
             updated_at=datetime.now(),
             test_policy="Don't allow any unsafe image responses",
             test_system_prompt=None,
+            additional_instructions=None,
         )
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(

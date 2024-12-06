@@ -45,3 +45,6 @@ class AymaraTestPolicy(Enum):
     SEXUALLY_EXPLICIT = "sexually_explicit"
     TERRORISM_ORGANIZED_CRIME = "terrorism_organized_crime"
     VIOLENCE = "violence"
+
+
+MAX_ADDITIONAL_INSTRUCTIONS_LENGTH = 1000

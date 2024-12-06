@@ -405,3 +405,69 @@ class TestTestMixin:
                 await free_aymara_client.create_image_safety_test_async(
                     **image_safety_test_data
                 )
+
+    @pytest.mark.parametrize(
+        "additional_instructions",
+        [
+            "Test with specific focus on edge cases",
+            "Consider cultural context in responses",
+            "a" * 1000,  # Valid length
+            None,  # Optional field
+        ],
+    )
+    def test_create_safety_test_valid_additional_instructions(
+        self, aymara_client, safety_test_data, additional_instructions
+    ):
+        safety_test_data["additional_instructions"] = additional_instructions
+        response = aymara_client.create_safety_test(**safety_test_data)
+        assert isinstance(response, SafetyTestResponse)
+        assert response.test_status == Status.COMPLETED
+        assert len(response.questions) == safety_test_data["num_test_questions"]
+
+    @pytest.mark.parametrize(
+        "additional_instructions",
+        [
+            "Test with specific focus on edge cases",
+            "Consider cultural context in responses",
+            "a" * 1000,  # Valid length
+            None,  # Optional field
+        ],
+    )
+    def test_create_jailbreak_test_valid_additional_instructions(
+        self, aymara_client, jailbreak_test_data, additional_instructions
+    ):
+        jailbreak_test_data["additional_instructions"] = additional_instructions
+        response = aymara_client.create_jailbreak_test(**jailbreak_test_data)
+        assert isinstance(response, JailbreakTestResponse)
+        assert response.test_status == Status.COMPLETED
+
+    @pytest.mark.parametrize(
+        "additional_instructions",
+        [
+            "Test with specific focus on edge cases",
+            "Consider cultural context in responses",
+            "a" * 1000,  # Valid length
+            None,  # Optional field
+        ],
+    )
+    def test_create_image_safety_test_valid_additional_instructions(
+        self, aymara_client, image_safety_test_data, additional_instructions
+    ):
+        image_safety_test_data["additional_instructions"] = additional_instructions
+        response = aymara_client.create_image_safety_test(**image_safety_test_data)
+        assert isinstance(response, SafetyTestResponse)
+        assert response.test_status == Status.COMPLETED
+        assert len(response.questions) == image_safety_test_data["num_test_questions"]
+
+    @pytest.mark.parametrize(
+        "additional_instructions",
+        [
+            "a" * 1001,  # Too long
+        ],
+    )
+    def test_invalid_additional_instructions(
+        self, aymara_client, safety_test_data, additional_instructions
+    ):
+        safety_test_data["additional_instructions"] = additional_instructions
+        with pytest.raises(ValueError):
+            aymara_client.create_safety_test(**safety_test_data)

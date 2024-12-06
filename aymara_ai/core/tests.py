@@ -31,6 +31,7 @@ from aymara_ai.utils.constants import (
     DEFAULT_TEST_LANGUAGE,
     DEFAULT_TEST_NAME_LEN_MAX,
     DEFAULT_TEST_NAME_LEN_MIN,
+    MAX_ADDITIONAL_INSTRUCTIONS_LENGTH,
     POLLING_INTERVAL,
     SUPPORTED_LANGUAGES,
     AymaraTestPolicy,
@@ -47,6 +48,7 @@ class TestMixin(AymaraAIProtocol):
         test_language: str = DEFAULT_TEST_LANGUAGE,
         num_test_questions: int = DEFAULT_NUM_QUESTIONS,
         max_wait_time_secs: int = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+        additional_instructions: Optional[str] = None,
     ) -> SafetyTestResponse:
         """
         Create an Aymara safety test synchronously and wait for completion.
@@ -63,6 +65,8 @@ class TestMixin(AymaraAIProtocol):
         :type num_test_questions: int, optional
         :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
         :type max_wait_time_secs: int, optional
+        :param additional_instructions: Optional additional instructions for test generation
+        :type additional_instructions: str, optional
         :return: Test response containing test details and generated questions.
         :rtype: SafetyTestResponse
 
@@ -80,6 +84,7 @@ class TestMixin(AymaraAIProtocol):
             is_async=False,
             test_type=TestType.SAFETY,
             max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
         )
 
     async def create_safety_test_async(
@@ -90,6 +95,7 @@ class TestMixin(AymaraAIProtocol):
         test_language: str = DEFAULT_TEST_LANGUAGE,
         num_test_questions: int = DEFAULT_NUM_QUESTIONS,
         max_wait_time_secs: Optional[int] = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+        additional_instructions: Optional[str] = None,
     ) -> SafetyTestResponse:
         """
         Create an Aymara safety test asynchronously and wait for completion.
@@ -106,6 +112,8 @@ class TestMixin(AymaraAIProtocol):
         :type num_test_questions: int, optional
         :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
         :type max_wait_time_secs: int, optional
+        :param additional_instructions: Optional additional instructions for test generation
+        :type additional_instructions: str, optional
         :return: Test response containing test details and generated questions.
         :rtype: SafetyTestResponse
 
@@ -123,6 +131,7 @@ class TestMixin(AymaraAIProtocol):
             is_async=True,
             test_type=TestType.SAFETY,
             max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
         )
 
     # Create Jailbreak Test Methods
@@ -133,6 +142,7 @@ class TestMixin(AymaraAIProtocol):
         test_system_prompt: str,
         test_language: str = DEFAULT_TEST_LANGUAGE,
         max_wait_time_secs: int = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
+        additional_instructions: Optional[str] = None,
     ) -> JailbreakTestResponse:
         """
         Create an Aymara jailbreak test synchronously and wait for completion.
@@ -147,6 +157,8 @@ class TestMixin(AymaraAIProtocol):
         :type test_language: str, optional
         :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS}.
         :type max_wait_time_secs: int, optional
+        :param additional_instructions: Optional additional instructions for test generation
+        :type additional_instructions: str, optional
         :return: Test response containing test details and generated questions.
         :rtype: JailbreakTestResponse
 
@@ -164,6 +176,7 @@ class TestMixin(AymaraAIProtocol):
             test_type=TestType.JAILBREAK,
             num_test_questions=None,
             max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
         )
 
     async def create_jailbreak_test_async(
@@ -173,6 +186,7 @@ class TestMixin(AymaraAIProtocol):
         test_system_prompt: str,
         test_language: str = DEFAULT_TEST_LANGUAGE,
         max_wait_time_secs: int = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
+        additional_instructions: Optional[str] = None,
     ) -> JailbreakTestResponse:
         """
         Create an Aymara jailbreak test asynchronously and wait for completion.
@@ -187,6 +201,8 @@ class TestMixin(AymaraAIProtocol):
         :type test_language: str, optional
         :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS}.
         :type max_wait_time_secs: int, optional
+        :param additional_instructions: Optional additional instructions for test generation
+        :type additional_instructions: str, optional
         :return: Test response containing test details and generated questions.
         :rtype: JailbreakTestResponse
 
@@ -204,6 +220,7 @@ class TestMixin(AymaraAIProtocol):
             test_type=TestType.JAILBREAK,
             num_test_questions=None,
             max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
         )
 
     def create_image_safety_test(
@@ -214,6 +231,7 @@ class TestMixin(AymaraAIProtocol):
         test_language: str = DEFAULT_TEST_LANGUAGE,
         num_test_questions: int = DEFAULT_NUM_QUESTIONS,
         max_wait_time_secs: Optional[int] = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+        additional_instructions: Optional[str] = None,
     ):
         """
         Create an Aymara image safety test synchronously and wait for completion.
@@ -230,6 +248,8 @@ class TestMixin(AymaraAIProtocol):
         :type num_test_questions: int, optional
         :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
         :type max_wait_time_secs: int, optional
+        :param additional_instructions: Optional additional instructions for test generation
+        :type additional_instructions: str, optional
         :return: Test response containing test details and generated questions.
         :rtype: SafetyTestResponse
 
@@ -247,6 +267,7 @@ class TestMixin(AymaraAIProtocol):
             test_type=TestType.IMAGE_SAFETY,
             num_test_questions=num_test_questions,
             max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
         )
 
     async def create_image_safety_test_async(
@@ -257,6 +278,7 @@ class TestMixin(AymaraAIProtocol):
         test_language: str = DEFAULT_TEST_LANGUAGE,
         num_test_questions: int = DEFAULT_NUM_QUESTIONS,
         max_wait_time_secs: Optional[int] = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+        additional_instructions: Optional[str] = None,
     ):
         """
         Create an Aymara image safety test asynchronously and wait for completion.
@@ -273,6 +295,8 @@ class TestMixin(AymaraAIProtocol):
         :type num_test_questions: int, optional
         :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
         :type max_wait_time_secs: int, optional
+        :param additional_instructions: Optional additional instructions for test generation
+        :type additional_instructions: str, optional
         :return: Test response containing test details and generated questions.
         :rtype: SafetyTestResponse
 
@@ -290,6 +314,7 @@ class TestMixin(AymaraAIProtocol):
             test_type=TestType.IMAGE_SAFETY,
             num_test_questions=num_test_questions,
             max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
         )
 
     def _create_test(
@@ -303,6 +328,7 @@ class TestMixin(AymaraAIProtocol):
         test_policy: Optional[Union[str, AymaraTestPolicy]],
         num_test_questions: Optional[int],
         max_wait_time_secs: Optional[int],
+        additional_instructions: Optional[str] = None,
     ) -> Union[BaseTestResponse, Coroutine[BaseTestResponse, None, None]]:
         # Convert AymaraTestPolicy to string and prefix with "aymara_test_policy:" for safety tests
 
@@ -322,6 +348,7 @@ class TestMixin(AymaraAIProtocol):
             test_language=test_language,
             num_test_questions=num_test_questions,
             test_type=test_type,
+            additional_instructions=additional_instructions,
         )
 
         test_data = models.TestInSchema(
@@ -332,6 +359,7 @@ class TestMixin(AymaraAIProtocol):
             test_language=test_language,
             num_test_questions=num_test_questions,
             test_type=test_type,
+            additional_instructions=additional_instructions,
         )
 
         if is_async:
@@ -352,6 +380,7 @@ class TestMixin(AymaraAIProtocol):
         test_language: str,
         num_test_questions: Optional[int],
         test_type: TestType,
+        additional_instructions: Optional[str] = None,
     ) -> None:
         if not student_description:
             raise ValueError("student_description is required")
@@ -401,6 +430,22 @@ class TestMixin(AymaraAIProtocol):
             raise ValueError(
                 f"student_description is ~{token1:,} tokens and {token_2_field} is ~{token2:,} tokens. They are ~{total_tokens:,} tokens in total but they should be less than {DEFAULT_MAX_TOKENS:,} tokens."
             )
+
+        if additional_instructions is not None:
+            token3 = len(additional_instructions) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
+            total_tokens = token1 + token2 + token3
+
+            if total_tokens > DEFAULT_MAX_TOKENS:
+                raise ValueError(
+                    f"student_description is ~{token1:,} tokens, {token_2_field} is ~{token2:,} tokens, "
+                    f"and additional_instructions is ~{token3:,} tokens. They are ~{total_tokens:,} tokens "
+                    f"in total but they should be less than {DEFAULT_MAX_TOKENS:,} tokens."
+                )
+
+            if len(additional_instructions) > MAX_ADDITIONAL_INSTRUCTIONS_LENGTH:
+                raise ValueError(
+                    f"additional_instructions must be less than {MAX_ADDITIONAL_INSTRUCTIONS_LENGTH} characters"
+                )
 
     def _create_and_wait_for_test_impl_sync(
         self, test_data: models.TestInSchema, max_wait_time_secs: Optional[int]

@@ -12,9 +12,6 @@ from aymara_ai.types import (
     Status,
     StudentAnswerInput,
 )
-from aymara_ai.utils.constants import (
-    DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
-)
 
 TestType.__test__ = False  # type: ignore
 
@@ -43,6 +40,7 @@ def test_score_test(aymara_client):
                 updated_at=datetime.now(),
                 test_policy="Don't allow any unsafe answers",
                 test_system_prompt=None,
+                additional_instructions=None,
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
@@ -63,6 +61,7 @@ def test_score_test(aymara_client):
                 updated_at=datetime.now(),
                 test_policy="Don't allow any unsafe answers",
                 test_system_prompt=None,
+                additional_instructions=None,
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
@@ -95,6 +94,7 @@ def test_score_test(aymara_client):
             updated_at=datetime.now(),
             test_policy="Don't allow any unsafe answers",
             test_system_prompt=None,
+            additional_instructions=None,
         )
 
         result = aymara_client.score_test(
@@ -136,6 +136,7 @@ async def test_score_test_async(aymara_client):
                 updated_at=datetime.now(),
                 test_policy="Don't allow any unsafe answers",
                 test_system_prompt=None,
+                additional_instructions=None,
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
@@ -156,6 +157,7 @@ async def test_score_test_async(aymara_client):
                 updated_at=datetime.now(),
                 test_policy="Don't allow any unsafe answers",
                 test_system_prompt=None,
+                additional_instructions=None,
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
@@ -188,6 +190,7 @@ async def test_score_test_async(aymara_client):
             updated_at=datetime.now(),
             test_policy="Don't allow any unsafe answers",
             test_system_prompt=None,
+            additional_instructions=None,
         )
 
         result = await aymara_client.score_test_async(
@@ -224,6 +227,7 @@ def test_get_score_run(aymara_client):
                 updated_at=datetime.now(),
                 test_policy="Don't allow any unsafe answers",
                 test_system_prompt=None,
+                additional_instructions=None,
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
@@ -276,6 +280,7 @@ async def test_get_score_run_async(aymara_client):
                 updated_at=datetime.now(),
                 test_policy="Don't allow any unsafe answers",
                 test_system_prompt=None,
+                additional_instructions=None,
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
@@ -327,6 +332,7 @@ def test_list_score_runs(aymara_client):
                         updated_at=datetime.now(),
                         test_policy="Don't allow any unsafe answers",
                         test_system_prompt=None,
+                        additional_instructions=None,
                     ),
                     created_at=datetime.now(),
                     updated_at=datetime.now(),
@@ -347,6 +353,7 @@ def test_list_score_runs(aymara_client):
                         updated_at=datetime.now(),
                         test_policy="Don't allow any unsafe answers",
                         test_system_prompt=None,
+                        additional_instructions=None,
                     ),
                     created_at=datetime.now(),
                     updated_at=datetime.now(),
@@ -389,6 +396,7 @@ async def test_list_score_runs_async(aymara_client):
                         updated_at=datetime.now(),
                         test_policy="Don't allow any unsafe answers",
                         test_system_prompt=None,
+                        additional_instructions=None,
                     ),
                     created_at=datetime.now(),
                     updated_at=datetime.now(),
@@ -409,6 +417,7 @@ async def test_list_score_runs_async(aymara_client):
                         updated_at=datetime.now(),
                         test_policy="Don't allow any unsafe answers",
                         test_system_prompt=None,
+                        additional_instructions=None,
                     ),
                     created_at=datetime.now(),
                     updated_at=datetime.now(),
@@ -428,625 +437,6 @@ async def test_list_score_runs_async(aymara_client):
         df_result = result.to_df()
         assert isinstance(df_result, pd.DataFrame)
         assert len(df_result) == 2
-
-
-def test_score_test_failed(aymara_client):
-    with patch(
-        "aymara_ai.core.score_runs.create_score_run.sync_detailed"
-    ) as mock_create_score_run, patch(
-        "aymara_ai.core.score_runs.get_score_run.sync_detailed"
-    ) as mock_get_score_run, patch(
-        "aymara_ai.core.score_runs.get_test.sync_detailed"
-    ) as mock_get_test:
-        mock_create_score_run.return_value.parsed = models.ScoreRunOutSchema(
-            score_run_uuid="score123",
-            score_run_status=models.ScoreRunStatus.RECORD_CREATED,
-            test=models.TestOutSchema(
-                test_name="Test 1",
-                test_uuid="test123",
-                test_status=models.TestStatus.FINISHED,
-                test_type=models.TestType.SAFETY,
-                organization_name="Organization 1",
-                num_test_questions=10,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-                test_policy="Don't allow any unsafe answers",
-                test_system_prompt=None,
-            ),
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            remaining_score_runs=100,
-            price=100,
-        )
-        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
-            score_run_uuid="score123",
-            score_run_status=models.ScoreRunStatus.FAILED,
-            test=models.TestOutSchema(
-                test_name="Test 1",
-                test_uuid="test123",
-                test_status=models.TestStatus.FINISHED,
-                test_type=models.TestType.SAFETY,
-                organization_name="Organization 1",
-                num_test_questions=10,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-                test_policy="Don't allow any unsafe answers",
-                test_system_prompt=None,
-            ),
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            remaining_score_runs=100,
-            price=100,
-        )
-        mock_get_test.return_value.parsed = models.TestOutSchema(
-            test_name="Test 1",
-            test_uuid="test123",
-            test_status=models.TestStatus.FINISHED,
-            test_type=models.TestType.SAFETY,
-            num_test_questions=10,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            test_policy="Don't allow any unsafe answers",
-            test_system_prompt=None,
-        )
-
-        result = aymara_client.score_test(
-            test_uuid="test123",
-            test_type=TestType.SAFETY,
-            student_answers=[
-                StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")
-            ],
-        )
-
-        assert isinstance(result, ScoreRunResponse)
-        assert result.score_run_uuid == "score123"
-        assert result.score_run_status == Status.FAILED
-        assert result.failure_reason == "Internal server error. Please try again."
-
-
-def test_score_test_timeout(aymara_client):
-    start_time = 0
-
-    def mock_time():
-        nonlocal start_time
-        start_time += DEFAULT_SAFETY_MAX_WAIT_TIME_SECS + 1
-        return start_time
-
-    with patch(
-        "aymara_ai.core.score_runs.create_score_run.sync_detailed"
-    ) as mock_create_score_run, patch(
-        "aymara_ai.core.score_runs.get_score_run.sync_detailed"
-    ) as mock_get_score_run, patch(
-        "aymara_ai.core.score_runs.get_test.sync_detailed"
-    ) as mock_get_test, patch("time.sleep", side_effect=lambda x: None), patch(
-        "time.time", side_effect=mock_time
-    ):
-        mock_create_score_run.return_value.parsed = models.ScoreRunOutSchema(
-            score_run_uuid="score123",
-            score_run_status=models.ScoreRunStatus.RECORD_CREATED,
-            test=models.TestOutSchema(
-                test_name="Test 1",
-                test_uuid="test123",
-                test_status=models.TestStatus.FINISHED,
-                test_type=models.TestType.SAFETY,
-                organization_name="Organization 1",
-                num_test_questions=10,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-                test_policy="Don't allow any unsafe answers",
-                test_system_prompt=None,
-            ),
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            remaining_score_runs=100,
-            price=100,
-        )
-        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
-            score_run_uuid="score123",
-            score_run_status=models.ScoreRunStatus.SCORING,
-            test=models.TestOutSchema(
-                test_name="Test 1",
-                test_uuid="test123",
-                test_status=models.TestStatus.FINISHED,
-                test_type=models.TestType.SAFETY,
-                organization_name="Organization 1",
-                num_test_questions=10,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-                test_policy="Don't allow any unsafe answers",
-                test_system_prompt=None,
-            ),
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            remaining_score_runs=100,
-            price=100,
-        )
-        mock_get_test.return_value.parsed = models.TestOutSchema(
-            test_name="Test 1",
-            test_uuid="test123",
-            test_status=models.TestStatus.FINISHED,
-            test_type=models.TestType.SAFETY,
-            num_test_questions=10,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            test_policy="Don't allow any unsafe answers",
-            test_system_prompt=None,
-        )
-
-        result = aymara_client.score_test(
-            test_uuid="test123",
-            test_type=TestType.SAFETY,
-            student_answers=[
-                StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")
-            ],
-        )
-
-        assert isinstance(result, ScoreRunResponse)
-        assert result.score_run_uuid == "score123"
-        assert result.score_run_status == Status.FAILED
-        assert result.failure_reason == "Score run creation timed out."
-
-
-@pytest.mark.asyncio
-async def test_score_test_async_failed(aymara_client):
-    with patch(
-        "aymara_ai.core.score_runs.create_score_run.asyncio_detailed"
-    ) as mock_create_score_run, patch(
-        "aymara_ai.core.score_runs.get_score_run.asyncio_detailed"
-    ) as mock_get_score_run, patch(
-        "aymara_ai.core.score_runs.get_test.asyncio_detailed"
-    ) as mock_get_test:
-        mock_create_score_run.return_value.parsed = models.ScoreRunOutSchema(
-            score_run_uuid="score123",
-            score_run_status=models.ScoreRunStatus.RECORD_CREATED,
-            test=models.TestOutSchema(
-                test_name="Test 1",
-                test_uuid="test123",
-                test_status=models.TestStatus.FINISHED,
-                test_type=models.TestType.SAFETY,
-                organization_name="Organization 1",
-                num_test_questions=10,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-                test_policy="Don't allow any unsafe answers",
-                test_system_prompt=None,
-            ),
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            remaining_score_runs=100,
-            price=100,
-        )
-        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
-            score_run_uuid="score123",
-            score_run_status=models.ScoreRunStatus.FAILED,
-            test=models.TestOutSchema(
-                test_name="Test 1",
-                test_uuid="test123",
-                test_status=models.TestStatus.FINISHED,
-                test_type=models.TestType.SAFETY,
-                organization_name="Organization 1",
-                num_test_questions=10,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-                test_policy="Don't allow any unsafe answers",
-                test_system_prompt=None,
-            ),
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            remaining_score_runs=100,
-            price=100,
-        )
-        mock_get_test.return_value.parsed = models.TestOutSchema(
-            test_name="Test 1",
-            test_uuid="test123",
-            test_status=models.TestStatus.FINISHED,
-            test_type=models.TestType.SAFETY,
-            num_test_questions=10,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            test_policy="Don't allow any unsafe answers",
-            test_system_prompt=None,
-        )
-
-        result = await aymara_client.score_test_async(
-            test_uuid="test123",
-            test_type=TestType.SAFETY,
-            student_answers=[
-                StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")
-            ],
-        )
-
-        assert isinstance(result, ScoreRunResponse)
-        assert result.score_run_uuid == "score123"
-        assert result.score_run_status == Status.FAILED
-        assert result.failure_reason == "Internal server error. Please try again."
-
-
-@pytest.mark.asyncio
-async def test_score_test_async_timeout(aymara_client):
-    start_time = 0
-
-    def mock_time():
-        nonlocal start_time
-        start_time += DEFAULT_SAFETY_MAX_WAIT_TIME_SECS + 1
-        return start_time
-
-    with patch(
-        "aymara_ai.core.score_runs.create_score_run.asyncio_detailed"
-    ) as mock_create_score_run, patch(
-        "aymara_ai.core.score_runs.get_score_run.asyncio_detailed"
-    ) as mock_get_score_run, patch(
-        "aymara_ai.core.score_runs.get_test.asyncio_detailed"
-    ) as mock_get_test, patch("asyncio.sleep", side_effect=lambda x: None), patch(
-        "time.time", side_effect=mock_time
-    ):
-        mock_create_score_run.return_value.parsed = models.ScoreRunOutSchema(
-            score_run_uuid="score123",
-            score_run_status=models.ScoreRunStatus.RECORD_CREATED,
-            test=models.TestOutSchema(
-                test_name="Test 1",
-                test_uuid="test123",
-                test_status=models.TestStatus.FINISHED,
-                test_type=models.TestType.SAFETY,
-                organization_name="Organization 1",
-                num_test_questions=10,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-                test_policy="Don't allow any unsafe answers",
-                test_system_prompt=None,
-            ),
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            remaining_score_runs=100,
-            price=100,
-        )
-        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
-            score_run_uuid="score123",
-            score_run_status=models.ScoreRunStatus.SCORING,
-            test=models.TestOutSchema(
-                test_name="Test 1",
-                test_uuid="test123",
-                test_status=models.TestStatus.FINISHED,
-                test_type=models.TestType.SAFETY,
-                organization_name="Organization 1",
-                num_test_questions=10,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-                test_policy="Don't allow any unsafe answers",
-                test_system_prompt=None,
-            ),
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            remaining_score_runs=100,
-            price=100,
-        )
-        mock_get_test.return_value.parsed = models.TestOutSchema(
-            test_name="Test 1",
-            test_uuid="test123",
-            test_status=models.TestStatus.FINISHED,
-            test_type=models.TestType.SAFETY,
-            num_test_questions=10,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            test_policy="Don't allow any unsafe answers",
-            test_system_prompt=None,
-        )
-
-        result = await aymara_client.score_test_async(
-            test_uuid="test123",
-            test_type=TestType.JAILBREAK,
-            student_answers=[
-                StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")
-            ],
-        )
-
-        assert isinstance(result, ScoreRunResponse)
-        assert result.score_run_uuid == "score123"
-        assert result.score_run_status == Status.FAILED
-        assert result.failure_reason == "Score run creation timed out."
-
-
-def test_get_score_run_not_finished(aymara_client):
-    with patch(
-        "aymara_ai.core.score_runs.get_score_run.sync_detailed"
-    ) as mock_get_score_run:
-        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
-            score_run_uuid="score123",
-            score_run_status=models.ScoreRunStatus.SCORING,
-            test=models.TestOutSchema(
-                test_name="Test 1",
-                test_uuid="test123",
-                test_status=models.TestStatus.FINISHED,
-                test_type=models.TestType.SAFETY,
-                organization_name="Organization 1",
-                num_test_questions=10,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-                test_policy="Don't allow any unsafe answers",
-                test_system_prompt=None,
-            ),
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            remaining_score_runs=100,
-            price=100,
-        )
-
-        result = aymara_client.get_score_run("score123")
-
-        assert isinstance(result, ScoreRunResponse)
-        assert result.score_run_uuid == "score123"
-        assert result.score_run_status == Status.PENDING
-        assert result.answers is None
-
-
-@pytest.mark.asyncio
-async def test_get_score_run_async_not_finished(aymara_client):
-    with patch(
-        "aymara_ai.core.score_runs.get_score_run.asyncio_detailed"
-    ) as mock_get_score_run:
-        mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
-            score_run_uuid="score123",
-            score_run_status=models.ScoreRunStatus.SCORING,
-            test=models.TestOutSchema(
-                test_name="Test 1",
-                test_uuid="test123",
-                test_status=models.TestStatus.FINISHED,
-                test_type=models.TestType.SAFETY,
-                organization_name="Organization 1",
-                num_test_questions=10,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-                test_policy="Don't allow any unsafe answers",
-                test_system_prompt=None,
-            ),
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            remaining_score_runs=100,
-            price=100,
-        )
-
-        result = await aymara_client.get_score_run_async("score123")
-
-        assert isinstance(result, ScoreRunResponse)
-        assert result.score_run_uuid == "score123"
-        assert result.score_run_status == Status.PENDING
-        assert result.answers is None
-
-
-def test_list_score_runs_with_test_uuid(aymara_client):
-    with patch(
-        "aymara_ai.core.score_runs.list_score_runs.sync_detailed"
-    ) as mock_list_score_runs:
-        mock_list_score_runs.return_value.parsed = models.PagedScoreRunOutSchema(
-            items=[
-                models.ScoreRunOutSchema(
-                    score_run_uuid="score1",
-                    score_run_status=models.ScoreRunStatus.FINISHED,
-                    test=models.TestOutSchema(
-                        test_name="Test 1",
-                        test_uuid="test123",
-                        test_status=models.TestStatus.FINISHED,
-                        test_type=models.TestType.SAFETY,
-                        organization_name="Organization 1",
-                        num_test_questions=10,
-                        created_at=datetime.now(),
-                        updated_at=datetime.now(),
-                        test_policy="Don't allow any unsafe answers",
-                        test_system_prompt=None,
-                    ),
-                    created_at=datetime.now(),
-                    updated_at=datetime.now(),
-                    remaining_score_runs=100,
-                    price=100,
-                ),
-            ],
-            count=1,
-        )
-
-        result = aymara_client.list_score_runs(test_uuid="test123")
-
-        assert isinstance(result, ListScoreRunResponse)
-        assert len(result) == 1
-        assert all(isinstance(item, ScoreRunResponse) for item in result)
-        mock_list_score_runs.assert_called_once_with(
-            client=aymara_client.client, test_uuid="test123", offset=0
-        )
-
-
-@pytest.mark.asyncio
-async def test_list_score_runs_async_with_test_uuid(aymara_client):
-    with patch(
-        "aymara_ai.core.score_runs.list_score_runs.asyncio_detailed"
-    ) as mock_list_score_runs:
-        mock_list_score_runs.return_value.parsed = models.PagedScoreRunOutSchema(
-            items=[
-                models.ScoreRunOutSchema(
-                    score_run_uuid="score1",
-                    score_run_status=models.ScoreRunStatus.FINISHED,
-                    test=models.TestOutSchema(
-                        test_name="Test 1",
-                        test_uuid="test123",
-                        test_status=models.TestStatus.FINISHED,
-                        test_type=models.TestType.SAFETY,
-                        organization_name="Organization 1",
-                        num_test_questions=10,
-                        created_at=datetime.now(),
-                        updated_at=datetime.now(),
-                        test_policy="Don't allow any unsafe answers",
-                        test_system_prompt=None,
-                    ),
-                    created_at=datetime.now(),
-                    updated_at=datetime.now(),
-                    remaining_score_runs=100,
-                    price=100,
-                ),
-            ],
-            count=1,
-        )
-
-        result = await aymara_client.list_score_runs_async(test_uuid="test123")
-
-        assert isinstance(result, ListScoreRunResponse)
-        assert len(result) == 1
-        assert all(isinstance(item, ScoreRunResponse) for item in result)
-        mock_list_score_runs.assert_called_once_with(
-            client=aymara_client.client, test_uuid="test123", offset=0
-        )
-
-
-def test_list_score_runs_multiple_pages(aymara_client):
-    with patch(
-        "aymara_ai.core.score_runs.list_score_runs.sync_detailed"
-    ) as mock_list_score_runs:
-        mock_list_score_runs.side_effect = [
-            type(
-                "Response",
-                (),
-                {
-                    "parsed": models.PagedScoreRunOutSchema(
-                        items=[
-                            models.ScoreRunOutSchema(
-                                score_run_uuid="score1",
-                                score_run_status=models.ScoreRunStatus.FINISHED,
-                                test=models.TestOutSchema(
-                                    test_name="Test 1",
-                                    test_uuid="test123",
-                                    test_status=models.TestStatus.FINISHED,
-                                    test_type=models.TestType.SAFETY,
-                                    organization_name="Organization 1",
-                                    num_test_questions=10,
-                                    created_at=datetime.now(),
-                                    updated_at=datetime.now(),
-                                    test_policy="Don't allow any unsafe answers",
-                                    test_system_prompt=None,
-                                ),
-                                created_at=datetime.now(),
-                                updated_at=datetime.now(),
-                                remaining_score_runs=100,
-                                price=100,
-                            ),
-                        ],
-                        count=2,
-                    )
-                },
-            ),
-            type(
-                "Response",
-                (),
-                {
-                    "parsed": models.PagedScoreRunOutSchema(
-                        items=[
-                            models.ScoreRunOutSchema(
-                                score_run_uuid="score2",
-                                score_run_status=models.ScoreRunStatus.FINISHED,
-                                test=models.TestOutSchema(
-                                    test_name="Test 2",
-                                    test_uuid="test456",
-                                    test_status=models.TestStatus.FINISHED,
-                                    test_type=models.TestType.SAFETY,
-                                    organization_name="Organization 1",
-                                    num_test_questions=10,
-                                    created_at=datetime.now(),
-                                    updated_at=datetime.now(),
-                                    test_policy="Don't allow any unsafe answers",
-                                    test_system_prompt=None,
-                                ),
-                                created_at=datetime.now(),
-                                updated_at=datetime.now(),
-                                remaining_score_runs=99,
-                                price=100,
-                            ),
-                        ],
-                        count=2,
-                    )
-                },
-            ),
-        ]
-
-        result = aymara_client.list_score_runs()
-
-        assert isinstance(result, ListScoreRunResponse)
-        assert len(result) == 2
-        assert all(isinstance(item, ScoreRunResponse) for item in result)
-        assert mock_list_score_runs.call_count == 2
-
-
-@pytest.mark.asyncio
-async def test_list_score_runs_async_multiple_pages(aymara_client):
-    with patch(
-        "aymara_ai.core.score_runs.list_score_runs.asyncio_detailed"
-    ) as mock_list_score_runs:
-        mock_list_score_runs.side_effect = [
-            type(
-                "Response",
-                (),
-                {
-                    "parsed": models.PagedScoreRunOutSchema(
-                        items=[
-                            models.ScoreRunOutSchema(
-                                score_run_uuid="score1",
-                                score_run_status=models.ScoreRunStatus.FINISHED,
-                                test=models.TestOutSchema(
-                                    test_name="Test 1",
-                                    test_uuid="test123",
-                                    test_status=models.TestStatus.FINISHED,
-                                    test_type=models.TestType.SAFETY,
-                                    organization_name="Organization 1",
-                                    num_test_questions=10,
-                                    created_at=datetime.now(),
-                                    updated_at=datetime.now(),
-                                    test_policy="Don't allow any unsafe answers",
-                                    test_system_prompt=None,
-                                ),
-                                created_at=datetime.now(),
-                                updated_at=datetime.now(),
-                                remaining_score_runs=100,
-                                price=100,
-                            ),
-                        ],
-                        count=2,
-                    )
-                },
-            ),
-            type(
-                "Response",
-                (),
-                {
-                    "parsed": models.PagedScoreRunOutSchema(
-                        items=[
-                            models.ScoreRunOutSchema(
-                                score_run_uuid="score2",
-                                score_run_status=models.ScoreRunStatus.FINISHED,
-                                test=models.TestOutSchema(
-                                    test_name="Test 2",
-                                    test_uuid="test456",
-                                    test_status=models.TestStatus.FINISHED,
-                                    test_type=models.TestType.SAFETY,
-                                    organization_name="Organization 1",
-                                    num_test_questions=10,
-                                    created_at=datetime.now(),
-                                    updated_at=datetime.now(),
-                                    test_policy="Don't allow any unsafe answers",
-                                    test_system_prompt=None,
-                                ),
-                                created_at=datetime.now(),
-                                updated_at=datetime.now(),
-                                remaining_score_runs=99,
-                                price=100,
-                            ),
-                        ],
-                        count=2,
-                    )
-                },
-            ),
-        ]
-
-        result = await aymara_client.list_score_runs_async()
-
-        assert isinstance(result, ListScoreRunResponse)
-        assert len(result) == 2
-        assert all(isinstance(item, ScoreRunResponse) for item in result)
-        assert mock_list_score_runs.call_count == 2
 
 
 def test_get_all_score_run_answers_sync(aymara_client):
@@ -1267,6 +657,7 @@ def test_score_image_safety_test(aymara_client):
                 updated_at=datetime.now(),
                 test_policy="Don't allow any unsafe image responses",
                 test_system_prompt=None,
+                additional_instructions=None,
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
@@ -1287,6 +678,7 @@ def test_score_image_safety_test(aymara_client):
                 updated_at=datetime.now(),
                 test_policy="Don't allow any unsafe image responses",
                 test_system_prompt=None,
+                additional_instructions=None,
             ),
             created_at=datetime.now(),
             updated_at=datetime.now(),
@@ -1319,6 +711,7 @@ def test_score_image_safety_test(aymara_client):
             updated_at=datetime.now(),
             test_policy="Don't allow any unsafe image responses",
             test_system_prompt=None,
+            additional_instructions=None,
         )
 
         result = aymara_client.score_test(

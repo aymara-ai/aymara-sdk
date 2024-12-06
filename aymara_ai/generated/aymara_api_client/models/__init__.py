@@ -4,6 +4,10 @@ from .answer_in_schema import AnswerInSchema
 from .answer_out_schema import AnswerOutSchema
 from .billing_cycle_usage_schema import BillingCycleUsageSchema
 from .error_schema import ErrorSchema
+from .example_in_schema import ExampleInSchema
+from .example_in_schema_example_type import ExampleInSchemaExampleType
+from .example_out_schema import ExampleOutSchema
+from .example_out_schema_example_type import ExampleOutSchemaExampleType
 from .get_image_presigned_urls_response import GetImagePresignedUrlsResponse
 from .image_upload_request_in_schema import ImageUploadRequestInSchema
 from .input_ import Input
@@ -21,6 +25,10 @@ from .score_run_suite_summary_in_schema import ScoreRunSuiteSummaryInSchema
 from .score_run_suite_summary_out_schema import ScoreRunSuiteSummaryOutSchema
 from .score_run_suite_summary_status import ScoreRunSuiteSummaryStatus
 from .score_run_summary_out_schema import ScoreRunSummaryOutSchema
+from .scoring_example_in_schema import ScoringExampleInSchema
+from .scoring_example_in_schema_example_type import ScoringExampleInSchemaExampleType
+from .scoring_example_out_schema import ScoringExampleOutSchema
+from .scoring_example_out_schema_example_type import ScoringExampleOutSchemaExampleType
 from .test_in_schema import TestInSchema
 from .test_out_schema import TestOutSchema
 from .test_status import TestStatus
@@ -36,6 +44,10 @@ __all__ = (
     "AnswerOutSchema",
     "BillingCycleUsageSchema",
     "ErrorSchema",
+    "ExampleInSchema",
+    "ExampleInSchemaExampleType",
+    "ExampleOutSchema",
+    "ExampleOutSchemaExampleType",
     "GetImagePresignedUrlsResponse",
     "ImageUploadRequestInSchema",
     "Input",
@@ -53,6 +65,10 @@ __all__ = (
     "ScoreRunSuiteSummaryOutSchema",
     "ScoreRunSuiteSummaryStatus",
     "ScoreRunSummaryOutSchema",
+    "ScoringExampleInSchema",
+    "ScoringExampleInSchemaExampleType",
+    "ScoringExampleOutSchema",
+    "ScoringExampleOutSchemaExampleType",
     "TestInSchema",
     "TestOutSchema",
     "TestStatus",

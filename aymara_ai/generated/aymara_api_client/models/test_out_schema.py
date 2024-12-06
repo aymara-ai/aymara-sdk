@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Dict, List, Type, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -8,6 +8,10 @@ from dateutil.parser import isoparse
 from ..models.test_status import TestStatus
 from ..models.test_type import TestType
 from ..types import UNSET, Unset
+
+if TYPE_CHECKING:
+    from ..models.example_out_schema import ExampleOutSchema
+
 
 T = TypeVar("T", bound="TestOutSchema")
 
@@ -25,7 +29,9 @@ class TestOutSchema:
         updated_at (datetime.datetime):
         test_system_prompt (Union[None, str]):
         test_policy (Union[None, str]):
+        additional_instructions (Union[None, str]):
         organization_name (Union[None, Unset, str]):
+        examples (Union[List['ExampleOutSchema'], None, Unset]):
     """
 
     test_uuid: str
@@ -37,7 +43,9 @@ class TestOutSchema:
     updated_at: datetime.datetime
     test_system_prompt: Union[None, str]
     test_policy: Union[None, str]
+    additional_instructions: Union[None, str]
     organization_name: Union[None, Unset, str] = UNSET
+    examples: Union[List["ExampleOutSchema"], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -62,11 +70,26 @@ class TestOutSchema:
         test_policy: Union[None, str]
         test_policy = self.test_policy
 
+        additional_instructions: Union[None, str]
+        additional_instructions = self.additional_instructions
+
         organization_name: Union[None, Unset, str]
         if isinstance(self.organization_name, Unset):
             organization_name = UNSET
         else:
             organization_name = self.organization_name
+
+        examples: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.examples, Unset):
+            examples = UNSET
+        elif isinstance(self.examples, list):
+            examples = []
+            for examples_type_0_item_data in self.examples:
+                examples_type_0_item = examples_type_0_item_data.to_dict()
+                examples.append(examples_type_0_item)
+
+        else:
+            examples = self.examples
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -81,15 +104,20 @@ class TestOutSchema:
                 "updated_at": updated_at,
                 "test_system_prompt": test_system_prompt,
                 "test_policy": test_policy,
+                "additional_instructions": additional_instructions,
             }
         )
         if organization_name is not UNSET:
             field_dict["organization_name"] = organization_name
+        if examples is not UNSET:
+            field_dict["examples"] = examples
 
         return field_dict
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+        from ..models.example_out_schema import ExampleOutSchema
+
         d = src_dict.copy()
         test_uuid = d.pop("test_uuid")
 
@@ -124,6 +152,13 @@ class TestOutSchema:
 
         test_policy = _parse_test_policy(d.pop("test_policy"))
 
+        def _parse_additional_instructions(data: object) -> Union[None, str]:
+            if data is None:
+                return data
+            return cast(Union[None, str], data)
+
+        additional_instructions = _parse_additional_instructions(d.pop("additional_instructions"))
+
         def _parse_organization_name(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -132,6 +167,28 @@ class TestOutSchema:
             return cast(Union[None, Unset, str], data)
 
         organization_name = _parse_organization_name(d.pop("organization_name", UNSET))
+
+        def _parse_examples(data: object) -> Union[List["ExampleOutSchema"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                examples_type_0 = []
+                _examples_type_0 = data
+                for examples_type_0_item_data in _examples_type_0:
+                    examples_type_0_item = ExampleOutSchema.from_dict(examples_type_0_item_data)
+
+                    examples_type_0.append(examples_type_0_item)
+
+                return examples_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["ExampleOutSchema"], None, Unset], data)
+
+        examples = _parse_examples(d.pop("examples", UNSET))
 
         test_out_schema = cls(
             test_uuid=test_uuid,
@@ -143,7 +200,9 @@ class TestOutSchema:
             updated_at=updated_at,
             test_system_prompt=test_system_prompt,
             test_policy=test_policy,
+            additional_instructions=additional_instructions,
             organization_name=organization_name,
+            examples=examples,
         )
 
         test_out_schema.additional_properties = d
