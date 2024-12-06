@@ -16,6 +16,12 @@ from aymara_ai.generated.aymara_api_client.models.answer_in_schema import (
 from aymara_ai.generated.aymara_api_client.models.answer_out_schema import (
     AnswerOutSchema,
 )
+from aymara_ai.generated.aymara_api_client.models.example_in_schema import (
+    ExampleInSchema,
+)
+from aymara_ai.generated.aymara_api_client.models.example_in_schema_example_type import (
+    ExampleInSchemaExampleType,
+)
 from aymara_ai.generated.aymara_api_client.models.question_schema import QuestionSchema
 from aymara_ai.generated.aymara_api_client.models.score_run_out_schema import (
     ScoreRunOutSchema,
@@ -28,6 +34,12 @@ from aymara_ai.generated.aymara_api_client.models.score_run_suite_summary_status
 )
 from aymara_ai.generated.aymara_api_client.models.score_run_summary_out_schema import (
     ScoreRunSummaryOutSchema,
+)
+from aymara_ai.generated.aymara_api_client.models.scoring_example_in_schema import (
+    ScoringExampleInSchema,
+)
+from aymara_ai.generated.aymara_api_client.models.scoring_example_in_schema_example_type import (
+    ScoringExampleInSchemaExampleType,
 )
 from aymara_ai.generated.aymara_api_client.models.test_out_schema import TestOutSchema
 from aymara_ai.generated.aymara_api_client.models.test_status import TestStatus
@@ -112,6 +124,32 @@ class StudentAnswerInput(BaseModel):
         )
 
 
+class ScoringExample(BaseModel):
+    """
+    An example answer to guide the scoring process
+    """
+
+    question_text: Annotated[str, Field(..., description="Example question text")]
+    answer_text: Annotated[str, Field(..., description="Example answer text")]
+    explanation: Annotated[
+        Optional[str],
+        Field(None, description="Explanation of why this answer should pass/fail"),
+    ]
+    is_passing: Annotated[
+        bool, Field(..., description="Whether this is a passing example")
+    ]
+
+    def to_scoring_example_in_schema(self) -> ScoringExampleInSchema:
+        return ScoringExampleInSchema(
+            question_text=self.question_text,
+            answer_text=self.answer_text,
+            explanation=self.explanation,
+            example_type=ScoringExampleInSchemaExampleType.PASS
+            if self.is_passing
+            else ScoringExampleInSchemaExampleType.FAIL,
+        )
+
+
 class CreateScoreRunInput(BaseModel):
     """
     Parameters for scoring a test
@@ -120,6 +158,10 @@ class CreateScoreRunInput(BaseModel):
     test_uuid: Annotated[str, Field(..., description="UUID of the test")]
     student_responses: Annotated[
         List[StudentAnswerInput], Field(..., description="Student responses")
+    ]
+    scoring_examples: Annotated[
+        Optional[List[ScoringExample]],
+        Field(None, description="Examples to guide scoring"),
     ]
 
 
@@ -140,6 +182,44 @@ class QuestionResponse(BaseModel):
     def to_question_schema(self) -> QuestionSchema:
         return QuestionSchema(
             question_uuid=self.question_uuid, question_text=self.question_text
+        )
+
+
+class PositiveExample(BaseModel):
+    """
+    A positive example of the kind of question to generate
+    """
+
+    question_text: Annotated[str, Field(..., description="Example question text")]
+    explanation: Annotated[
+        Optional[str],
+        Field(None, description="Explanation of why this is a good example"),
+    ]
+
+    def to_example_in_schema(self) -> "ExampleInSchema":
+        return ExampleInSchema(
+            question_text=self.question_text,
+            explanation=self.explanation,
+            example_type=ExampleInSchemaExampleType.POSITIVE,
+        )
+
+
+class NegativeExample(BaseModel):
+    """
+    A negative example (counter-example) of the kind of question to generate
+    """
+
+    question_text: Annotated[str, Field(..., description="Example question text")]
+    explanation: Annotated[
+        Optional[str],
+        Field(None, description="Explanation of why this is a counter-example"),
+    ]
+
+    def to_example_in_schema(self) -> "ExampleInSchema":
+        return ExampleInSchema(
+            question_text=self.question_text,
+            explanation=self.explanation,
+            example_type=ExampleInSchemaExampleType.NEGATIVE,
         )
 
 
@@ -166,6 +246,15 @@ class BaseTestResponse(BaseModel):
     ]
     failure_reason: Annotated[
         Optional[str], Field(None, description="Reason for the test failure")
+    ]
+
+    positive_examples: Annotated[
+        Optional[List[PositiveExample]],
+        Field(None, description="Positive examples for the test"),
+    ]
+    negative_examples: Annotated[
+        Optional[List[NegativeExample]],
+        Field(None, description="Negative examples for the test"),
     ]
 
     def to_questions_df(self) -> pd.DataFrame:
@@ -207,6 +296,24 @@ class BaseTestResponse(BaseModel):
             if questions
             else None,
             "failure_reason": failure_reason,
+            "positive_examples": [
+                PositiveExample(
+                    question_text=e.question_text, explanation=e.explanation
+                )
+                for e in test.examples
+                if e.example_type == ExampleInSchemaExampleType.POSITIVE
+            ]
+            if test.examples
+            else None,
+            "negative_examples": [
+                NegativeExample(
+                    question_text=e.question_text, explanation=e.explanation
+                )
+                for e in test.examples
+                if e.example_type == ExampleInSchemaExampleType.NEGATIVE
+            ]
+            if test.examples
+            else None,
         }
 
         if test.test_type == TestType.SAFETY or test.test_type == TestType.IMAGE_SAFETY:

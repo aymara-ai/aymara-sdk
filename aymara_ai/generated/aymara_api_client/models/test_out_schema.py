@@ -29,8 +29,8 @@ class TestOutSchema:
         updated_at (datetime.datetime):
         test_system_prompt (Union[None, str]):
         test_policy (Union[None, str]):
-        additional_instructions (Union[None, str]):
         organization_name (Union[None, Unset, str]):
+        additional_instructions (Union[None, Unset, str]):
         examples (Union[List['ExampleOutSchema'], None, Unset]):
     """
 
@@ -43,8 +43,8 @@ class TestOutSchema:
     updated_at: datetime.datetime
     test_system_prompt: Union[None, str]
     test_policy: Union[None, str]
-    additional_instructions: Union[None, str]
     organization_name: Union[None, Unset, str] = UNSET
+    additional_instructions: Union[None, Unset, str] = UNSET
     examples: Union[List["ExampleOutSchema"], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -70,14 +70,17 @@ class TestOutSchema:
         test_policy: Union[None, str]
         test_policy = self.test_policy
 
-        additional_instructions: Union[None, str]
-        additional_instructions = self.additional_instructions
-
         organization_name: Union[None, Unset, str]
         if isinstance(self.organization_name, Unset):
             organization_name = UNSET
         else:
             organization_name = self.organization_name
+
+        additional_instructions: Union[None, Unset, str]
+        if isinstance(self.additional_instructions, Unset):
+            additional_instructions = UNSET
+        else:
+            additional_instructions = self.additional_instructions
 
         examples: Union[List[Dict[str, Any]], None, Unset]
         if isinstance(self.examples, Unset):
@@ -104,11 +107,12 @@ class TestOutSchema:
                 "updated_at": updated_at,
                 "test_system_prompt": test_system_prompt,
                 "test_policy": test_policy,
-                "additional_instructions": additional_instructions,
             }
         )
         if organization_name is not UNSET:
             field_dict["organization_name"] = organization_name
+        if additional_instructions is not UNSET:
+            field_dict["additional_instructions"] = additional_instructions
         if examples is not UNSET:
             field_dict["examples"] = examples
 
@@ -152,13 +156,6 @@ class TestOutSchema:
 
         test_policy = _parse_test_policy(d.pop("test_policy"))
 
-        def _parse_additional_instructions(data: object) -> Union[None, str]:
-            if data is None:
-                return data
-            return cast(Union[None, str], data)
-
-        additional_instructions = _parse_additional_instructions(d.pop("additional_instructions"))
-
         def _parse_organization_name(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -167,6 +164,15 @@ class TestOutSchema:
             return cast(Union[None, Unset, str], data)
 
         organization_name = _parse_organization_name(d.pop("organization_name", UNSET))
+
+        def _parse_additional_instructions(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        additional_instructions = _parse_additional_instructions(d.pop("additional_instructions", UNSET))
 
         def _parse_examples(data: object) -> Union[List["ExampleOutSchema"], None, Unset]:
             if data is None:
@@ -200,8 +206,8 @@ class TestOutSchema:
             updated_at=updated_at,
             test_system_prompt=test_system_prompt,
             test_policy=test_policy,
-            additional_instructions=additional_instructions,
             organization_name=organization_name,
+            additional_instructions=additional_instructions,
             examples=examples,
         )
 

@@ -9,6 +9,8 @@ from aymara_ai.types import (
     BaseTestResponse,
     JailbreakTestResponse,
     ListTestResponse,
+    NegativeExample,
+    PositiveExample,
     SafetyTestResponse,
     Status,
 )
@@ -20,6 +22,7 @@ from aymara_ai.utils.constants import (
     DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
     DEFAULT_TEST_NAME_LEN_MAX,
     MAX_ADDITIONAL_INSTRUCTIONS_LENGTH,
+    MAX_EXAMPLES_LENGTH,
 )
 
 
@@ -353,6 +356,12 @@ def test_validate_test_inputs_valid(aymara_client):
         10,
         models.TestType.SAFETY,
         additional_instructions="Valid additional instructions",
+        positive_examples=[
+            PositiveExample(question_text="Question 1", explanation="Explanation 1")
+        ],
+        negative_examples=[
+            NegativeExample(question_text="Question 2", explanation="Explanation 2")
+        ],
     )
     # If no exception is raised, the test passes
 
@@ -409,6 +418,23 @@ def test_validate_test_inputs_excessive_tokens(aymara_client):
             "en",
             10,
             models.TestType.SAFETY,
+        )
+
+
+def test_validate_test_inputs_excessive_examples(aymara_client):
+    with pytest.raises(ValueError, match="examples must be less than"):
+        aymara_client._validate_test_inputs(
+            "Valid Test Name",
+            "Valid student description",
+            "Don't allow any unsafe answers",
+            None,
+            "en",
+            10,
+            models.TestType.SAFETY,
+            positive_examples=[
+                PositiveExample(question_text="Question 1", explanation="Explanation 1")
+            ]
+            * (MAX_EXAMPLES_LENGTH + 1),
         )
 
 

@@ -17,12 +17,14 @@ from aymara_ai.generated.aymara_api_client.models.test_type import TestType
 from aymara_ai.types import (
     ListScoreRunResponse,
     ScoreRunResponse,
+    ScoringExample,
     Status,
     StudentAnswerInput,
 )
 from aymara_ai.utils.constants import (
     DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
     DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+    MAX_EXAMPLES_LENGTH,
     POLLING_INTERVAL,
 )
 
@@ -40,6 +42,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         test_type: TestType,
         student_answers: List[StudentAnswerInput],
         max_wait_time_secs: Optional[int] = None,
+        scoring_examples: Optional[List[ScoringExample]] = None,
     ) -> ScoreRunResponse:
         """
         Score a test synchronously.
@@ -48,6 +51,8 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         :type test_uuid: str
         :param student_answers: List of StudentAnswerInput objects containing student responses.
         :type student_answers: List[StudentAnswerInput]
+        :param scoring_examples: Optional list of examples to guide the scoring process.
+        :type scoring_examples: Optional[List[ScoringExample]]
         :return: Score response.
         :rtype: ScoreRunResponse
         """
@@ -62,6 +67,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             student_answers=student_answers,
             is_async=False,
             max_wait_time_secs=max_wait_time_secs,
+            scoring_examples=scoring_examples,
         )
 
     async def score_test_async(
@@ -70,6 +76,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         test_type: TestType,
         student_answers: List[StudentAnswerInput],
         max_wait_time_secs: Optional[int] = None,
+        scoring_examples: Optional[List[ScoringExample]] = None,
     ) -> ScoreRunResponse:
         """
         Score a test asynchronously.
@@ -78,6 +85,8 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         :type test_uuid: str
         :param student_answers: List of StudentAnswerInput objects containing student responses.
         :type student_answers: List[StudentAnswerInput]
+        :param scoring_examples: Optional list of examples to guide the scoring process.
+        :type scoring_examples: Optional[List[ScoringExample]]
         :return: Score response.
         :rtype: ScoreRunResponse
         """
@@ -91,6 +100,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             student_answers=student_answers,
             is_async=True,
             max_wait_time_secs=max_wait_time_secs,
+            scoring_examples=scoring_examples,
         )
 
     def _score_test(
@@ -99,8 +109,12 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         student_answers: List[StudentAnswerInput],
         is_async: bool,
         max_wait_time_secs: Optional[int] = None,
+        scoring_examples: Optional[List[ScoringExample]] = None,
     ) -> Union[ScoreRunResponse, Coroutine[ScoreRunResponse, None, None]]:
         self._validate_student_answers(student_answers)
+
+        if scoring_examples is not None:
+            self._validate_scoring_examples(scoring_examples)
 
         score_data = models.ScoreRunInSchema(
             test_uuid=test_uuid,
@@ -108,6 +122,11 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
                 StudentAnswerInput.to_answer_in_schema(student_answer)
                 for student_answer in student_answers
             ],
+            examples=[
+                example.to_scoring_example_in_schema() for example in scoring_examples
+            ]
+            if scoring_examples
+            else None,
         )
 
         if is_async:
@@ -512,6 +531,20 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             ]
             self.logger.error(f"Invalid answers: {non_student_answers}")
             raise ValueError("All items in student answers must be StudentAnswerInput.")
+
+    def _validate_scoring_examples(self, scoring_examples: List[ScoringExample]):
+        if len(scoring_examples) > MAX_EXAMPLES_LENGTH:
+            raise ValueError(
+                f"Scoring examples must be less than {MAX_EXAMPLES_LENGTH}."
+            )
+        if not all(isinstance(example, ScoringExample) for example in scoring_examples):
+            non_scoring_examples = [
+                example
+                for example in scoring_examples
+                if not isinstance(example, ScoringExample)
+            ]
+            self.logger.error(f"Invalid examples: {non_scoring_examples}")
+            raise ValueError("All items in scoring examples must be ScoringExample.")
 
     def delete_score_run(self, score_run_uuid: str) -> None:
         """
