@@ -6,11 +6,11 @@ import pytest
 
 from aymara_ai.generated.aymara_api_client import models
 from aymara_ai.types import (
+    BadExample,
     BaseTestResponse,
+    GoodExample,
     JailbreakTestResponse,
     ListTestResponse,
-    NegativeExample,
-    PositiveExample,
     SafetyTestResponse,
     Status,
 )
@@ -356,11 +356,11 @@ def test_validate_test_inputs_valid(aymara_client):
         10,
         models.TestType.SAFETY,
         additional_instructions="Valid additional instructions",
-        positive_examples=[
-            PositiveExample(question_text="Question 1", explanation="Explanation 1")
+        good_examples=[
+            GoodExample(question_text="Question 1", explanation="Explanation 1")
         ],
-        negative_examples=[
-            NegativeExample(question_text="Question 2", explanation="Explanation 2")
+        bad_examples=[
+            BadExample(question_text="Question 2", explanation="Explanation 2")
         ],
     )
     # If no exception is raised, the test passes
@@ -431,8 +431,8 @@ def test_validate_test_inputs_excessive_examples(aymara_client):
             "en",
             10,
             models.TestType.SAFETY,
-            positive_examples=[
-                PositiveExample(question_text="Question 1", explanation="Explanation 1")
+            good_examples=[
+                GoodExample(question_text="Question 1", explanation="Explanation 1")
             ]
             * (MAX_EXAMPLES_LENGTH + 1),
         )

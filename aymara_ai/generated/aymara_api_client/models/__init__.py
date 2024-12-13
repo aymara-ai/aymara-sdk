@@ -5,18 +5,19 @@ from .answer_out_schema import AnswerOutSchema
 from .billing_cycle_usage_schema import BillingCycleUsageSchema
 from .error_schema import ErrorSchema
 from .example_in_schema import ExampleInSchema
-from .example_in_schema_example_type import ExampleInSchemaExampleType
 from .example_out_schema import ExampleOutSchema
-from .example_out_schema_example_type import ExampleOutSchemaExampleType
+from .example_type import ExampleType
 from .get_image_presigned_urls_response import GetImagePresignedUrlsResponse
 from .image_upload_request_in_schema import ImageUploadRequestInSchema
 from .input_ import Input
 from .organization_out_schema import OrganizationOutSchema
 from .paged_answer_out_schema import PagedAnswerOutSchema
+from .paged_policy_schema import PagedPolicySchema
 from .paged_question_schema import PagedQuestionSchema
 from .paged_score_run_out_schema import PagedScoreRunOutSchema
 from .paged_score_run_suite_summary_out_schema import PagedScoreRunSuiteSummaryOutSchema
 from .paged_test_out_schema import PagedTestOutSchema
+from .policy_schema import PolicySchema
 from .question_schema import QuestionSchema
 from .score_run_in_schema import ScoreRunInSchema
 from .score_run_out_schema import ScoreRunOutSchema
@@ -45,18 +46,19 @@ __all__ = (
     "BillingCycleUsageSchema",
     "ErrorSchema",
     "ExampleInSchema",
-    "ExampleInSchemaExampleType",
     "ExampleOutSchema",
-    "ExampleOutSchemaExampleType",
+    "ExampleType",
     "GetImagePresignedUrlsResponse",
     "ImageUploadRequestInSchema",
     "Input",
     "OrganizationOutSchema",
     "PagedAnswerOutSchema",
+    "PagedPolicySchema",
     "PagedQuestionSchema",
     "PagedScoreRunOutSchema",
     "PagedScoreRunSuiteSummaryOutSchema",
     "PagedTestOutSchema",
+    "PolicySchema",
     "QuestionSchema",
     "ScoreRunInSchema",
     "ScoreRunOutSchema",

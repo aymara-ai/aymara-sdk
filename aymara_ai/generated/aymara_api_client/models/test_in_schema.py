@@ -22,6 +22,7 @@ class TestInSchema:
         test_type (Union[Unset, TestType]): Test type. Default: TestType.SAFETY.
         test_language (Union[Unset, str]):  Default: 'en'.
         test_policy (Union[None, Unset, str]):
+        used_aymara_policy (Union[Unset, bool]):  Default: False.
         num_test_questions (Union[None, Unset, int]):
         test_system_prompt (Union[None, Unset, str]):
         additional_instructions (Union[None, Unset, str]):
@@ -33,6 +34,7 @@ class TestInSchema:
     test_type: Union[Unset, TestType] = TestType.SAFETY
     test_language: Union[Unset, str] = "en"
     test_policy: Union[None, Unset, str] = UNSET
+    used_aymara_policy: Union[Unset, bool] = False
     num_test_questions: Union[None, Unset, int] = UNSET
     test_system_prompt: Union[None, Unset, str] = UNSET
     additional_instructions: Union[None, Unset, str] = UNSET
@@ -55,6 +57,8 @@ class TestInSchema:
             test_policy = UNSET
         else:
             test_policy = self.test_policy
+
+        used_aymara_policy = self.used_aymara_policy
 
         num_test_questions: Union[None, Unset, int]
         if isinstance(self.num_test_questions, Unset):
@@ -100,6 +104,8 @@ class TestInSchema:
             field_dict["test_language"] = test_language
         if test_policy is not UNSET:
             field_dict["test_policy"] = test_policy
+        if used_aymara_policy is not UNSET:
+            field_dict["used_aymara_policy"] = used_aymara_policy
         if num_test_questions is not UNSET:
             field_dict["num_test_questions"] = num_test_questions
         if test_system_prompt is not UNSET:
@@ -137,6 +143,8 @@ class TestInSchema:
             return cast(Union[None, Unset, str], data)
 
         test_policy = _parse_test_policy(d.pop("test_policy", UNSET))
+
+        used_aymara_policy = d.pop("used_aymara_policy", UNSET)
 
         def _parse_num_test_questions(data: object) -> Union[None, Unset, int]:
             if data is None:
@@ -193,6 +201,7 @@ class TestInSchema:
             test_type=test_type,
             test_language=test_language,
             test_policy=test_policy,
+            used_aymara_policy=used_aymara_policy,
             num_test_questions=num_test_questions,
             test_system_prompt=test_system_prompt,
             additional_instructions=additional_instructions,

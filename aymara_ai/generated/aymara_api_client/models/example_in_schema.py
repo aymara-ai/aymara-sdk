@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Type, TypeVar, Union, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..models.example_in_schema_example_type import ExampleInSchemaExampleType
+from ..models.example_type import ExampleType
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="ExampleInSchema")
@@ -13,20 +13,20 @@ T = TypeVar("T", bound="ExampleInSchema")
 class ExampleInSchema:
     """
     Attributes:
-        question_text (str):
-        example_type (ExampleInSchemaExampleType):
+        example_type (ExampleType):
+        example_text (str):
         explanation (Union[None, Unset, str]):
     """
 
-    question_text: str
-    example_type: ExampleInSchemaExampleType
+    example_type: ExampleType
+    example_text: str
     explanation: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        question_text = self.question_text
-
         example_type = self.example_type.value
+
+        example_text = self.example_text
 
         explanation: Union[None, Unset, str]
         if isinstance(self.explanation, Unset):
@@ -38,8 +38,8 @@ class ExampleInSchema:
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "question_text": question_text,
                 "example_type": example_type,
+                "example_text": example_text,
             }
         )
         if explanation is not UNSET:
@@ -50,9 +50,9 @@ class ExampleInSchema:
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         d = src_dict.copy()
-        question_text = d.pop("question_text")
+        example_type = ExampleType(d.pop("example_type"))
 
-        example_type = ExampleInSchemaExampleType(d.pop("example_type"))
+        example_text = d.pop("example_text")
 
         def _parse_explanation(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -64,8 +64,8 @@ class ExampleInSchema:
         explanation = _parse_explanation(d.pop("explanation", UNSET))
 
         example_in_schema = cls(
-            question_text=question_text,
             example_type=example_type,
+            example_text=example_text,
             explanation=explanation,
         )
 

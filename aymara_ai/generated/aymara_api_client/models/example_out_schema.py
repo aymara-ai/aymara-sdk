@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Type, TypeVar, Union, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..models.example_out_schema_example_type import ExampleOutSchemaExampleType
+from ..models.example_type import ExampleType
 from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="ExampleOutSchema")
@@ -14,21 +14,21 @@ class ExampleOutSchema:
     """
     Attributes:
         example_uuid (str):
-        question_text (str):
-        example_type (ExampleOutSchemaExampleType):
+        example_text (str):
+        example_type (ExampleType):
         explanation (Union[None, Unset, str]):
     """
 
     example_uuid: str
-    question_text: str
-    example_type: ExampleOutSchemaExampleType
+    example_text: str
+    example_type: ExampleType
     explanation: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         example_uuid = self.example_uuid
 
-        question_text = self.question_text
+        example_text = self.example_text
 
         example_type = self.example_type.value
 
@@ -43,7 +43,7 @@ class ExampleOutSchema:
         field_dict.update(
             {
                 "example_uuid": example_uuid,
-                "question_text": question_text,
+                "example_text": example_text,
                 "example_type": example_type,
             }
         )
@@ -57,9 +57,9 @@ class ExampleOutSchema:
         d = src_dict.copy()
         example_uuid = d.pop("example_uuid")
 
-        question_text = d.pop("question_text")
+        example_text = d.pop("example_text")
 
-        example_type = ExampleOutSchemaExampleType(d.pop("example_type"))
+        example_type = ExampleType(d.pop("example_type"))
 
         def _parse_explanation(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -72,7 +72,7 @@ class ExampleOutSchema:
 
         example_out_schema = cls(
             example_uuid=example_uuid,
-            question_text=question_text,
+            example_text=example_text,
             example_type=example_type,
             explanation=explanation,
         )

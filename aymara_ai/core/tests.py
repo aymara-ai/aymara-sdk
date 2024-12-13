@@ -13,16 +13,15 @@ from aymara_ai.generated.aymara_api_client.api.tests import (
 )
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
 from aymara_ai.types import (
+    BadExample,
     BaseTestResponse,
+    GoodExample,
     JailbreakTestResponse,
     ListTestResponse,
-    NegativeExample,
-    PositiveExample,
     SafetyTestResponse,
     Status,
 )
 from aymara_ai.utils.constants import (
-    AYMARA_TEST_POLICY_PREFIX,
     DEFAULT_CHAR_TO_TOKEN_MULTIPLIER,
     DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
     DEFAULT_MAX_TOKENS,
@@ -37,7 +36,6 @@ from aymara_ai.utils.constants import (
     MAX_EXAMPLES_LENGTH,
     POLLING_INTERVAL,
     SUPPORTED_LANGUAGES,
-    AymaraTestPolicy,
 )
 
 
@@ -47,13 +45,13 @@ class TestMixin(AymaraAIProtocol):
         self,
         test_name: str,
         student_description: str,
-        test_policy: Union[str, AymaraTestPolicy],
+        test_policy: str,
         test_language: str = DEFAULT_TEST_LANGUAGE,
         num_test_questions: int = DEFAULT_NUM_QUESTIONS,
         max_wait_time_secs: int = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
         additional_instructions: Optional[str] = None,
-        positive_examples: Optional[List[PositiveExample]] = None,
-        negative_examples: Optional[List[NegativeExample]] = None,
+        good_examples: Optional[List[GoodExample]] = None,
+        bad_examples: Optional[List[BadExample]] = None,
     ) -> SafetyTestResponse:
         """
         Create an Aymara safety test synchronously and wait for completion.
@@ -72,10 +70,10 @@ class TestMixin(AymaraAIProtocol):
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
         :type additional_instructions: str, optional
-        :param positive_examples: Optional list of positive examples to guide question generation
-        :type positive_examples: List[PositiveExample], optional
-        :param negative_examples: Optional list of negative examples to guide question generation
-        :type negative_examples: List[NegativeExample], optional
+        :param good_examples: Optional list of good examples to guide question generation
+        :type good_examples: List[GoodExample], optional
+        :param bad_examples: Optional list of bad examples to guide question generation
+        :type bad_examples: List[BadExample], optional
         :return: Test response containing test details and generated questions.
         :rtype: SafetyTestResponse
 
@@ -94,21 +92,21 @@ class TestMixin(AymaraAIProtocol):
             test_type=TestType.SAFETY,
             max_wait_time_secs=max_wait_time_secs,
             additional_instructions=additional_instructions,
-            positive_examples=positive_examples,
-            negative_examples=negative_examples,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
         )
 
     async def create_safety_test_async(
         self,
         test_name: str,
         student_description: str,
-        test_policy: Union[str, AymaraTestPolicy],
+        test_policy: str,
         test_language: str = DEFAULT_TEST_LANGUAGE,
         num_test_questions: int = DEFAULT_NUM_QUESTIONS,
         max_wait_time_secs: Optional[int] = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
         additional_instructions: Optional[str] = None,
-        positive_examples: Optional[List[PositiveExample]] = None,
-        negative_examples: Optional[List[NegativeExample]] = None,
+        good_examples: Optional[List[GoodExample]] = None,
+        bad_examples: Optional[List[BadExample]] = None,
     ) -> SafetyTestResponse:
         """
         Create an Aymara safety test asynchronously and wait for completion.
@@ -127,10 +125,10 @@ class TestMixin(AymaraAIProtocol):
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
         :type additional_instructions: str, optional
-        :param positive_examples: Optional list of positive examples to guide question generation
-        :type positive_examples: List[PositiveExample], optional
-        :param negative_examples: Optional list of negative examples to guide question generation
-        :type negative_examples: List[NegativeExample], optional
+        :param good_examples: Optional list of good examples to guide question generation
+        :type good_examples: List[GoodExample], optional
+        :param bad_examples: Optional list of bad examples to guide question generation
+        :type bad_examples: List[BadExample], optional
         :return: Test response containing test details and generated questions.
         :rtype: SafetyTestResponse
 
@@ -149,8 +147,8 @@ class TestMixin(AymaraAIProtocol):
             test_type=TestType.SAFETY,
             max_wait_time_secs=max_wait_time_secs,
             additional_instructions=additional_instructions,
-            positive_examples=positive_examples,
-            negative_examples=negative_examples,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
         )
 
     # Create Jailbreak Test Methods
@@ -162,8 +160,8 @@ class TestMixin(AymaraAIProtocol):
         test_language: str = DEFAULT_TEST_LANGUAGE,
         max_wait_time_secs: int = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
         additional_instructions: Optional[str] = None,
-        positive_examples: Optional[List[PositiveExample]] = None,
-        negative_examples: Optional[List[NegativeExample]] = None,
+        good_examples: Optional[List[GoodExample]] = None,
+        bad_examples: Optional[List[BadExample]] = None,
     ) -> JailbreakTestResponse:
         """
         Create an Aymara jailbreak test synchronously and wait for completion.
@@ -180,10 +178,10 @@ class TestMixin(AymaraAIProtocol):
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
         :type additional_instructions: str, optional
-        :param positive_examples: Optional list of positive examples to guide question generation
-        :type positive_examples: List[PositiveExample], optional
-        :param negative_examples: Optional list of negative examples to guide question generation
-        :type negative_examples: List[NegativeExample], optional
+        :param good_examples: Optional list of good examples to guide question generation
+        :type good_examples: List[GoodExample], optional
+        :param bad_examples: Optional list of bad examples to guide question generation
+        :type bad_examples: List[BadExample], optional
         :return: Test response containing test details and generated questions.
         :rtype: JailbreakTestResponse
 
@@ -202,8 +200,8 @@ class TestMixin(AymaraAIProtocol):
             num_test_questions=None,
             max_wait_time_secs=max_wait_time_secs,
             additional_instructions=additional_instructions,
-            positive_examples=positive_examples,
-            negative_examples=negative_examples,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
         )
 
     async def create_jailbreak_test_async(
@@ -214,8 +212,8 @@ class TestMixin(AymaraAIProtocol):
         test_language: str = DEFAULT_TEST_LANGUAGE,
         max_wait_time_secs: int = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
         additional_instructions: Optional[str] = None,
-        positive_examples: Optional[List[PositiveExample]] = None,
-        negative_examples: Optional[List[NegativeExample]] = None,
+        good_examples: Optional[List[GoodExample]] = None,
+        bad_examples: Optional[List[BadExample]] = None,
     ) -> JailbreakTestResponse:
         """
         Create an Aymara jailbreak test asynchronously and wait for completion.
@@ -232,10 +230,10 @@ class TestMixin(AymaraAIProtocol):
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
         :type additional_instructions: str, optional
-        :param positive_examples: Optional list of positive examples to guide question generation
-        :type positive_examples: List[PositiveExample], optional
-        :param negative_examples: Optional list of negative examples to guide question generation
-        :type negative_examples: List[NegativeExample], optional
+        :param good_examples: Optional list of good examples to guide question generation
+        :type good_examples: List[GoodExample], optional
+        :param bad_examples: Optional list of bad examples to guide question generation
+        :type bad_examples: List[BadExample], optional
         :return: Test response containing test details and generated questions.
         :rtype: JailbreakTestResponse
 
@@ -254,21 +252,21 @@ class TestMixin(AymaraAIProtocol):
             num_test_questions=None,
             max_wait_time_secs=max_wait_time_secs,
             additional_instructions=additional_instructions,
-            positive_examples=positive_examples,
-            negative_examples=negative_examples,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
         )
 
     def create_image_safety_test(
         self,
         test_name: str,
         student_description: str,
-        test_policy: Union[str, AymaraTestPolicy],
+        test_policy: str,
         test_language: str = DEFAULT_TEST_LANGUAGE,
         num_test_questions: int = DEFAULT_NUM_QUESTIONS,
         max_wait_time_secs: Optional[int] = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
         additional_instructions: Optional[str] = None,
-        positive_examples: Optional[List[PositiveExample]] = None,
-        negative_examples: Optional[List[NegativeExample]] = None,
+        good_examples: Optional[List[GoodExample]] = None,
+        bad_examples: Optional[List[BadExample]] = None,
     ):
         """
         Create an Aymara image safety test synchronously and wait for completion.
@@ -287,10 +285,10 @@ class TestMixin(AymaraAIProtocol):
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
         :type additional_instructions: str, optional
-        :param positive_examples: Optional list of positive examples to guide question generation
-        :type positive_examples: List[PositiveExample], optional
-        :param negative_examples: Optional list of negative examples to guide question generation
-        :type negative_examples: List[NegativeExample], optional
+        :param good_examples: Optional list of good examples to guide question generation
+        :type good_examples: List[GoodExample], optional
+        :param bad_examples: Optional list of bad examples to guide question generation
+        :type bad_examples: List[BadExample], optional
         :return: Test response containing test details and generated questions.
         :rtype: SafetyTestResponse
 
@@ -309,21 +307,21 @@ class TestMixin(AymaraAIProtocol):
             num_test_questions=num_test_questions,
             max_wait_time_secs=max_wait_time_secs,
             additional_instructions=additional_instructions,
-            positive_examples=positive_examples,
-            negative_examples=negative_examples,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
         )
 
     async def create_image_safety_test_async(
         self,
         test_name: str,
         student_description: str,
-        test_policy: Union[str, AymaraTestPolicy],
+        test_policy: str,
         test_language: str = DEFAULT_TEST_LANGUAGE,
         num_test_questions: int = DEFAULT_NUM_QUESTIONS,
         max_wait_time_secs: Optional[int] = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
         additional_instructions: Optional[str] = None,
-        positive_examples: Optional[List[PositiveExample]] = None,
-        negative_examples: Optional[List[NegativeExample]] = None,
+        good_examples: Optional[List[GoodExample]] = None,
+        bad_examples: Optional[List[BadExample]] = None,
     ):
         """
         Create an Aymara image safety test asynchronously and wait for completion.
@@ -342,10 +340,10 @@ class TestMixin(AymaraAIProtocol):
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
         :type additional_instructions: str, optional
-        :param positive_examples: Optional list of positive examples to guide question generation
-        :type positive_examples: List[PositiveExample], optional
-        :param negative_examples: Optional list of negative examples to guide question generation
-        :type negative_examples: List[NegativeExample], optional
+        :param good_examples: Optional list of good examples to guide question generation
+        :type good_examples: List[GoodExample], optional
+        :param bad_examples: Optional list of bad examples to guide question generation
+        :type bad_examples: List[BadExample], optional
         :return: Test response containing test details and generated questions.
         :rtype: SafetyTestResponse
 
@@ -364,8 +362,8 @@ class TestMixin(AymaraAIProtocol):
             num_test_questions=num_test_questions,
             max_wait_time_secs=max_wait_time_secs,
             additional_instructions=additional_instructions,
-            positive_examples=positive_examples,
-            negative_examples=negative_examples,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
         )
 
     def _create_test(
@@ -376,22 +374,13 @@ class TestMixin(AymaraAIProtocol):
         test_type: TestType,
         test_language: str,
         test_system_prompt: Optional[str],
-        test_policy: Optional[Union[str, AymaraTestPolicy]],
+        test_policy: Optional[str],
         num_test_questions: Optional[int],
         max_wait_time_secs: Optional[int],
         additional_instructions: Optional[str] = None,
-        positive_examples: Optional[List[PositiveExample]] = None,
-        negative_examples: Optional[List[NegativeExample]] = None,
+        good_examples: Optional[List[GoodExample]] = None,
+        bad_examples: Optional[List[BadExample]] = None,
     ) -> Union[BaseTestResponse, Coroutine[BaseTestResponse, None, None]]:
-        # Convert AymaraTestPolicy to string and prefix with "aymara_test_policy:" for safety tests
-        if isinstance(test_policy, AymaraTestPolicy):
-            if test_type == TestType.SAFETY:
-                test_policy = f"{AYMARA_TEST_POLICY_PREFIX}{test_policy.value}"
-            else:
-                raise ValueError(
-                    "test_policy must be a string for image safety tests or jailbreak tests"
-                )
-
         self._validate_test_inputs(
             test_name=test_name,
             student_description=student_description,
@@ -401,15 +390,15 @@ class TestMixin(AymaraAIProtocol):
             num_test_questions=num_test_questions,
             test_type=test_type,
             additional_instructions=additional_instructions,
-            positive_examples=positive_examples,
-            negative_examples=negative_examples,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
         )
 
         examples = []
-        if positive_examples:
-            examples.extend([ex.to_example_in_schema() for ex in positive_examples])
-        if negative_examples:
-            examples.extend([ex.to_example_in_schema() for ex in negative_examples])
+        if good_examples:
+            examples.extend([ex.to_example_in_schema() for ex in good_examples])
+        if bad_examples:
+            examples.extend([ex.to_example_in_schema() for ex in bad_examples])
 
         test_data = models.TestInSchema(
             test_name=test_name,
@@ -442,8 +431,8 @@ class TestMixin(AymaraAIProtocol):
         num_test_questions: Optional[int],
         test_type: TestType,
         additional_instructions: Optional[str] = None,
-        positive_examples: Optional[List[PositiveExample]] = None,
-        negative_examples: Optional[List[NegativeExample]] = None,
+        good_examples: Optional[List[GoodExample]] = None,
+        bad_examples: Optional[List[BadExample]] = None,
     ) -> None:
         if not student_description:
             raise ValueError("student_description is required")
@@ -510,15 +499,15 @@ class TestMixin(AymaraAIProtocol):
                     f"additional_instructions must be less than {MAX_ADDITIONAL_INSTRUCTIONS_LENGTH} characters"
                 )
 
-        if positive_examples is not None or negative_examples is not None:
+        if good_examples is not None or bad_examples is not None:
             # Validate example types separately
-            for example in positive_examples or negative_examples:
-                if not isinstance(example, (PositiveExample, NegativeExample)):
+            for example in good_examples or bad_examples:
+                if not isinstance(example, (GoodExample, BadExample)):
                     raise ValueError(
                         "examples must be instances of PositiveExample or NegativeExample"
                     )
 
-            if len(positive_examples or negative_examples) > MAX_EXAMPLES_LENGTH:
+            if len(good_examples or bad_examples) > MAX_EXAMPLES_LENGTH:
                 raise ValueError(
                     f"examples must be less than {MAX_EXAMPLES_LENGTH} examples"
                 )

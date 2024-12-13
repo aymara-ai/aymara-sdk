@@ -15,6 +15,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
+from aymara_ai.core.policies import PolicyMixin
 from aymara_ai.core.protocols import AymaraAIProtocol
 from aymara_ai.core.score_runs import ScoreRunMixin
 from aymara_ai.core.summaries import SummaryMixin
@@ -33,6 +34,7 @@ class AymaraAI(
     ScoreRunMixin,
     SummaryMixin,
     UploadMixin,
+    PolicyMixin,
     AymaraAIProtocol,
 ):
     """
@@ -70,6 +72,14 @@ class AymaraAI(
             headers={"x-api-key": api_key},
             raise_on_unexpected_status=True,
         )
+
+        # Initialize all parent classes
+        TestMixin.__init__(self)
+        ScoreRunMixin.__init__(self)
+        SummaryMixin.__init__(self)
+        UploadMixin.__init__(self)
+        PolicyMixin.__init__(self)
+
         self.logger.debug(f"AymaraAI client initialized with base URL: {base_url}")
 
     def __enter__(self):
