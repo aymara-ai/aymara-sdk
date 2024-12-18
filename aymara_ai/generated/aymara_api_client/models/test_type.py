@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class TestType(str, Enum):
-    HALLUCINATION = "hallucination"
+    ACCURACY = "accuracy"
     IMAGE_SAFETY = "image_safety"
     JAILBREAK = "jailbreak"
     SAFETY = "safety"

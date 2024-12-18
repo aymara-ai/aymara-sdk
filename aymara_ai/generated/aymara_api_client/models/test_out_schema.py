@@ -27,9 +27,10 @@ class TestOutSchema:
         num_test_questions (Union[None, int]):
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
-        test_system_prompt (Union[None, str]):
-        test_policy (Union[None, str]):
         organization_name (Union[None, Unset, str]):
+        test_system_prompt (Union[None, Unset, str]):
+        test_policy (Union[None, Unset, str]):
+        knowledge_base (Union[None, Unset, str]):
         additional_instructions (Union[None, Unset, str]):
         examples (Union[List['ExampleOutSchema'], None, Unset]):
     """
@@ -41,9 +42,10 @@ class TestOutSchema:
     num_test_questions: Union[None, int]
     created_at: datetime.datetime
     updated_at: datetime.datetime
-    test_system_prompt: Union[None, str]
-    test_policy: Union[None, str]
     organization_name: Union[None, Unset, str] = UNSET
+    test_system_prompt: Union[None, Unset, str] = UNSET
+    test_policy: Union[None, Unset, str] = UNSET
+    knowledge_base: Union[None, Unset, str] = UNSET
     additional_instructions: Union[None, Unset, str] = UNSET
     examples: Union[List["ExampleOutSchema"], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -64,17 +66,29 @@ class TestOutSchema:
 
         updated_at = self.updated_at.isoformat()
 
-        test_system_prompt: Union[None, str]
-        test_system_prompt = self.test_system_prompt
-
-        test_policy: Union[None, str]
-        test_policy = self.test_policy
-
         organization_name: Union[None, Unset, str]
         if isinstance(self.organization_name, Unset):
             organization_name = UNSET
         else:
             organization_name = self.organization_name
+
+        test_system_prompt: Union[None, Unset, str]
+        if isinstance(self.test_system_prompt, Unset):
+            test_system_prompt = UNSET
+        else:
+            test_system_prompt = self.test_system_prompt
+
+        test_policy: Union[None, Unset, str]
+        if isinstance(self.test_policy, Unset):
+            test_policy = UNSET
+        else:
+            test_policy = self.test_policy
+
+        knowledge_base: Union[None, Unset, str]
+        if isinstance(self.knowledge_base, Unset):
+            knowledge_base = UNSET
+        else:
+            knowledge_base = self.knowledge_base
 
         additional_instructions: Union[None, Unset, str]
         if isinstance(self.additional_instructions, Unset):
@@ -105,12 +119,16 @@ class TestOutSchema:
                 "num_test_questions": num_test_questions,
                 "created_at": created_at,
                 "updated_at": updated_at,
-                "test_system_prompt": test_system_prompt,
-                "test_policy": test_policy,
             }
         )
         if organization_name is not UNSET:
             field_dict["organization_name"] = organization_name
+        if test_system_prompt is not UNSET:
+            field_dict["test_system_prompt"] = test_system_prompt
+        if test_policy is not UNSET:
+            field_dict["test_policy"] = test_policy
+        if knowledge_base is not UNSET:
+            field_dict["knowledge_base"] = knowledge_base
         if additional_instructions is not UNSET:
             field_dict["additional_instructions"] = additional_instructions
         if examples is not UNSET:
@@ -142,20 +160,6 @@ class TestOutSchema:
 
         updated_at = isoparse(d.pop("updated_at"))
 
-        def _parse_test_system_prompt(data: object) -> Union[None, str]:
-            if data is None:
-                return data
-            return cast(Union[None, str], data)
-
-        test_system_prompt = _parse_test_system_prompt(d.pop("test_system_prompt"))
-
-        def _parse_test_policy(data: object) -> Union[None, str]:
-            if data is None:
-                return data
-            return cast(Union[None, str], data)
-
-        test_policy = _parse_test_policy(d.pop("test_policy"))
-
         def _parse_organization_name(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -164,6 +168,33 @@ class TestOutSchema:
             return cast(Union[None, Unset, str], data)
 
         organization_name = _parse_organization_name(d.pop("organization_name", UNSET))
+
+        def _parse_test_system_prompt(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        test_system_prompt = _parse_test_system_prompt(d.pop("test_system_prompt", UNSET))
+
+        def _parse_test_policy(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        test_policy = _parse_test_policy(d.pop("test_policy", UNSET))
+
+        def _parse_knowledge_base(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        knowledge_base = _parse_knowledge_base(d.pop("knowledge_base", UNSET))
 
         def _parse_additional_instructions(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -204,9 +235,10 @@ class TestOutSchema:
             num_test_questions=num_test_questions,
             created_at=created_at,
             updated_at=updated_at,
+            organization_name=organization_name,
             test_system_prompt=test_system_prompt,
             test_policy=test_policy,
-            organization_name=organization_name,
+            knowledge_base=knowledge_base,
             additional_instructions=additional_instructions,
             examples=examples,
         )

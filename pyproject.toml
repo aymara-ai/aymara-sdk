@@ -32,6 +32,7 @@ dependencies = [
     "sphinxcontrib-googleanalytics>=0.4",
     "boto3>=1.35.66",
     "openai>=1.55.0",
+    "tiktoken>=0.8.0",
 ]
 license = {file = "LICENSE"}
 keywords = ["ai", "alignment", "testing"]

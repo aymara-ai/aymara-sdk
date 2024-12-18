@@ -6,6 +6,7 @@ import pytest
 
 from aymara_ai.core.sdk import AymaraAI
 from aymara_ai.types import (
+    AccuracyTestResponse,
     BadExample,
     BaseTestResponse,
     GoodExample,
@@ -79,6 +80,15 @@ class TestTestMixin:
                     explanation="This doesn't test any safety or ethical concerns.",
                 ),
             ],
+        }
+
+    @pytest.fixture
+    def accuracy_test_data(self):
+        return {
+            "test_name": "Accuracy Integration Test",
+            "student_description": "An AI assistant for medical knowledge",
+            "knowledge_base": "The human heart has four chambers. The upper chambers are called atria, and the lower chambers are called ventricles.",
+            "num_test_questions": 5,
         }
 
     @pytest.mark.parametrize(
@@ -701,3 +711,100 @@ class TestTestMixin:
         )
         with pytest.raises(ValueError):
             await aymara_client.create_image_safety_test_async(**image_safety_test_data)
+
+    def test_create_accuracy_test_sync(self, aymara_client, accuracy_test_data):
+        response = aymara_client.create_accuracy_test(**accuracy_test_data)
+        assert isinstance(response, AccuracyTestResponse)
+        assert response.test_status == Status.COMPLETED
+        assert len(response.questions) == accuracy_test_data["num_test_questions"]
+        assert response.knowledge_base == accuracy_test_data["knowledge_base"]
+
+    @pytest.mark.asyncio
+    async def test_create_accuracy_test_async(self, aymara_client, accuracy_test_data):
+        response = await aymara_client.create_accuracy_test_async(**accuracy_test_data)
+        assert isinstance(response, AccuracyTestResponse)
+        assert response.test_status == Status.COMPLETED
+        assert len(response.questions) == accuracy_test_data["num_test_questions"]
+        assert response.knowledge_base == accuracy_test_data["knowledge_base"]
+
+    @pytest.mark.parametrize(
+        "num_test_questions",
+        [DEFAULT_NUM_QUESTIONS_MIN, 10, 25, DEFAULT_NUM_QUESTIONS_MAX],
+    )
+    def test_create_accuracy_test_sync_different_question_counts(
+        self, aymara_client, accuracy_test_data, num_test_questions
+    ):
+        accuracy_test_data["num_test_questions"] = num_test_questions
+        response = aymara_client.create_accuracy_test(**accuracy_test_data)
+        assert isinstance(response, AccuracyTestResponse)
+        assert response.test_status == Status.COMPLETED
+        assert len(response.questions) == num_test_questions
+
+    def test_create_accuracy_test_with_examples(
+        self, aymara_client, accuracy_test_data, example_data
+    ):
+        accuracy_test_data.update(example_data)
+        response = aymara_client.create_accuracy_test(**accuracy_test_data)
+        assert isinstance(response, AccuracyTestResponse)
+        assert response.test_status == Status.COMPLETED
+        assert len(response.questions) == accuracy_test_data["num_test_questions"]
+        assert len(response.good_examples) == len(example_data["good_examples"])
+        assert len(response.bad_examples) == len(example_data["bad_examples"])
+
+    async def test_create_accuracy_test_async_with_examples(
+        self, aymara_client, accuracy_test_data, example_data
+    ):
+        accuracy_test_data.update(example_data)
+        response = await aymara_client.create_accuracy_test_async(**accuracy_test_data)
+        assert isinstance(response, AccuracyTestResponse)
+        assert response.test_status == Status.COMPLETED
+        assert len(response.questions) == accuracy_test_data["num_test_questions"]
+        assert len(response.good_examples) == len(example_data["good_examples"])
+        assert len(response.bad_examples) == len(example_data["bad_examples"])
+
+    def test_create_accuracy_test_timeout(self, aymara_client, accuracy_test_data):
+        response = aymara_client.create_accuracy_test(
+            **accuracy_test_data, max_wait_time_secs=0
+        )
+        assert response.test_status == Status.FAILED
+        assert response.failure_reason == "Test creation timed out"
+
+    async def test_create_accuracy_test_async_timeout(
+        self, aymara_client, accuracy_test_data
+    ):
+        response = await aymara_client.create_accuracy_test_async(
+            **accuracy_test_data, max_wait_time_secs=0
+        )
+        assert response.test_status == Status.FAILED
+        assert response.failure_reason == "Test creation timed out"
+
+    @pytest.mark.parametrize(
+        "invalid_input",
+        [
+            {"test_name": "a" * (DEFAULT_TEST_NAME_LEN_MAX + 1)},  # Too long test name
+            {"test_name": ""},  # Empty test name
+            {"num_test_questions": DEFAULT_NUM_QUESTIONS_MIN - 1},  # Too few questions
+            {"num_test_questions": DEFAULT_NUM_QUESTIONS_MAX + 1},  # Too many questions
+            {"knowledge_base": None},  # Missing knowledge base
+            {"test_language": "invalid_language"},  # Invalid language
+            {"student_description": ""},  # Empty student description
+        ],
+    )
+    def test_create_accuracy_test_invalid_inputs(
+        self, aymara_client, accuracy_test_data, invalid_input
+    ):
+        invalid_data = {**accuracy_test_data, **invalid_input}
+        with pytest.raises(ValueError):
+            aymara_client.create_accuracy_test(**invalid_data)
+
+    def test_free_user_cannot_create_accuracy_test(
+        self, free_aymara_client, accuracy_test_data
+    ):
+        with pytest.raises(ValueError):
+            free_aymara_client.create_accuracy_test(**accuracy_test_data)
+
+    async def test_free_user_cannot_create_accuracy_test_async(
+        self, free_aymara_client, accuracy_test_data
+    ):
+        with pytest.raises(ValueError):
+            await free_aymara_client.create_accuracy_test_async(**accuracy_test_data)

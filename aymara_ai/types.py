@@ -370,6 +370,10 @@ class BaseTestResponse(BaseModel):
             return JailbreakTestResponse(
                 **base_attributes, test_system_prompt=test.test_system_prompt
             )
+        elif test.test_type == TestType.ACCURACY:
+            return AccuracyTestResponse(
+                **base_attributes, knowledge_base=test.knowledge_base
+            )
         else:
             raise ValueError(f"Unsupported test type: {test.test_type}")
 
@@ -389,6 +393,16 @@ class JailbreakTestResponse(BaseTestResponse):
 
     test_system_prompt: Annotated[
         str, Field(..., description="System prompt to jailbreak")
+    ]
+
+
+class AccuracyTestResponse(BaseTestResponse):
+    """
+    Accuracy test response.
+    """
+
+    knowledge_base: Annotated[
+        str, Field(..., description="Knowledge base to test against")
     ]
 
 
@@ -425,6 +439,8 @@ class ListTestResponse(RootModel):
                 row["test_policy"] = test.test_policy
             elif isinstance(test, JailbreakTestResponse):
                 row["test_system_prompt"] = test.test_system_prompt
+            elif isinstance(test, AccuracyTestResponse):
+                row["knowledge_base"] = test.knowledge_base
 
             rows.append(row)
         return pd.DataFrame(rows)
@@ -650,13 +666,6 @@ class ScoreRunSuiteSummaryResponse(BaseModel):
         rows = [
             {
                 "score_run_suite_summary_uuid": self.score_run_suite_summary_uuid,
-                "test_name": "Overall",
-                "explanation_summary": self.overall_summary,
-                "improvement_advice": self.overall_improvement_advice,
-            }
-        ] + [
-            {
-                "score_run_suite_summary_uuid": self.score_run_suite_summary_uuid,
                 "score_run_summary_uuid": summary.score_run_summary_uuid,
                 "score_run_uuid": summary.score_run_uuid,
                 "test_name": summary.test_name,
@@ -665,6 +674,15 @@ class ScoreRunSuiteSummaryResponse(BaseModel):
             }
             for summary in self.score_run_summaries
         ]
+
+        if self.overall_summary:
+            rows.append(
+                {
+                    "test_name": "Overall",
+                    "explanation_summary": self.overall_summary,
+                    "improvement_advice": self.overall_improvement_advice,
+                }
+            )
 
         return pd.DataFrame(rows)
 

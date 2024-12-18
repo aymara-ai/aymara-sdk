@@ -6,6 +6,7 @@ import pytest
 
 from aymara_ai.generated.aymara_api_client import models
 from aymara_ai.types import (
+    AccuracyTestResponse,
     BadExample,
     BaseTestResponse,
     GoodExample,
@@ -44,8 +45,6 @@ def test_create_safety_test(aymara_client):
             created_at=datetime.now(),
             updated_at=datetime.now(),
             test_policy="Don't allow any unsafe answers",
-            test_system_prompt=None,
-            additional_instructions=None,
         )
         mock_create_test.return_value.status_code = 200
         mock_get_test.return_value.parsed = models.TestOutSchema(
@@ -58,8 +57,6 @@ def test_create_safety_test(aymara_client):
             created_at=datetime.now(),
             updated_at=datetime.now(),
             test_policy="Don't allow any unsafe answers",
-            test_system_prompt=None,
-            additional_instructions=None,
         )
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
@@ -352,6 +349,7 @@ def test_validate_test_inputs_valid(aymara_client):
         "Valid student description",
         "Don't allow any unsafe answers",
         None,
+        None,
         "en",
         10,
         models.TestType.SAFETY,
@@ -373,6 +371,7 @@ def test_validate_test_inputs_invalid_name_length(aymara_client):
             "Valid student description",
             "Don't allow any unsafe answers",
             None,
+            None,
             "en",
             10,
             models.TestType.SAFETY,
@@ -386,6 +385,7 @@ def test_validate_test_inputs_invalid_question_count(aymara_client):
             "Valid student description",
             "Don't allow any unsafe answers",
             None,
+            None,
             "en",
             DEFAULT_NUM_QUESTIONS_MAX + 1,
             models.TestType.SAFETY,
@@ -396,6 +396,7 @@ def test_validate_test_inputs_invalid_question_count(aymara_client):
             "Valid Test Name",
             "Valid student description",
             "Don't allow any unsafe answers",
+            None,
             None,
             "en",
             DEFAULT_NUM_QUESTIONS_MIN - 1,
@@ -415,6 +416,7 @@ def test_validate_test_inputs_excessive_tokens(aymara_client):
             long_text,
             long_text,
             None,
+            None,
             "en",
             10,
             models.TestType.SAFETY,
@@ -427,6 +429,7 @@ def test_validate_test_inputs_excessive_examples(aymara_client):
             "Valid Test Name",
             "Valid student description",
             "Don't allow any unsafe answers",
+            None,
             None,
             "en",
             10,
@@ -1251,3 +1254,159 @@ def test_create_image_safety_test(aymara_client):
         assert result.test_name == "Test 1"
         assert result.test_status == Status.COMPLETED
         assert len(result.questions) == 1
+
+
+def test_create_accuracy_test(aymara_client):
+    with patch(
+        "aymara_ai.core.tests.create_test.sync_detailed"
+    ) as mock_create_test, patch(
+        "aymara_ai.core.tests.get_test.sync_detailed"
+    ) as mock_get_test, patch(
+        "aymara_ai.core.tests.get_test_questions.sync_detailed"
+    ) as mock_get_questions:
+        mock_create_test.return_value.parsed = models.TestOutSchema(
+            test_uuid="test123",
+            test_name="Test 1",
+            test_status=models.TestStatus.RECORD_CREATED,
+            test_type=models.TestType.ACCURACY,
+            organization_name="Test Organization",
+            num_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            test_policy=None,
+            test_system_prompt=None,
+            knowledge_base="Test knowledge base content",
+            additional_instructions=None,
+        )
+        mock_create_test.return_value.status_code = 200
+        mock_get_test.return_value.parsed = models.TestOutSchema(
+            test_uuid="test123",
+            test_name="Test 1",
+            test_status=models.TestStatus.FINISHED,
+            test_type=models.TestType.ACCURACY,
+            organization_name="Test Organization",
+            num_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            test_policy=None,
+            test_system_prompt=None,
+            knowledge_base="Test knowledge base content",
+            additional_instructions=None,
+        )
+        mock_get_test.return_value.status_code = 200
+        mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
+            items=[
+                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
+            ],
+            count=1,
+        )
+        mock_get_questions.return_value.status_code = 200
+
+        result = aymara_client.create_accuracy_test(
+            "Test 1", "Student description", "Test knowledge base content"
+        )
+
+        assert isinstance(result, AccuracyTestResponse)
+        assert result.test_uuid == "test123"
+        assert result.test_name == "Test 1"
+        assert result.test_status == Status.COMPLETED
+        assert result.knowledge_base == "Test knowledge base content"
+        assert len(result.questions) == 1
+
+
+@pytest.mark.asyncio
+async def test_create_accuracy_test_async(aymara_client):
+    with patch(
+        "aymara_ai.core.tests.create_test.asyncio_detailed"
+    ) as mock_create_test, patch(
+        "aymara_ai.core.tests.get_test.asyncio_detailed"
+    ) as mock_get_test, patch(
+        "aymara_ai.core.tests.get_test_questions.asyncio_detailed"
+    ) as mock_get_questions:
+        mock_create_test.return_value.parsed = models.TestOutSchema(
+            test_uuid="test123",
+            test_name="Test 1",
+            test_status=models.TestStatus.RECORD_CREATED,
+            test_type=models.TestType.ACCURACY,
+            organization_name="Test Organization",
+            num_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            test_policy=None,
+            test_system_prompt=None,
+            knowledge_base="Test knowledge base content",
+            additional_instructions=None,
+        )
+        mock_create_test.return_value.status_code = 200
+        mock_get_test.return_value.parsed = models.TestOutSchema(
+            test_uuid="test123",
+            test_name="Test 1",
+            test_status=models.TestStatus.FINISHED,
+            test_type=models.TestType.ACCURACY,
+            organization_name="Test Organization",
+            num_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            test_policy=None,
+            test_system_prompt=None,
+            knowledge_base="Test knowledge base content",
+            additional_instructions=None,
+        )
+        mock_get_test.return_value.status_code = 200
+        mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
+            items=[
+                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
+            ],
+            count=1,
+        )
+        mock_get_questions.return_value.status_code = 200
+
+        result = await aymara_client.create_accuracy_test_async(
+            "Test 1", "Student description", "Test knowledge base content"
+        )
+
+        assert isinstance(result, AccuracyTestResponse)
+        assert result.test_uuid == "test123"
+        assert result.test_name == "Test 1"
+        assert result.test_status == Status.COMPLETED
+        assert result.knowledge_base == "Test knowledge base content"
+        assert len(result.questions) == 1
+
+
+def test_create_accuracy_test_validation(aymara_client):
+    with pytest.raises(ValueError, match="test_name must be between"):
+        aymara_client.create_accuracy_test(
+            "A" * 256, "Student description", "Test knowledge base content"
+        )
+
+    with pytest.raises(ValueError, match="num_test_questions must be between"):
+        aymara_client.create_accuracy_test(
+            "Test 1",
+            "Student description",
+            "Test knowledge base content",
+            num_test_questions=0,
+        )
+
+    with pytest.raises(ValueError, match="knowledge_base is required"):
+        aymara_client.create_accuracy_test("Test 1", "Student description", None)
+
+    with pytest.raises(ValueError, match="additional_instructions must be less than"):
+        aymara_client.create_accuracy_test(
+            "Test 1",
+            "Student description",
+            "Test knowledge base content",
+            additional_instructions="A" * (MAX_ADDITIONAL_INSTRUCTIONS_LENGTH + 1),
+        )
+
+    long_desc = "A" * int(DEFAULT_MAX_TOKENS / DEFAULT_CHAR_TO_TOKEN_MULTIPLIER / 2)
+    long_knowledge_base = "B" * int(
+        DEFAULT_MAX_TOKENS / DEFAULT_CHAR_TO_TOKEN_MULTIPLIER / 2
+    )
+    with pytest.raises(
+        ValueError, match="tokens in total but they should be less than"
+    ):
+        aymara_client.create_accuracy_test(
+            "Test 1",
+            long_desc,
+            long_knowledge_base,
+        )

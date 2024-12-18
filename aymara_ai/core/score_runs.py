@@ -22,6 +22,7 @@ from aymara_ai.types import (
     StudentAnswerInput,
 )
 from aymara_ai.utils.constants import (
+    DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS,
     DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
     DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
     MAX_EXAMPLES_LENGTH,
@@ -39,7 +40,6 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
     def score_test(
         self,
         test_uuid: str,
-        test_type: TestType,
         student_answers: List[StudentAnswerInput],
         max_wait_time_secs: Optional[int] = None,
         scoring_examples: Optional[List[ScoringExample]] = None,
@@ -56,11 +56,6 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         :return: Score response.
         :rtype: ScoreRunResponse
         """
-        if max_wait_time_secs is None:
-            if test_type == TestType.SAFETY or test_type == TestType.IMAGE_SAFETY:
-                max_wait_time_secs = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS
-            elif test_type == TestType.JAILBREAK:
-                max_wait_time_secs = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS
 
         return self._score_test(
             test_uuid=test_uuid,
@@ -73,7 +68,6 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
     async def score_test_async(
         self,
         test_uuid: str,
-        test_type: TestType,
         student_answers: List[StudentAnswerInput],
         max_wait_time_secs: Optional[int] = None,
         scoring_examples: Optional[List[ScoringExample]] = None,
@@ -90,11 +84,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         :return: Score response.
         :rtype: ScoreRunResponse
         """
-        if max_wait_time_secs is None:
-            if test_type == TestType.SAFETY or test_type == TestType.IMAGE_SAFETY:
-                max_wait_time_secs = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS
-            elif test_type == TestType.JAILBREAK:
-                max_wait_time_secs = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS
+
         return await self._score_test(
             test_uuid=test_uuid,
             student_answers=student_answers,
@@ -289,13 +279,24 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
     def _create_and_wait_for_score_impl_sync(
         self,
         score_data: models.ScoreRunInSchema,
-        max_wait_time_secs: Optional[int],
+        max_wait_time_secs: Optional[int] = None,
     ) -> ScoreRunResponse:
         start_time = time.time()
 
         test = get_test.sync_detailed(
             client=self.client, test_uuid=score_data.test_uuid
         )
+
+        if max_wait_time_secs is None:
+            if (
+                test.parsed.test_type == TestType.SAFETY
+                or test.parsed.test_type == TestType.IMAGE_SAFETY
+            ):
+                max_wait_time_secs = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS
+            elif test.parsed.test_type == TestType.JAILBREAK:
+                max_wait_time_secs = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS
+            elif test.parsed.test_type == TestType.ACCURACY:
+                max_wait_time_secs = DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS
 
         # Create progress bar once at the start
         with self.logger.progress_bar(
@@ -383,7 +384,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
     async def _create_and_wait_for_score_impl_async(
         self,
         score_data: models.ScoreRunInSchema,
-        max_wait_time_secs: Optional[int],
+        max_wait_time_secs: Optional[int] = None,
     ) -> ScoreRunResponse:
         start_time = time.time()
 
@@ -394,6 +395,17 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         test = await get_test.asyncio_detailed(
             client=self.client, test_uuid=score_data.test_uuid
         )
+
+        if max_wait_time_secs is None:
+            if (
+                test.parsed.test_type == TestType.SAFETY
+                or test.parsed.test_type == TestType.IMAGE_SAFETY
+            ):
+                max_wait_time_secs = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS
+            elif test.parsed.test_type == TestType.JAILBREAK:
+                max_wait_time_secs = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS
+            elif test.parsed.test_type == TestType.ACCURACY:
+                max_wait_time_secs = DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS
 
         # Create progress bar once at the start
         with self.logger.progress_bar(

@@ -13,6 +13,7 @@ from aymara_ai.generated.aymara_api_client.api.tests import (
 )
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
 from aymara_ai.types import (
+    AccuracyTestResponse,
     BadExample,
     BaseTestResponse,
     GoodExample,
@@ -86,6 +87,7 @@ class TestMixin(AymaraAIProtocol):
             student_description=student_description,
             test_policy=test_policy,
             test_system_prompt=None,
+            knowledge_base=None,
             test_language=test_language,
             num_test_questions=num_test_questions,
             is_async=False,
@@ -141,6 +143,7 @@ class TestMixin(AymaraAIProtocol):
             student_description=student_description,
             test_policy=test_policy,
             test_system_prompt=None,
+            knowledge_base=None,
             test_language=test_language,
             num_test_questions=num_test_questions,
             is_async=True,
@@ -194,6 +197,7 @@ class TestMixin(AymaraAIProtocol):
             student_description=student_description,
             test_policy=None,
             test_system_prompt=test_system_prompt,
+            knowledge_base=None,
             test_language=test_language,
             is_async=False,
             test_type=TestType.JAILBREAK,
@@ -246,6 +250,7 @@ class TestMixin(AymaraAIProtocol):
             student_description=student_description,
             test_policy=None,
             test_system_prompt=test_system_prompt,
+            knowledge_base=None,
             test_language=test_language,
             is_async=True,
             test_type=TestType.JAILBREAK,
@@ -302,6 +307,7 @@ class TestMixin(AymaraAIProtocol):
             test_policy=test_policy,
             is_async=False,
             test_system_prompt=None,
+            knowledge_base=None,
             test_language=test_language,
             test_type=TestType.IMAGE_SAFETY,
             num_test_questions=num_test_questions,
@@ -357,9 +363,122 @@ class TestMixin(AymaraAIProtocol):
             test_policy=test_policy,
             is_async=True,
             test_system_prompt=None,
+            knowledge_base=None,
             test_language=test_language,
             test_type=TestType.IMAGE_SAFETY,
             num_test_questions=num_test_questions,
+            max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
+        )
+
+    def create_accuracy_test(
+        self,
+        test_name: str,
+        student_description: str,
+        knowledge_base: str,
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        num_test_questions: int = DEFAULT_NUM_QUESTIONS,
+        max_wait_time_secs: Optional[int] = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+        additional_instructions: Optional[str] = None,
+        good_examples: Optional[List[GoodExample]] = None,
+        bad_examples: Optional[List[BadExample]] = None,
+    ) -> AccuracyTestResponse:
+        """
+        Create an Aymara accuracy test synchronously and wait for completion.
+
+        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
+        :type test_name: str
+        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
+        :type student_description: str
+        :param knowledge_base: Knowledge base text that will be used to generate accuracy test questions.
+        :type knowledge_base: str
+        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
+        :type test_language: str, optional
+        :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
+        :type num_test_questions: int, optional
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
+        :type max_wait_time_secs: int, optional
+        :param additional_instructions: Optional additional instructions for test generation
+        :type additional_instructions: str, optional
+        :param good_examples: Optional list of good examples to guide question generation
+        :type good_examples: List[GoodExample], optional
+        :param bad_examples: Optional list of bad examples to guide question generation
+        :type bad_examples: List[BadExample], optional
+        :return: Test response containing test details and generated questions.
+        :rtype: AccuracyTestResponse
+
+        :raises ValueError: If the test_name length is not within the allowed range.
+        :raises ValueError: If num_test_questions is not within the allowed range.
+        :raises ValueError: If knowledge_base is not provided for accuracy tests.
+        """
+        return self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=None,
+            test_system_prompt=None,
+            knowledge_base=knowledge_base,
+            test_language=test_language,
+            num_test_questions=num_test_questions,
+            is_async=False,
+            test_type=TestType.ACCURACY,
+            max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
+        )
+
+    async def create_accuracy_test_async(
+        self,
+        test_name: str,
+        student_description: str,
+        knowledge_base: str,
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        num_test_questions: int = DEFAULT_NUM_QUESTIONS,
+        max_wait_time_secs: Optional[int] = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+        additional_instructions: Optional[str] = None,
+        good_examples: Optional[List[GoodExample]] = None,
+        bad_examples: Optional[List[BadExample]] = None,
+    ) -> AccuracyTestResponse:
+        """
+        Create an Aymara accuracy test asynchronously and wait for completion.
+
+        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
+        :type test_name: str
+        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
+        :type student_description: str
+        :param knowledge_base: Knowledge base text that will be used to generate accuracy test questions.
+        :type knowledge_base: str
+        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
+        :type test_language: str, optional
+        :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
+        :type num_test_questions: int, optional
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
+        :type max_wait_time_secs: int, optional
+        :param additional_instructions: Optional additional instructions for test generation
+        :type additional_instructions: str, optional
+        :param good_examples: Optional list of good examples to guide question generation
+        :type good_examples: List[GoodExample], optional
+        :param bad_examples: Optional list of bad examples to guide question generation
+        :type bad_examples: List[BadExample], optional
+        :return: Test response containing test details and generated questions.
+        :rtype: AccuracyTestResponse
+
+        :raises ValueError: If the test_name length is not within the allowed range.
+        :raises ValueError: If num_test_questions is not within the allowed range.
+        :raises ValueError: If knowledge_base is not provided for accuracy tests.
+        """
+        return await self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=None,
+            test_system_prompt=None,
+            knowledge_base=knowledge_base,
+            test_language=test_language,
+            num_test_questions=num_test_questions,
+            is_async=True,
+            test_type=TestType.ACCURACY,
             max_wait_time_secs=max_wait_time_secs,
             additional_instructions=additional_instructions,
             good_examples=good_examples,
@@ -375,6 +494,7 @@ class TestMixin(AymaraAIProtocol):
         test_language: str,
         test_system_prompt: Optional[str],
         test_policy: Optional[str],
+        knowledge_base: Optional[str],
         num_test_questions: Optional[int],
         max_wait_time_secs: Optional[int],
         additional_instructions: Optional[str] = None,
@@ -386,6 +506,7 @@ class TestMixin(AymaraAIProtocol):
             student_description=student_description,
             test_policy=test_policy,
             test_system_prompt=test_system_prompt,
+            knowledge_base=knowledge_base,
             test_language=test_language,
             num_test_questions=num_test_questions,
             test_type=test_type,
@@ -405,6 +526,7 @@ class TestMixin(AymaraAIProtocol):
             student_description=student_description,
             test_policy=test_policy,
             test_system_prompt=test_system_prompt,
+            knowledge_base=knowledge_base,
             test_language=test_language,
             num_test_questions=num_test_questions,
             test_type=test_type,
@@ -427,6 +549,7 @@ class TestMixin(AymaraAIProtocol):
         student_description: str,
         test_policy: Optional[str],
         test_system_prompt: Optional[str],
+        knowledge_base: Optional[str],
         test_language: str,
         num_test_questions: Optional[int],
         test_type: TestType,
@@ -447,6 +570,9 @@ class TestMixin(AymaraAIProtocol):
 
         if test_type == TestType.JAILBREAK and test_system_prompt is None:
             raise ValueError("test_system_prompt is required for jailbreak tests")
+
+        if test_type == TestType.ACCURACY and knowledge_base is None:
+            raise ValueError("knowledge_base is required for accuracy tests")
 
         if (
             len(test_name) < DEFAULT_TEST_NAME_LEN_MIN
@@ -470,11 +596,15 @@ class TestMixin(AymaraAIProtocol):
             "test_policy"
             if test_type == TestType.SAFETY or test_type == TestType.IMAGE_SAFETY
             else "test_system_prompt"
+            if test_type == TestType.JAILBREAK
+            else "knowledge_base"
         )
         token2 = (
             len(test_policy) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
             if test_type == TestType.SAFETY or test_type == TestType.IMAGE_SAFETY
             else len(test_system_prompt) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
+            if test_type == TestType.JAILBREAK
+            else len(knowledge_base) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
         )
 
         total_tokens = token1 + token2
@@ -510,6 +640,18 @@ class TestMixin(AymaraAIProtocol):
             if len(good_examples or bad_examples) > MAX_EXAMPLES_LENGTH:
                 raise ValueError(
                     f"examples must be less than {MAX_EXAMPLES_LENGTH} examples"
+                )
+
+        # Add knowledge_base to token calculation if it exists
+        if knowledge_base is not None:
+            token3 = len(knowledge_base) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
+            total_tokens = token1 + token2 + token3
+
+            if total_tokens > DEFAULT_MAX_TOKENS:
+                raise ValueError(
+                    f"student_description is ~{token1:,} tokens, {token_2_field} is ~{token2:,} tokens, "
+                    f"and knowledge_base is ~{token3:,} tokens. They are ~{total_tokens:,} tokens "
+                    f"in total but they should be less than {DEFAULT_MAX_TOKENS:,} tokens."
                 )
 
     def _create_and_wait_for_test_impl_sync(

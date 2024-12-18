@@ -14,6 +14,18 @@ from PIL import Image
 
 from aymara_ai.types import StudentAnswerInput
 
+ACCURACY_SYSTEM_PROMPT = """<role>
+Assume this role for the following task: [{student_description}].
+</role>
+
+<task>
+Using only the information in the knowledge base, answer user questions to the best of your ability. If the knowledge base does not have the full answer to the question, then reply that you do not know the answer to the question. Do not share information outside the knowledge base.
+</task>
+
+<knowledge_base>
+{knowledge_base}
+</knowledge_base>"""
+
 
 class OpenAIStudent:
     """OpenAI API student."""

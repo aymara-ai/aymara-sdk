@@ -50,6 +50,22 @@ class TestScoreRunMixin:
         return test_response
 
     @pytest.fixture(scope="class")
+    async def accuracy_test_data(self, aymara_client: AymaraAI):
+        # Create a test and return its UUID and questions
+        test_name = "Score Run Integration Test"
+        student_description = "An AI assistant for customer support"
+        knowledge_base = "The human heart has four chambers. The upper chambers are called atria, and the lower chambers are called ventricles."
+        num_test_questions = 2
+
+        test_response = await aymara_client.create_accuracy_test_async(
+            test_name=test_name,
+            student_description=student_description,
+            knowledge_base=knowledge_base,
+            num_test_questions=num_test_questions,
+        )
+        return test_response
+
+    @pytest.fixture(scope="class")
     async def image_safety_test_data(self, aymara_client: AymaraAI):
         # Create an image safety test and return its UUID and questions
         test_name = "Image Safety Score Run Integration Test"
@@ -750,6 +766,182 @@ class TestScoreRunMixin:
         assert "All items in scoring examples must be ScoringExample" in str(
             exc_info.value
         )
+
+    @pytest.fixture(scope="class")
+    def accuracy_student_answers(self, accuracy_test_data) -> List[StudentAnswerInput]:
+        questions = accuracy_test_data.questions
+
+        answers = [
+            StudentAnswerInput(
+                question_uuid=question.question_uuid,
+                answer_text="The heart has four chambers: two atria and two ventricles",
+            )
+            for question in questions
+        ]
+        return answers
+
+    async def test_score_accuracy_test_async(
+        self,
+        aymara_client: AymaraAI,
+        accuracy_test_data: SafetyTestResponse,
+        accuracy_student_answers: List[StudentAnswerInput],
+    ):
+        score_response = await aymara_client.score_test_async(
+            accuracy_test_data.test_uuid,
+            TestType.ACCURACY,
+            accuracy_student_answers,
+        )
+        assert isinstance(score_response, ScoreRunResponse)
+        assert score_response.score_run_status == Status.COMPLETED
+        assert len(score_response.answers) == len(accuracy_student_answers)
+
+        # Check that all answers have a confidence score
+        assert all(
+            hasattr(answer, "confidence") and answer.confidence is not None
+            for answer in score_response.answers
+        ), "Not all answers have a confidence score"
+
+        # Check if there are any non-passing answers
+        non_passing_answers = [
+            answer for answer in score_response.answers if not answer.is_passed
+        ]
+
+        # If there are non-passing answers, check that they have explanations
+        if non_passing_answers:
+            assert all(
+                hasattr(answer, "explanation") and answer.explanation is not None
+                for answer in non_passing_answers
+            ), "Not all non-passing answers have an explanation"
+
+    def test_score_accuracy_test_sync(
+        self,
+        aymara_client: AymaraAI,
+        accuracy_test_data: SafetyTestResponse,
+        accuracy_student_answers: List[StudentAnswerInput],
+    ):
+        test_uuid = accuracy_test_data.test_uuid
+
+        score_response = aymara_client.score_test(
+            test_uuid, TestType.ACCURACY, accuracy_student_answers
+        )
+        assert isinstance(score_response, ScoreRunResponse)
+        assert score_response.score_run_status == Status.COMPLETED
+        assert len(score_response.answers) == len(accuracy_student_answers)
+
+        # Check that all answers have a confidence score
+        assert all(
+            hasattr(answer, "confidence") and answer.confidence is not None
+            for answer in score_response.answers
+        ), "Not all answers have a confidence score"
+
+        # Check if there are any non-passing answers
+        non_passing_answers = [
+            answer for answer in score_response.answers if not answer.is_passed
+        ]
+
+        # If there are non-passing answers, check that they have explanations
+        if non_passing_answers:
+            assert all(
+                hasattr(answer, "explanation") and answer.explanation is not None
+                for answer in non_passing_answers
+            ), "Not all non-passing answers have an explanation"
+
+    @pytest.mark.asyncio
+    async def test_score_accuracy_test_async_timeout(
+        self,
+        aymara_client: AymaraAI,
+        accuracy_test_data: SafetyTestResponse,
+        accuracy_student_answers: List[StudentAnswerInput],
+    ):
+        score_response = await aymara_client.score_test_async(
+            accuracy_test_data.test_uuid,
+            TestType.ACCURACY,
+            accuracy_student_answers,
+            max_wait_time_secs=0,
+        )
+        assert isinstance(score_response, ScoreRunResponse)
+        assert score_response.score_run_status == Status.FAILED
+        assert score_response.failure_reason == "Score run creation timed out."
+
+    def test_score_accuracy_test_sync_timeout(
+        self,
+        aymara_client: AymaraAI,
+        accuracy_test_data: SafetyTestResponse,
+        accuracy_student_answers: List[StudentAnswerInput],
+    ):
+        score_response = aymara_client.score_test(
+            accuracy_test_data.test_uuid,
+            TestType.ACCURACY,
+            accuracy_student_answers,
+            max_wait_time_secs=0,
+        )
+        assert isinstance(score_response, ScoreRunResponse)
+        assert score_response.score_run_status == Status.FAILED
+        assert score_response.failure_reason == "Score run creation timed out."
+
+    async def test_score_accuracy_test_with_scoring_examples_async(
+        self,
+        aymara_client: AymaraAI,
+        accuracy_test_data: SafetyTestResponse,
+        accuracy_student_answers: List[StudentAnswerInput],
+    ):
+        scoring_examples = [
+            ScoringExample(
+                question_text="How many chambers does the heart have?",
+                answer_text="The heart has four chambers",
+                is_passing=True,
+                explanation="Response correctly states the number of chambers",
+            ),
+            ScoringExample(
+                question_text="How many chambers does the heart have?",
+                answer_text="The heart has three chambers",
+                is_passing=False,
+                explanation="Response incorrectly states the number of chambers",
+            ),
+        ]
+
+        score_response = await aymara_client.score_test_async(
+            accuracy_test_data.test_uuid,
+            TestType.ACCURACY,
+            accuracy_student_answers,
+            scoring_examples=scoring_examples,
+        )
+
+        assert isinstance(score_response, ScoreRunResponse)
+        assert score_response.score_run_status == Status.COMPLETED
+        assert len(score_response.answers) == len(accuracy_student_answers)
+
+    def test_score_accuracy_test_with_scoring_examples_sync(
+        self,
+        aymara_client: AymaraAI,
+        accuracy_test_data: SafetyTestResponse,
+        accuracy_student_answers: List[StudentAnswerInput],
+    ):
+        scoring_examples = [
+            ScoringExample(
+                question_text="How many chambers does the heart have?",
+                answer_text="The heart has four chambers",
+                is_passing=True,
+                explanation="Response correctly states the number of chambers",
+            ),
+            ScoringExample(
+                question_text="How many chambers does the heart have?",
+                answer_text="The heart has three chambers",
+                is_passing=False,
+                explanation="Response incorrectly states the number of chambers",
+            ),
+        ]
+
+        score_response = aymara_client.score_test(
+            accuracy_test_data.test_uuid,
+            TestType.ACCURACY,
+            accuracy_student_answers,
+            scoring_examples=scoring_examples,
+        )
+
+        assert isinstance(score_response, ScoreRunResponse)
+        assert score_response.score_run_status == Status.COMPLETED
+        assert len(score_response.answers) == len(accuracy_student_answers)
 
 
 ENVIRONMENT = os.getenv("API_TEST_ENV")
