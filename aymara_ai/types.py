@@ -225,16 +225,24 @@ class QuestionResponse(BaseModel):
 
     question_text: Annotated[str, Field(..., description="Question in the test")]
     question_uuid: Annotated[str, Field(..., description="UUID of the question")]
+    accuracy_question_type: Annotated[
+        Optional[str],
+        Field(None, description="Type of the question for accuracy tests"),
+    ]
 
     @classmethod
     def from_question_schema(cls, question: QuestionSchema) -> "QuestionResponse":
         return cls(
-            question_uuid=question.question_uuid, question_text=question.question_text
+            question_uuid=question.question_uuid,
+            question_text=question.question_text,
+            accuracy_question_type=question.accuracy_question_type,
         )
 
     def to_question_schema(self) -> QuestionSchema:
         return QuestionSchema(
-            question_uuid=self.question_uuid, question_text=self.question_text
+            question_uuid=self.question_uuid,
+            question_text=self.question_text,
+            accuracy_question_type=self.accuracy_question_type,
         )
 
 
