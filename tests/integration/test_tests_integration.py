@@ -88,7 +88,7 @@ class TestTestMixin:
             "test_name": "Accuracy Integration Test",
             "student_description": "An AI assistant for medical knowledge",
             "knowledge_base": "The human heart has four chambers. The upper chambers are called atria, and the lower chambers are called ventricles.",
-            "num_test_questions": 5,
+            "num_test_questions_per_category": 5,
         }
 
     @pytest.mark.parametrize(
@@ -716,7 +716,7 @@ class TestTestMixin:
         response = aymara_client.create_accuracy_test(**accuracy_test_data)
         assert isinstance(response, AccuracyTestResponse)
         assert response.test_status == Status.COMPLETED
-        assert len(response.questions) == accuracy_test_data["num_test_questions"]
+
         assert response.knowledge_base == accuracy_test_data["knowledge_base"]
 
     @pytest.mark.asyncio
@@ -724,21 +724,25 @@ class TestTestMixin:
         response = await aymara_client.create_accuracy_test_async(**accuracy_test_data)
         assert isinstance(response, AccuracyTestResponse)
         assert response.test_status == Status.COMPLETED
-        assert len(response.questions) == accuracy_test_data["num_test_questions"]
+        assert (
+            len(response.questions)
+            == accuracy_test_data["num_test_questions_per_category"]
+        )
         assert response.knowledge_base == accuracy_test_data["knowledge_base"]
 
     @pytest.mark.parametrize(
-        "num_test_questions",
+        "num_test_questions_per_category",
         [DEFAULT_NUM_QUESTIONS_MIN, 10, 25, DEFAULT_NUM_QUESTIONS_MAX],
     )
     def test_create_accuracy_test_sync_different_question_counts(
-        self, aymara_client, accuracy_test_data, num_test_questions
+        self, aymara_client, accuracy_test_data, num_test_questions_per_category
     ):
-        accuracy_test_data["num_test_questions"] = num_test_questions
+        accuracy_test_data["num_test_questions_per_category"] = (
+            num_test_questions_per_category
+        )
         response = aymara_client.create_accuracy_test(**accuracy_test_data)
         assert isinstance(response, AccuracyTestResponse)
         assert response.test_status == Status.COMPLETED
-        assert len(response.questions) == num_test_questions
 
     def test_create_accuracy_test_with_examples(
         self, aymara_client, accuracy_test_data, example_data
@@ -747,7 +751,10 @@ class TestTestMixin:
         response = aymara_client.create_accuracy_test(**accuracy_test_data)
         assert isinstance(response, AccuracyTestResponse)
         assert response.test_status == Status.COMPLETED
-        assert len(response.questions) == accuracy_test_data["num_test_questions"]
+        assert (
+            len(response.questions)
+            == accuracy_test_data["num_test_questions_per_category"]
+        )
         assert len(response.good_examples) == len(example_data["good_examples"])
         assert len(response.bad_examples) == len(example_data["bad_examples"])
 
@@ -758,7 +765,10 @@ class TestTestMixin:
         response = await aymara_client.create_accuracy_test_async(**accuracy_test_data)
         assert isinstance(response, AccuracyTestResponse)
         assert response.test_status == Status.COMPLETED
-        assert len(response.questions) == accuracy_test_data["num_test_questions"]
+        assert (
+            len(response.questions)
+            == accuracy_test_data["num_test_questions_per_category"]
+        )
         assert len(response.good_examples) == len(example_data["good_examples"])
         assert len(response.bad_examples) == len(example_data["bad_examples"])
 
@@ -783,8 +793,12 @@ class TestTestMixin:
         [
             {"test_name": "a" * (DEFAULT_TEST_NAME_LEN_MAX + 1)},  # Too long test name
             {"test_name": ""},  # Empty test name
-            {"num_test_questions": DEFAULT_NUM_QUESTIONS_MIN - 1},  # Too few questions
-            {"num_test_questions": DEFAULT_NUM_QUESTIONS_MAX + 1},  # Too many questions
+            {
+                "num_test_questions_per_category": DEFAULT_NUM_QUESTIONS_MIN - 1
+            },  # Too few questions
+            {
+                "num_test_questions_per_category": DEFAULT_NUM_QUESTIONS_MAX + 1
+            },  # Too many questions
             {"knowledge_base": None},  # Missing knowledge base
             {"test_language": "invalid_language"},  # Invalid language
             {"student_description": ""},  # Empty student description

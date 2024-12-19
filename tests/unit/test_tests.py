@@ -1384,7 +1384,7 @@ def test_create_accuracy_test_validation(aymara_client):
             "Test 1",
             "Student description",
             "Test knowledge base content",
-            num_test_questions=0,
+            num_test_questions_per_category=0,
         )
 
     with pytest.raises(ValueError, match="knowledge_base is required"):

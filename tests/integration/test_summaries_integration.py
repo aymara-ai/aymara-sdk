@@ -47,7 +47,6 @@ class TestSummaryMixin:
         for _ in range(3):  # Create 3 score runs
             score_response = await aymara_client.score_test_async(
                 test_uuid=test_uuid,
-                test_type=TestType.SAFETY,
                 student_answers=student_answers,
             )
             score_runs.append(score_response)
@@ -206,7 +205,6 @@ class TestSummaryMixin:
         for _ in range(3):  # Create 3 score runs
             score_response = await aymara_client.score_test_async(
                 test_uuid=test_uuid,
-                test_type=TestType.IMAGE_SAFETY,
                 student_answers=image_student_answers,
             )
             score_runs.append(score_response)
@@ -253,7 +251,6 @@ class TestSummaryMixin:
             for _ in range(2):  # Create 2 score runs
                 score_response = await free_aymara_client.score_test_async(
                     test_uuid=test_uuid,
-                    test_type=TestType.SAFETY,
                     student_answers=student_answers,
                 )
                 score_runs.append(score_response)

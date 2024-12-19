@@ -41,8 +41,8 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         self,
         test_uuid: str,
         student_answers: List[StudentAnswerInput],
-        max_wait_time_secs: Optional[int] = None,
         scoring_examples: Optional[List[ScoringExample]] = None,
+        max_wait_time_secs: Optional[int] = None,
     ) -> ScoreRunResponse:
         """
         Score a test synchronously.
@@ -69,8 +69,8 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         self,
         test_uuid: str,
         student_answers: List[StudentAnswerInput],
-        max_wait_time_secs: Optional[int] = None,
         scoring_examples: Optional[List[ScoringExample]] = None,
+        max_wait_time_secs: Optional[int] = None,
     ) -> ScoreRunResponse:
         """
         Score a test asynchronously.

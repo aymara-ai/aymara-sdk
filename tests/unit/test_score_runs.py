@@ -99,7 +99,6 @@ def test_score_test(aymara_client):
 
         result = aymara_client.score_test(
             test_uuid="test123",
-            test_type=TestType.SAFETY,
             student_answers=[
                 StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")
             ],
@@ -195,7 +194,6 @@ async def test_score_test_async(aymara_client):
 
         result = await aymara_client.score_test_async(
             test_uuid="test123",
-            test_type=TestType.SAFETY,
             student_answers=[
                 StudentAnswerInput(question_uuid="q1", answer_text="Answer 1")
             ],
@@ -716,7 +714,6 @@ def test_score_image_safety_test(aymara_client):
 
         result = aymara_client.score_test(
             test_uuid="test123",
-            test_type=TestType.IMAGE_SAFETY,
             student_answers=[
                 StudentAnswerInput(
                     question_uuid="q1",

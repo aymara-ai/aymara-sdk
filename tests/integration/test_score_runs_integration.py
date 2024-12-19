@@ -61,7 +61,7 @@ class TestScoreRunMixin:
             test_name=test_name,
             student_description=student_description,
             knowledge_base=knowledge_base,
-            num_test_questions=num_test_questions,
+            num_test_questions_per_category=num_test_questions,
         )
         return test_response
 
@@ -144,9 +144,8 @@ class TestScoreRunMixin:
         safety_student_answers: List[StudentAnswerInput],
     ):
         score_response = await aymara_client.score_test_async(
-            safety_test_data.test_uuid,
-            TestType.SAFETY,
-            safety_student_answers,
+            test_uuid=safety_test_data.test_uuid,
+            student_answers=safety_student_answers,
         )
         assert isinstance(score_response, ScoreRunResponse)
         assert score_response.score_run_status == Status.COMPLETED
@@ -179,7 +178,8 @@ class TestScoreRunMixin:
         test_uuid = safety_test_data.test_uuid
 
         score_response = aymara_client.score_test(
-            test_uuid, TestType.SAFETY, safety_student_answers
+            test_uuid=test_uuid,
+            student_answers=safety_student_answers,
         )
         assert isinstance(score_response, ScoreRunResponse)
         assert score_response.score_run_status == Status.COMPLETED
@@ -211,8 +211,7 @@ class TestScoreRunMixin:
     ):
         score_response = await aymara_client.score_test_async(
             jailbreak_test_data.test_uuid,
-            TestType.JAILBREAK,
-            jailbreak_student_answers,
+            student_answers=jailbreak_student_answers,
         )
         assert isinstance(score_response, ScoreRunResponse)
         assert score_response.score_run_status == Status.COMPLETED
@@ -245,7 +244,8 @@ class TestScoreRunMixin:
         test_uuid = jailbreak_test_data.test_uuid
 
         score_response = aymara_client.score_test(
-            test_uuid, TestType.JAILBREAK, jailbreak_student_answers
+            test_uuid=test_uuid,
+            student_answers=jailbreak_student_answers,
         )
         assert isinstance(score_response, ScoreRunResponse)
         assert score_response.score_run_status == Status.COMPLETED
@@ -276,9 +276,8 @@ class TestScoreRunMixin:
         safety_student_answers: List[StudentAnswerInput],
     ):
         score_response = await aymara_client.score_test_async(
-            safety_test_data.test_uuid,
-            TestType.SAFETY,
-            safety_student_answers,
+            test_uuid=safety_test_data.test_uuid,
+            student_answers=safety_student_answers,
         )
         get_response = await aymara_client.get_score_run_async(
             score_response.score_run_uuid
@@ -313,8 +312,7 @@ class TestScoreRunMixin:
     ):
         score_response = aymara_client.score_test(
             safety_test_data.test_uuid,
-            TestType.SAFETY,
-            safety_student_answers,
+            student_answers=safety_student_answers,
         )
         get_response = aymara_client.get_score_run(score_response.score_run_uuid)
         assert isinstance(get_response, ScoreRunResponse)
@@ -347,9 +345,8 @@ class TestScoreRunMixin:
         safety_student_answers: List[StudentAnswerInput],
     ):
         await aymara_client.score_test_async(
-            safety_test_data.test_uuid,
-            TestType.SAFETY,
-            safety_student_answers,
+            test_uuid=safety_test_data.test_uuid,
+            student_answers=safety_student_answers,
         )
         score_runs = await aymara_client.list_score_runs_async(
             safety_test_data.test_uuid
@@ -371,9 +368,8 @@ class TestScoreRunMixin:
         safety_student_answers: List[StudentAnswerInput],
     ):
         aymara_client.score_test(
-            safety_test_data.test_uuid,
-            TestType.SAFETY,
-            safety_student_answers,
+            test_uuid=safety_test_data.test_uuid,
+            student_answers=safety_student_answers,
         )
         score_runs = aymara_client.list_score_runs(safety_test_data.test_uuid)
         assert isinstance(score_runs, ListScoreRunResponse)
@@ -397,7 +393,8 @@ class TestScoreRunMixin:
 
         with pytest.raises(ValueError) as exc_info:
             aymara_client.score_test(
-                safety_test_data.test_uuid, TestType.SAFETY, partial_answers
+                test_uuid=safety_test_data.test_uuid,
+                student_answers=partial_answers,
             )
         assert "Missing answers for" in str(exc_info.value)
 
@@ -414,7 +411,8 @@ class TestScoreRunMixin:
 
         with pytest.raises(ValueError) as exc_info:
             aymara_client.score_test(
-                safety_test_data.test_uuid, TestType.SAFETY, extra_answers
+                test_uuid=safety_test_data.test_uuid,
+                student_answers=extra_answers,
             )
         assert "Extra answers provided" in str(exc_info.value)
 
@@ -431,7 +429,8 @@ class TestScoreRunMixin:
         ]
 
         response = aymara_client.score_test(
-            safety_test_data.test_uuid, TestType.SAFETY, unanswered_answers
+            test_uuid=safety_test_data.test_uuid,
+            student_answers=unanswered_answers,
         )
         assert response.score_run_status == Status.COMPLETED
 
@@ -450,7 +449,8 @@ class TestScoreRunMixin:
         empty_answers = []
         with pytest.raises(ValueError):
             aymara_client.score_test(
-                safety_test_data.test_uuid, TestType.SAFETY, empty_answers
+                test_uuid=safety_test_data.test_uuid,
+                student_answers=empty_answers,
             )
 
     def test_score_test_with_invalid_question_index(
@@ -461,7 +461,8 @@ class TestScoreRunMixin:
         ]
         with pytest.raises(ValueError):
             aymara_client.score_test(
-                safety_test_data.test_uuid, TestType.SAFETY, invalid_answers
+                test_uuid=safety_test_data.test_uuid,
+                student_answers=invalid_answers,
             )
 
     @pytest.mark.asyncio
@@ -472,9 +473,8 @@ class TestScoreRunMixin:
         safety_student_answers: List[StudentAnswerInput],
     ):
         score_response = await aymara_client.score_test_async(
-            safety_test_data.test_uuid,
-            TestType.SAFETY,
-            safety_student_answers,
+            test_uuid=safety_test_data.test_uuid,
+            student_answers=safety_student_answers,
             max_wait_time_secs=0,
         )
         assert isinstance(score_response, ScoreRunResponse)
@@ -488,9 +488,8 @@ class TestScoreRunMixin:
         safety_student_answers: List[StudentAnswerInput],
     ):
         score_response = aymara_client.score_test(
-            safety_test_data.test_uuid,
-            TestType.SAFETY,
-            safety_student_answers,
+            test_uuid=safety_test_data.test_uuid,
+            student_answers=safety_student_answers,
             max_wait_time_secs=0,
         )
         assert isinstance(score_response, ScoreRunResponse)
@@ -505,9 +504,8 @@ class TestScoreRunMixin:
         jailbreak_student_answers: List[StudentAnswerInput],
     ):
         score_response = await aymara_client.score_test_async(
-            jailbreak_test_data.test_uuid,
-            TestType.JAILBREAK,
-            jailbreak_student_answers,
+            test_uuid=jailbreak_test_data.test_uuid,
+            student_answers=jailbreak_student_answers,
             max_wait_time_secs=0,
         )
         assert isinstance(score_response, ScoreRunResponse)
@@ -521,9 +519,8 @@ class TestScoreRunMixin:
         jailbreak_student_answers: List[StudentAnswerInput],
     ):
         score_response = aymara_client.score_test(
-            jailbreak_test_data.test_uuid,
-            TestType.JAILBREAK,
-            jailbreak_student_answers,
+            test_uuid=jailbreak_test_data.test_uuid,
+            student_answers=jailbreak_student_answers,
             max_wait_time_secs=0,
         )
         assert isinstance(score_response, ScoreRunResponse)
@@ -538,8 +535,7 @@ class TestScoreRunMixin:
     ):
         score_response = await aymara_client.score_test_async(
             image_safety_test_data.test_uuid,
-            TestType.IMAGE_SAFETY,
-            image_safety_student_answers,
+            student_answers=image_safety_student_answers,
         )
         assert isinstance(score_response, ScoreRunResponse)
         assert score_response.score_run_status == Status.COMPLETED
@@ -570,9 +566,8 @@ class TestScoreRunMixin:
         image_safety_student_answers: List[StudentAnswerInput],
     ):
         score_response = aymara_client.score_test(
-            image_safety_test_data.test_uuid,
-            TestType.IMAGE_SAFETY,
-            image_safety_student_answers,
+            test_uuid=image_safety_test_data.test_uuid,
+            student_answers=image_safety_student_answers,
         )
         assert isinstance(score_response, ScoreRunResponse)
         assert score_response.score_run_status == Status.COMPLETED
@@ -610,9 +605,8 @@ class TestScoreRunMixin:
         ]
         with pytest.raises(ValueError) as exc_info:
             aymara_client.score_test(
-                image_safety_test_data.test_uuid,
-                TestType.IMAGE_SAFETY,
-                invalid_answers,
+                test_uuid=image_safety_test_data.test_uuid,
+                student_answers=invalid_answers,
             )
         assert "Image path does not exist" in str(exc_info.value)
 
@@ -630,9 +624,8 @@ class TestScoreRunMixin:
         ]
         with pytest.raises(ValueError) as exc_info:
             aymara_client.score_test(
-                image_safety_test_data.test_uuid,
-                TestType.IMAGE_SAFETY,
-                text_answers,
+                test_uuid=image_safety_test_data.test_uuid,
+                student_answers=text_answers,
             )
         assert "Image path is required" in str(exc_info.value)
 
@@ -644,9 +637,8 @@ class TestScoreRunMixin:
         image_safety_student_answers: List[StudentAnswerInput],
     ):
         score_response = await aymara_client.score_test_async(
-            image_safety_test_data.test_uuid,
-            TestType.IMAGE_SAFETY,
-            image_safety_student_answers,
+            test_uuid=image_safety_test_data.test_uuid,
+            student_answers=image_safety_student_answers,
             max_wait_time_secs=0,
         )
         assert isinstance(score_response, ScoreRunResponse)
@@ -675,9 +667,8 @@ class TestScoreRunMixin:
         ]
 
         score_response = await aymara_client.score_test_async(
-            safety_test_data.test_uuid,
-            TestType.SAFETY,
-            safety_student_answers,
+            test_uuid=safety_test_data.test_uuid,
+            student_answers=safety_student_answers,
             scoring_examples=scoring_examples,
         )
 
@@ -707,9 +698,8 @@ class TestScoreRunMixin:
         ]
 
         score_response = aymara_client.score_test(
-            safety_test_data.test_uuid,
-            TestType.SAFETY,
-            safety_student_answers,
+            test_uuid=safety_test_data.test_uuid,
+            student_answers=safety_student_answers,
             scoring_examples=scoring_examples,
         )
 
@@ -736,9 +726,8 @@ class TestScoreRunMixin:
 
         with pytest.raises(ValueError) as exc_info:
             aymara_client.score_test(
-                safety_test_data.test_uuid,
-                TestType.SAFETY,
-                safety_student_answers,
+                test_uuid=safety_test_data.test_uuid,
+                student_answers=safety_student_answers,
                 scoring_examples=scoring_examples,
             )
         assert f"Scoring examples must be less than {MAX_EXAMPLES_LENGTH}" in str(
@@ -758,9 +747,8 @@ class TestScoreRunMixin:
 
         with pytest.raises(ValueError) as exc_info:
             aymara_client.score_test(
-                safety_test_data.test_uuid,
-                TestType.SAFETY,
-                safety_student_answers,
+                test_uuid=safety_test_data.test_uuid,
+                student_answers=safety_student_answers,
                 scoring_examples=invalid_examples,  # type: ignore
             )
         assert "All items in scoring examples must be ScoringExample" in str(
@@ -787,9 +775,8 @@ class TestScoreRunMixin:
         accuracy_student_answers: List[StudentAnswerInput],
     ):
         score_response = await aymara_client.score_test_async(
-            accuracy_test_data.test_uuid,
-            TestType.ACCURACY,
-            accuracy_student_answers,
+            test_uuid=accuracy_test_data.test_uuid,
+            student_answers=accuracy_student_answers,
         )
         assert isinstance(score_response, ScoreRunResponse)
         assert score_response.score_run_status == Status.COMPLETED
@@ -822,7 +809,8 @@ class TestScoreRunMixin:
         test_uuid = accuracy_test_data.test_uuid
 
         score_response = aymara_client.score_test(
-            test_uuid, TestType.ACCURACY, accuracy_student_answers
+            test_uuid=test_uuid,
+            student_answers=accuracy_student_answers,
         )
         assert isinstance(score_response, ScoreRunResponse)
         assert score_response.score_run_status == Status.COMPLETED
@@ -854,9 +842,8 @@ class TestScoreRunMixin:
         accuracy_student_answers: List[StudentAnswerInput],
     ):
         score_response = await aymara_client.score_test_async(
-            accuracy_test_data.test_uuid,
-            TestType.ACCURACY,
-            accuracy_student_answers,
+            test_uuid=accuracy_test_data.test_uuid,
+            student_answers=accuracy_student_answers,
             max_wait_time_secs=0,
         )
         assert isinstance(score_response, ScoreRunResponse)
@@ -870,9 +857,8 @@ class TestScoreRunMixin:
         accuracy_student_answers: List[StudentAnswerInput],
     ):
         score_response = aymara_client.score_test(
-            accuracy_test_data.test_uuid,
-            TestType.ACCURACY,
-            accuracy_student_answers,
+            test_uuid=accuracy_test_data.test_uuid,
+            student_answers=accuracy_student_answers,
             max_wait_time_secs=0,
         )
         assert isinstance(score_response, ScoreRunResponse)
@@ -901,9 +887,8 @@ class TestScoreRunMixin:
         ]
 
         score_response = await aymara_client.score_test_async(
-            accuracy_test_data.test_uuid,
-            TestType.ACCURACY,
-            accuracy_student_answers,
+            test_uuid=accuracy_test_data.test_uuid,
+            student_answers=accuracy_student_answers,
             scoring_examples=scoring_examples,
         )
 
@@ -933,9 +918,8 @@ class TestScoreRunMixin:
         ]
 
         score_response = aymara_client.score_test(
-            accuracy_test_data.test_uuid,
-            TestType.ACCURACY,
-            accuracy_student_answers,
+            test_uuid=accuracy_test_data.test_uuid,
+            student_answers=accuracy_student_answers,
             scoring_examples=scoring_examples,
         )
 
@@ -983,7 +967,8 @@ class TestFreeUserScoreRunRestrictions:
 
         # First score run should succeed
         free_aymara_client.score_test(
-            default_test.test_uuid, TestType.SAFETY, student_answers
+            test_uuid=default_test.test_uuid,
+            student_answers=student_answers,
         )
         assert (
             warning_calls[-1]
@@ -992,7 +977,8 @@ class TestFreeUserScoreRunRestrictions:
 
         # Second score run should succeed
         free_aymara_client.score_test(
-            default_test.test_uuid, TestType.SAFETY, student_answers
+            test_uuid=default_test.test_uuid,
+            student_answers=student_answers,
         )
         assert (
             warning_calls[-1]
@@ -1002,7 +988,8 @@ class TestFreeUserScoreRunRestrictions:
         # Third score run should fail
         with pytest.raises(ValueError):
             free_aymara_client.score_test(
-                default_test.test_uuid, TestType.SAFETY, student_answers
+                test_uuid=default_test.test_uuid,
+                student_answers=student_answers,
             )
 
     def test_free_user_cannot_delete_score_run(self, free_aymara_client):

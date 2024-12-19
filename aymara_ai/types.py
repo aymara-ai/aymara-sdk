@@ -4,6 +4,7 @@ Types for the SDK
 
 from datetime import datetime
 from enum import Enum
+from itertools import zip_longest
 from typing import Annotated, Iterator, List, Optional, Union
 
 import pandas as pd
@@ -612,6 +613,7 @@ class ScoreRunSummaryResponse(BaseModel):
     ]
     improvement_advice: Annotated[str, Field(..., description="Advice for improvement")]
     test_name: Annotated[str, Field(..., description="Name of the test")]
+    test_type: Annotated[TestType, Field(..., description="Type of the test")]
     score_run_uuid: Annotated[str, Field(..., description="UUID of the score run")]
 
     @classmethod
@@ -623,6 +625,7 @@ class ScoreRunSummaryResponse(BaseModel):
             explanation_summary=summary.explanation_summary,
             improvement_advice=summary.improvement_advice,
             test_name=summary.score_run.test.test_name,
+            test_type=summary.score_run.test.test_type,
             score_run_uuid=summary.score_run.score_run_uuid,
         )
 
@@ -663,17 +666,63 @@ class ScoreRunSuiteSummaryResponse(BaseModel):
 
     def to_df(self) -> pd.DataFrame:
         """Create a scores DataFrame."""
-        rows = [
-            {
-                "score_run_suite_summary_uuid": self.score_run_suite_summary_uuid,
-                "score_run_summary_uuid": summary.score_run_summary_uuid,
-                "score_run_uuid": summary.score_run_uuid,
-                "test_name": summary.test_name,
-                "explanation_summary": summary.explanation_summary,
-                "improvement_advice": summary.improvement_advice,
-            }
-            for summary in self.score_run_summaries
-        ]
+
+        rows = []
+        for summary in self.score_run_summaries:
+            if summary.test_type == TestType.ACCURACY:
+                # Split summary and advice by question type sections
+                summary_sections = (
+                    summary.explanation_summary.split("\n\n")
+                    if summary.explanation_summary
+                    else []
+                )
+                advice_sections = (
+                    summary.improvement_advice.split("\n\n")
+                    if summary.improvement_advice
+                    else []
+                )
+
+                # Process each question type section
+                for summary_section, advice_section in zip_longest(
+                    summary_sections, advice_sections, fillvalue=""
+                ):
+                    # Extract question type from summary section if available, otherwise from advice
+                    section = summary_section if summary_section else advice_section
+                    if not section:
+                        continue
+
+                    # Get question type from first line
+                    question_type = section.split("\n")[0].strip()
+
+                    # Get content after first line for summary/advice
+                    summary_content = (
+                        "\n".join(summary_section.split("\n")[1:]).strip()
+                        if summary_section
+                        else ""
+                    )
+                    advice_content = (
+                        "\n".join(advice_section.split("\n")[1:]).strip()
+                        if advice_section
+                        else ""
+                    )
+
+                    rows.append(
+                        {
+                            "test_name": summary.test_name,
+                            "question_type": question_type,
+                            "explanation_summary": summary_content,
+                            "improvement_advice": advice_content,
+                        }
+                    )
+
+            else:
+                rows.append(
+                    {
+                        "test_name": summary.test_name,
+                        "explanation_summary": summary.explanation_summary,
+                        "improvement_advice": summary.improvement_advice,
+                    }
+                )
 
         if self.overall_summary:
             rows.append(
