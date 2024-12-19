@@ -379,7 +379,7 @@ class TestMixin(AymaraAIProtocol):
         student_description: str,
         knowledge_base: str,
         test_language: str = DEFAULT_TEST_LANGUAGE,
-        num_test_questions_per_category: int = DEFAULT_NUM_QUESTIONS,
+        num_test_questions_per_question_type: int = DEFAULT_NUM_QUESTIONS,
         max_wait_time_secs: Optional[int] = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
@@ -396,8 +396,8 @@ class TestMixin(AymaraAIProtocol):
         :type knowledge_base: str
         :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
         :type test_language: str, optional
-        :param num_test_questions_per_category: Number of test questions per category, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
-        :type num_test_questions_per_category: int, optional
+        :param num_test_questions_per_question_type: Number of test questions per question type, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
+        :type num_test_questions_per_question_type: int, optional
         :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
@@ -420,7 +420,7 @@ class TestMixin(AymaraAIProtocol):
             test_system_prompt=None,
             knowledge_base=knowledge_base,
             test_language=test_language,
-            num_test_questions=num_test_questions_per_category,
+            num_test_questions=num_test_questions_per_question_type,
             is_async=False,
             test_type=TestType.ACCURACY,
             max_wait_time_secs=max_wait_time_secs,
@@ -435,7 +435,7 @@ class TestMixin(AymaraAIProtocol):
         student_description: str,
         knowledge_base: str,
         test_language: str = DEFAULT_TEST_LANGUAGE,
-        num_test_questions_per_category: int = DEFAULT_NUM_QUESTIONS,
+        num_test_questions_per_question_type: int = DEFAULT_NUM_QUESTIONS,
         max_wait_time_secs: Optional[int] = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
@@ -452,8 +452,8 @@ class TestMixin(AymaraAIProtocol):
         :type knowledge_base: str
         :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
         :type test_language: str, optional
-        :param num_test_questions_per_category: Number of test questions per category, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
-        :type num_test_questions_per_category: int, optional
+        :param num_test_questions_per_question_type: Number of test questions per question type, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
+        :type num_test_questions_per_question_type: int, optional
         :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
@@ -476,7 +476,7 @@ class TestMixin(AymaraAIProtocol):
             test_system_prompt=None,
             knowledge_base=knowledge_base,
             test_language=test_language,
-            num_test_questions=num_test_questions_per_category,
+            num_test_questions=num_test_questions_per_question_type,
             is_async=True,
             test_type=TestType.ACCURACY,
             max_wait_time_secs=max_wait_time_secs,
