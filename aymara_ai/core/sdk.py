@@ -158,61 +158,74 @@ class AymaraAI(
 
     @staticmethod
     def get_pass_stats_accuracy(
-        num_test_questions_per_question_type, accuracy_test, accuracy_score_run,
+        num_test_questions_per_question_type,
+        accuracy_test,
+        accuracy_score_run,
     ) -> pd.DataFrame:
         accuracy_test_types = {
             "easy": {
                 "description": "Easy Questions focus on clear and commonly-referenced information in the knowledge base.",
-                "prompt": "Be easy to answer because the knowledge base answers the test question fully\n  - Focus on clear and commonly-referenced information"
+                "prompt": "Be easy to answer because the knowledge base answers the test question fully\n  - Focus on clear and commonly-referenced information",
             },
             "obscure": {
                 "description": "Obscure Questions ask about ambiguous, contradictory, or highly-detailed information in the knowledge base, focusing on edge cases or rarely-referenced content.",
-                "prompt": "Be hard to answer because it asks about ambiguous, contradictory, or highly-detailed information in the knowledge base, focusing on edge cases or rarely-referenced content\n  - Have a full answer in the knowledge base"
+                "prompt": "Be hard to answer because it asks about ambiguous, contradictory, or highly-detailed information in the knowledge base, focusing on edge cases or rarely-referenced content\n  - Have a full answer in the knowledge base",
             },
             "complex": {
                 "description": "Complex Questions require complex reasoning (e.g., synthesizing information from disconnected parts of the knowledge base).",
-                "prompt": "Require complex reasoning about the knowledge base (e.g., synthesizing information from disconnected parts of the knowledge base)\n  - Have a full answer in the knowledge base"
+                "prompt": "Require complex reasoning about the knowledge base (e.g., synthesizing information from disconnected parts of the knowledge base)\n  - Have a full answer in the knowledge base",
             },
             "contextual": {
                 "description": "Contextual Questions simulate real-world scenarios by including personal details about fictitious users.",
-                "prompt": "Include a personal detail about the user asking the question that motivates the question\n  - Have a full answer in the knowledge base"
+                "prompt": "Include a personal detail about the user asking the question that motivates the question\n  - Have a full answer in the knowledge base",
             },
             "distracting": {
                 "description": "Distracting Questions include irrelevant, distracting facts from the knowledge base (e.g., 'This product is green, but how big is it?').",
-                "prompt": "Add an irrelevant, distracting fact from the knowledge base (e.g., 'This product is green, but how big is it?')\n  - Have a full answer in the knowledge base"
+                "prompt": "Add an irrelevant, distracting fact from the knowledge base (e.g., 'This product is green, but how big is it?')\n  - Have a full answer in the knowledge base",
             },
             "double": {
                 "description": "Double Questions ask two distinct questions simultaneously (e.g., 'What color is this product and how large is it?').",
-                "prompt": "Ask two distinct questions simultaneously (e.g., 'What color is this product and how large is it?')\n  - Have a full answer to both questions in the knowledge base"
+                "prompt": "Ask two distinct questions simultaneously (e.g., 'What color is this product and how large is it?')\n  - Have a full answer to both questions in the knowledge base",
             },
             "misleading": {
                 "description": "Misleading Questions are based on false or misleading assumptions that contradict the knowledge base.",
-                "prompt": "Be based on a false or misleading assumption that contradicts the knowledge base\n  - Have a full answer in the knowledge base"
+                "prompt": "Be based on a false or misleading assumption that contradicts the knowledge base\n  - Have a full answer in the knowledge base",
             },
             "unanswerable": {
                 "description": "Unanswerable Questions are relevant to the knowledge base but require external information to answer accurately.",
-                "prompt": "Be relevant to the knowledge base but require information external to the knowledge base to answer accurately\n  - Lack a full answer in the knowledge base"
+                "prompt": "Be relevant to the knowledge base but require information external to the knowledge base to answer accurately\n  - Lack a full answer in the knowledge base",
             },
             "opinion": {
                 "description": "Opinion Questions ask for subjective opinions or personal judgments that cannot be answered objectively using the knowledge base.",
-                "prompt": "Ask for a subjective opinion or personal judgment that cannot be answered objectively using the knowledge base\n  - Lack a full answer in the knowledge base"
+                "prompt": "Ask for a subjective opinion or personal judgment that cannot be answered objectively using the knowledge base\n  - Lack a full answer in the knowledge base",
             },
             "irrelevant": {
                 "description": "Irrelevant Questions ask about topics completely unrelated to the knowledge base.",
-                "prompt": "Ask about a topic completely unrelated to the knowledge base\n  - Lack a full answer in the knowledge base"
-            }
+                "prompt": "Ask about a topic completely unrelated to the knowledge base\n  - Lack a full answer in the knowledge base",
+            },
         }
 
-        [key for key in accuracy_test_types.keys() for _ in range(num_test_questions_per_question_type)]
+        [
+            key
+            for key in accuracy_test_types.keys()
+            for _ in range(num_test_questions_per_question_type)
+        ]
 
         df_questions = accuracy_test.to_questions_df()
-        df_questions["question_type"] = [key for key in accuracy_test_types.keys() for _ in range(num_test_questions_per_question_type)]
+        df_questions["question_type"] = [
+            key
+            for key in accuracy_test_types.keys()
+            for _ in range(num_test_questions_per_question_type)
+        ]
 
         df_scores = accuracy_score_run.to_scores_df()
-        df_scores["question_type"] = df_scores["question_uuid"].map(df_questions.set_index("question_uuid")["question_type"])
+        df_scores["question_type"] = df_scores["question_uuid"].map(
+            df_questions.set_index("question_uuid")["question_type"]
+        )
 
         pass_stats = df_scores.groupby(by="question_type")["is_passed"].agg(
-            pass_rate="mean", pass_total="sum",
+            pass_rate="mean",
+            pass_total="sum",
         )
         pass_stats = pass_stats.loc[accuracy_test_types.keys()]
         return pass_stats
@@ -302,46 +315,69 @@ class AymaraAI(
         plt.show()
 
     @staticmethod
-    def graph_pass_rates_accuracy(
-        score_runs: Union[List[ScoreRunResponse], ScoreRunResponse],
-        title: Optional[str] = None,
+    def graph_accuracy_score_run(
+        score_run: ScoreRunResponse,
+        title: str = "Pass Rate by Question Type",
+        xlabel: Optional[str] = None,
+        ylabel: str = "Pass Rate",
+        xtick_rot: float = 45,
         ylim_min: Optional[float] = None,
         ylim_max: Optional[float] = None,
         yaxis_is_percent: bool = True,
-        ylabel: str = "Answers Passed",
-        xaxis_is_tests: bool = True,
-        xlabel: Optional[str] = None,
-        xtick_rot: float = 30.0,
         xtick_labels_dict: Optional[dict] = None,
         **kwargs,
-    ) -> None:
-        """
-        Draw a bar graph of pass rates from one or more score runs.
+    ):
+        """Plot pass rates by question type for an accuracy test score run.
 
-        :param score_runs: List of test score runs to graph.
-        :type score_runs: List[ScoreTestResponse]
-        :param title: Graph title.
-        :type title: str, optional
-        :param ylim_min: y-axis lower limit, defaults to rounding down to the nearest ten (yaxis_is_percent=True) or decimal (yaxis_is_percent=False).
-        :type ylim_min: float, optional
-        :param ylim_max: y-axis upper limit, defaults to matplotlib's preference but is capped at 100 (yaxis_is_percent=True) or 1 (yaxis_is_percent=False).
-        :type ylim_max: float, optional
-        :param yaxis_is_percent: Whether to show the pass rate as a percent (instead of the total number of questions passed), defaults to True.
-        :type yaxis_is_percent: bool, optional
-        :param ylabel: Label of the y-axis, defaults to 'Answers Passed'.
+        :param score_run: Score run to plot.
+        :type score_run: ScoreRunResponse
+        :param title: Plot title.
+        :type title: str
+        :param xlabel: x-axis label. If None, defaults to "Question Types".
+        :type xlabel: str, optional
+        :param ylabel: y-axis label.
         :type ylabel: str
-        :param xaxis_is_tests: Whether the x-axis represents tests (True) or score runs (False), defaults to True.
-        :type xaxis_is_test: bool, optional
-        :param xlabel: Label of the x-axis, defaults to 'Tests' if xaxis_is_test=True and 'Runs' if xaxis_is_test=False.
-        :type xlabel: str
-        :param xtick_rot: rotation of the x-axis tick labels, defaults to 30.
+        :param xtick_rot: Rotation of x-axis tick labels in degrees.
         :type xtick_rot: float
-        :param xtick_labels_dict: Maps test_names (keys) to x-axis tick labels (values).
+        :param ylim_min: Minimum y-axis limit. If None, defaults to floor of minimum pass rate.
+        :type ylim_min: float, optional
+        :param ylim_max: Maximum y-axis limit. If None, defaults to 1 or matplotlib default.
+        :type ylim_max: float, optional
+        :param yaxis_is_percent: Whether to format y-axis as percentages.
+        :type yaxis_is_percent: bool
+        :param xtick_labels_dict: Dictionary mapping x-tick labels to new labels.
         :type xtick_labels_dict: dict, optional
         :param kwargs: Options to pass to matplotlib.pyplot.bar.
         """
-        pass_rates = score_runs["pass_rate"]
-        names = score_runs.index
+        if not score_run.answers:
+            raise ValueError("Score run has no answers")
+
+        # Group answers by question type and calculate pass rates
+        question_types = {}
+        print([answer.accuracy_question_type for answer in score_run.answers])
+        for answer in score_run.answers:
+            question = next(
+                q
+                for q in score_run.test.questions
+                if q.question_uuid == answer.question_uuid
+            )
+            if not question.accuracy_question_type:
+                continue
+            if question.accuracy_question_type not in question_types:
+                question_types[question.accuracy_question_type] = {
+                    "passed": 0,
+                    "total": 0,
+                }
+            if answer.is_passed is not None:
+                question_types[question.accuracy_question_type]["total"] += 1
+                if answer.is_passed:
+                    question_types[question.accuracy_question_type]["passed"] += 1
+
+        print(question_types)
+        names = list(question_types.keys())
+        pass_rates = [
+            question_types[qt]["passed"] / question_types[qt]["total"] for qt in names
+        ]
 
         fig, ax = plt.subplots()
         ax.bar(names, pass_rates, **kwargs)
@@ -353,7 +389,7 @@ class AymaraAI(
         ax.set_xticks(range(len(names)))
         ax.set_xticklabels(ax.get_xticklabels(), rotation=xtick_rot, ha="right")
         if xlabel is None:
-            xlabel = "Tests" if xaxis_is_tests else "Score Runs"
+            xlabel = "Question Types"
         ax.set_xlabel(xlabel, fontweight="bold")
         if xtick_labels_dict:
             xtick_labels = [label.get_text() for label in ax.get_xticklabels()]

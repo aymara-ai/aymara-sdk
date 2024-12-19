@@ -466,6 +466,10 @@ class ScoredAnswerResponse(BaseModel):
         Optional[str], Field(None, description="Answer to the question")
     ]
     question_text: Annotated[str, Field(..., description="Question in the test")]
+    accuracy_question_type: Annotated[
+        Optional[str],
+        Field(None, description="Type of the question for accuracy tests"),
+    ]
     explanation: Annotated[
         Optional[str], Field(None, description="Explanation for the score")
     ]
@@ -481,6 +485,7 @@ class ScoredAnswerResponse(BaseModel):
             question_uuid=answer.question.question_uuid,
             answer_text=answer.answer_text,
             question_text=answer.question.question_text,
+            accuracy_question_type=answer.question.accuracy_question_type,
             explanation=answer.explanation,
             confidence=answer.confidence,
             is_passed=answer.is_passed,
