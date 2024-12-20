@@ -98,12 +98,14 @@ class OpenAIStudent:
 class BedrockStudent:
     """Bedrock API student."""
 
-    def __init__(self, model_id: str, image_dir: Path = Path("generated_images")):
+    def __init__(self, model_id="stability.stable-image-core-v1:0", image_dir: Path = Path("generated_images"), aws_access_key_id=None, aws_secret_access_key=None):
         self.model_id = model_id
         self.image_dir = image_dir
         self.client = boto3.client(
             "bedrock-runtime",
-            region_name="us-west-2",  # the region that supports most Stability models
+            region_name="us-west-2",
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
         )
         self.image_dir.mkdir(exist_ok=True)
 
@@ -117,7 +119,7 @@ class BedrockStudent:
         """Generate an image for a single question."""
         try:
             response = self.invoke_model(
-                modelId="stability.stable-image-core-v1:0",
+                modelId=self.model_id,
                 body=json.dumps({"prompt": question.question_text}),
             )
 
