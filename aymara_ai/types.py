@@ -177,32 +177,6 @@ class ImageScoringExample(BaseModel):
         )
 
 
-class JailbreakScoringExample(BaseModel):
-    """
-    An example answer to guide the scoring process
-    """
-
-    question_text: Annotated[str, Field(..., description="Example question text")]
-    answer_text: Annotated[str, Field(..., description="Example answer text")]
-    explanation: Annotated[
-        Optional[str],
-        Field(None, description="Explanation of why this answer should pass/fail"),
-    ]
-    is_passing: Annotated[
-        bool, Field(..., description="Whether this is a passing example")
-    ]
-
-    def to_scoring_example_in_schema(self) -> ScoringExampleInSchema:
-        return ScoringExampleInSchema(
-            question_text=self.question_text,
-            answer_text=self.answer_text,
-            explanation=self.explanation,
-            example_type=ScoringExampleInSchemaExampleType.PASS
-            if self.is_passing
-            else ScoringExampleInSchemaExampleType.FAIL,
-        )
-
-
 class CreateScoreRunInput(BaseModel):
     """
     Parameters for scoring a test
@@ -225,13 +199,35 @@ class QuestionResponse(BaseModel):
 
     question_text: Annotated[str, Field(..., description="Question in the test")]
     question_uuid: Annotated[str, Field(..., description="UUID of the question")]
+
+    @classmethod
+    def from_question_schema(cls, question: QuestionSchema) -> "QuestionResponse":
+        return cls(
+            question_uuid=question.question_uuid,
+            question_text=question.question_text,
+        )
+
+    def to_question_schema(self) -> QuestionSchema:
+        return QuestionSchema(
+            question_uuid=self.question_uuid,
+            question_text=self.question_text,
+        )
+
+
+class AccuracyQuestionResponse(QuestionResponse):
+    """
+    Question in the test
+    """
+
     accuracy_question_type: Annotated[
         Optional[str],
         Field(None, description="Type of the question for accuracy tests"),
     ]
 
     @classmethod
-    def from_question_schema(cls, question: QuestionSchema) -> "QuestionResponse":
+    def from_question_schema(
+        cls, question: QuestionSchema
+    ) -> "AccuracyQuestionResponse":
         return cls(
             question_uuid=question.question_uuid,
             question_text=question.question_text,
@@ -332,6 +328,7 @@ class BaseTestResponse(BaseModel):
                     **{
                         "question_uuid": question.question_uuid,
                         "question_text": question.question_text,
+                        "accuracy_question_type": question.accuracy_question_type,
                     },
                 }
                 for question in self.questions
@@ -353,9 +350,6 @@ class BaseTestResponse(BaseModel):
             "test_status": Status.from_api_status(test.test_status),
             "created_at": test.created_at,
             "num_test_questions": test.num_test_questions,
-            "questions": [QuestionResponse.from_question_schema(q) for q in questions]
-            if questions
-            else None,
             "failure_reason": failure_reason,
             "good_examples": [
                 GoodExample(question_text=e.example_text, explanation=e.explanation)
@@ -372,16 +366,37 @@ class BaseTestResponse(BaseModel):
             if test.examples
             else None,
         }
-
         if test.test_type == TestType.SAFETY or test.test_type == TestType.IMAGE_SAFETY:
-            return SafetyTestResponse(**base_attributes, test_policy=test.test_policy)
+            questions = (
+                [QuestionResponse.from_question_schema(q) for q in questions]
+                if questions
+                else None
+            )
+            return SafetyTestResponse(
+                **base_attributes, test_policy=test.test_policy, questions=questions
+            )
         elif test.test_type == TestType.JAILBREAK:
+            questions = (
+                [QuestionResponse.from_question_schema(q) for q in questions]
+                if questions
+                else None
+            )
             return JailbreakTestResponse(
-                **base_attributes, test_system_prompt=test.test_system_prompt
+                **base_attributes,
+                test_system_prompt=test.test_system_prompt,
+                questions=questions,
             )
         elif test.test_type == TestType.ACCURACY:
+            questions = (
+                [AccuracyQuestionResponse.from_question_schema(q) for q in questions]
+                if questions
+                else None
+            )
+
             return AccuracyTestResponse(
-                **base_attributes, knowledge_base=test.knowledge_base
+                **base_attributes,
+                knowledge_base=test.knowledge_base,
+                questions=questions,
             )
         else:
             raise ValueError(f"Unsupported test type: {test.test_type}")
@@ -412,6 +427,10 @@ class AccuracyTestResponse(BaseTestResponse):
 
     knowledge_base: Annotated[
         str, Field(..., description="Knowledge base to test against")
+    ]
+    questions: Annotated[
+        Optional[List[AccuracyQuestionResponse]],
+        Field(None, description="Questions in the test"),
     ]
 
 
@@ -466,10 +485,6 @@ class ScoredAnswerResponse(BaseModel):
         Optional[str], Field(None, description="Answer to the question")
     ]
     question_text: Annotated[str, Field(..., description="Question in the test")]
-    accuracy_question_type: Annotated[
-        Optional[str],
-        Field(None, description="Type of the question for accuracy tests"),
-    ]
     explanation: Annotated[
         Optional[str], Field(None, description="Explanation for the score")
     ]
@@ -480,6 +495,30 @@ class ScoredAnswerResponse(BaseModel):
 
     @classmethod
     def from_answer_out_schema(cls, answer: AnswerOutSchema) -> "ScoredAnswerResponse":
+        return cls(
+            answer_uuid=answer.answer_uuid,
+            question_uuid=answer.question.question_uuid,
+            answer_text=answer.answer_text,
+            question_text=answer.question.question_text,
+            explanation=answer.explanation,
+            confidence=answer.confidence,
+            is_passed=answer.is_passed,
+        )
+
+
+class AccuracyScoredAnswerResponse(ScoredAnswerResponse):
+    """
+    A single answer to a question in the test that has been scored.
+    """
+
+    accuracy_question_type: Annotated[
+        str, Field(..., description="Type of the question for accuracy tests")
+    ]
+
+    @classmethod
+    def from_answer_out_schema(
+        cls, answer: AnswerOutSchema
+    ) -> "AccuracyScoredAnswerResponse":
         return cls(
             answer_uuid=answer.answer_uuid,
             question_uuid=answer.question.question_uuid,
@@ -559,24 +598,81 @@ class ScoreRunResponse(BaseModel):
         answers: Optional[List[AnswerOutSchema]] = None,
         failure_reason: Optional[str] = None,
     ) -> "ScoreRunResponse":
-        return cls(
-            score_run_uuid=score_run.score_run_uuid,
-            score_run_status=Status.from_api_status(score_run.score_run_status),
-            test=BaseTestResponse.from_test_out_schema_and_questions(
+        base_attributes = {
+            "score_run_uuid": score_run.score_run_uuid,
+            "score_run_status": Status.from_api_status(score_run.score_run_status),
+            "test": BaseTestResponse.from_test_out_schema_and_questions(
                 score_run.test,
                 questions=[answer.question for answer in answers]
                 if answers is not None
                 else None,
             ),
-            answers=[
-                ScoredAnswerResponse.from_answer_out_schema(answer)
-                for answer in answers
-            ]
-            if answers is not None
-            else None,
-            created_at=score_run.created_at,
-            failure_reason=failure_reason,
+            "created_at": score_run.created_at,
+            "failure_reason": failure_reason,
+        }
+        if score_run.test.test_type == TestType.ACCURACY:
+            answers = (
+                [
+                    AccuracyScoredAnswerResponse.from_answer_out_schema(answer)
+                    for answer in answers
+                ]
+                if answers
+                else None
+            )
+            return AccuracyScoreRunResponse(
+                **base_attributes,
+                answers=answers,
+            )
+        else:
+            answers = (
+                [
+                    ScoredAnswerResponse.from_answer_out_schema(answer)
+                    for answer in answers
+                ]
+                if answers
+                else None
+            )
+
+        return cls(
+            **base_attributes,
+            answers=answers,
         )
+
+
+class AccuracyScoreRunResponse(ScoreRunResponse):
+    """
+    Score run response for accuracy tests.
+    """
+
+    answers: Annotated[
+        Optional[List[AccuracyScoredAnswerResponse]],
+        Field(None, description="List of scored answers"),
+    ]
+
+    def to_scores_df(self) -> pd.DataFrame:
+        """Create a scores DataFrame."""
+        rows = (
+            [
+                {
+                    "score_run_uuid": self.score_run_uuid,
+                    "test_uuid": self.test.test_uuid,
+                    "test_name": self.test.test_name,
+                    "question_type": answer.accuracy_question_type,
+                    "question_uuid": answer.question_uuid,
+                    "answer_uuid": answer.answer_uuid,
+                    "is_passed": answer.is_passed,
+                    "question_text": answer.question_text,
+                    "answer_text": answer.answer_text,
+                    "explanation": answer.explanation,
+                    "confidence": answer.confidence,
+                }
+                for answer in self.answers
+            ]
+            if self.answers
+            else []
+        )
+
+        return pd.DataFrame(rows)
 
 
 class ListScoreRunResponse(RootModel):

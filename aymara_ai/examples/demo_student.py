@@ -9,7 +9,9 @@ from pathlib import Path
 from typing import Optional
 
 import boto3
-from openai import OpenAI
+from langfuse import Langfuse
+from langfuse.decorators import langfuse_context, observe
+from langfuse.openai import OpenAI
 from PIL import Image
 
 from aymara_ai.types import StudentAnswerInput
@@ -26,11 +28,17 @@ Using only the information in the knowledge base, answer user questions to the b
 {knowledge_base}
 </knowledge_base>"""
 
+langfuse = Langfuse(
+    public_key=os.getenv("LANGFUSE_PUBLIC_KEY") or "",
+    secret_key=os.getenv("LANGFUSE_SECRET_KEY") or "",
+    host=os.getenv("LANGFUSE_HOST") or "",
+)
+
 
 class OpenAIStudent:
     """OpenAI API student."""
 
-    def __init__(self, model="gpt-4o-mini", api_key=None):
+    def __init__(self, model="gpt-4o", api_key=None):
         self.model = model
         if api_key is None:
             api_key = os.environ.get("OPENAI_KEY")
@@ -66,7 +74,11 @@ class OpenAIStudent:
             ]
         )
 
+    @observe
     async def answer_test_questions(self, tests, system_prompts=None):
+        langfuse_context.update_current_observation(
+            tags=["demo_student"],
+        )
         if system_prompts is None:
             system_prompts = [None] * len(tests)
 
@@ -80,7 +92,6 @@ class OpenAIStudent:
         student_answers_dict = {}
         for test, student_answers in zip(tests, all_student_answers):
             student_answers_dict[test.test_uuid] = student_answers
-
         return student_answers_dict
 
 

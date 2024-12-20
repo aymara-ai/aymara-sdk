@@ -1296,7 +1296,11 @@ def test_create_accuracy_test(aymara_client):
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
             items=[
-                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
+                models.QuestionSchema(
+                    question_uuid="q1",
+                    question_text="Question 1",
+                    accuracy_question_type="type_1",
+                )
             ],
             count=1,
         )
@@ -1355,7 +1359,11 @@ async def test_create_accuracy_test_async(aymara_client):
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
             items=[
-                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
+                models.QuestionSchema(
+                    question_uuid="q1",
+                    question_text="Question 1",
+                    accuracy_question_type="type_1",
+                )
             ],
             count=1,
         )
@@ -1384,7 +1392,7 @@ def test_create_accuracy_test_validation(aymara_client):
             "Test 1",
             "Student description",
             "Test knowledge base content",
-            num_test_questions_per_category=0,
+            num_test_questions_per_question_type=0,
         )
 
     with pytest.raises(ValueError, match="knowledge_base is required"):

@@ -33,6 +33,7 @@ dependencies = [
     "boto3>=1.35.66",
     "openai>=1.55.0",
     "tiktoken>=0.8.0",
+    "langfuse>=2.57.0",
 ]
 license = {file = "LICENSE"}
 keywords = ["ai", "alignment", "testing"]

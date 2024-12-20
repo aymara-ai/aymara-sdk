@@ -10,6 +10,8 @@ from aymara_ai.generated.aymara_api_client.models.test_type import (
     TestType as AymaraTestType,
 )
 from aymara_ai.types import (
+    AccuracyScoredAnswerResponse,
+    AccuracyScoreRunResponse,
     BaseTestResponse,
     ScoredAnswerResponse,
     ScoreRunResponse,
@@ -272,3 +274,128 @@ def test_graph_pass_rates_multiple_runs():
         mock_ax.set_ylabel.assert_called_once()
         mock_tight_layout.assert_called_once()
         mock_show.assert_called_once()
+
+
+@pytest.fixture
+def mock_accuracy_score_run():
+    return AccuracyScoreRunResponse(
+        score_run_uuid="test-uuid",
+        score_run_status=Status.COMPLETED,
+        test=BaseTestResponse(
+            test_name="Accuracy Test",
+            test_uuid="test-test-uuid",
+            test_status=Status.COMPLETED,
+            test_type=AymaraTestType.ACCURACY,
+            organization_name="Organization 1",
+            num_test_questions=10,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            test_policy="Test accuracy",
+            test_system_prompt=None,
+        ),
+        answers=[
+            AccuracyScoredAnswerResponse(
+                answer_uuid=f"answer-uuid-{i}",
+                question_uuid=f"question-uuid-{i}",
+                answer_text=f"Answer {i}",
+                question_text=f"Question {i}",
+                explanation=f"Explanation {i}",
+                confidence=0.8,
+                is_passed=i % 2 == 0,
+                accuracy_question_type="type_" + str((i % 3) + 1),
+            )
+            for i in range(1, 11)
+        ],
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+    )
+
+
+def test_get_pass_stats_accuracy(mock_accuracy_score_run):
+    result = AymaraAI.get_pass_stats_accuracy(mock_accuracy_score_run)
+
+    assert isinstance(result, pd.DataFrame)
+    assert list(result.columns) == ["pass_rate", "pass_total"]
+    assert len(result.index) == 3  # Three different question types
+    assert all(0 <= rate <= 1 for rate in result["pass_rate"])
+    assert all(isinstance(total, (int, float)) for total in result["pass_total"])
+
+
+def test_graph_accuracy_score_run(mock_accuracy_score_run):
+    with patch("matplotlib.pyplot.subplots") as mock_subplots, patch(
+        "matplotlib.pyplot.show"
+    ) as mock_show, patch("matplotlib.pyplot.tight_layout") as mock_tight_layout:
+        mock_fig, mock_ax = Mock(), Mock()
+        mock_subplots.return_value = (mock_fig, mock_ax)
+        mock_ax.get_ylim.return_value = (0, 1)
+        mock_ax.get_xticklabels.return_value = [
+            Mock(get_text=lambda: f"type_{i}") for i in range(1, 4)
+        ]
+
+        AymaraAI.graph_accuracy_score_run(mock_accuracy_score_run)
+
+        mock_subplots.assert_called_once()
+        mock_ax.bar.assert_called_once()
+        mock_ax.set_title.assert_called_once_with("Pass Rate by Question Type")
+        mock_ax.set_xlabel.assert_called_once_with("Question Types", fontweight="bold")
+        mock_ax.set_ylabel.assert_called_once_with("Pass Rate", fontweight="bold")
+        mock_tight_layout.assert_called_once()
+        mock_show.assert_called_once()
+
+
+def test_graph_accuracy_score_run_custom_options(mock_accuracy_score_run):
+    with patch("matplotlib.pyplot.subplots") as mock_subplots, patch(
+        "matplotlib.pyplot.show"
+    ) as mock_show, patch("matplotlib.pyplot.tight_layout") as mock_tight_layout:
+        mock_fig, mock_ax = Mock(), Mock()
+        mock_subplots.return_value = (mock_fig, mock_ax)
+        mock_ax.get_ylim.return_value = (0, 1)
+        mock_ax.get_xticklabels.return_value = [
+            Mock(get_text=lambda: f"type_{i}") for i in range(1, 4)
+        ]
+
+        AymaraAI.graph_accuracy_score_run(
+            mock_accuracy_score_run,
+            title="Custom Accuracy Graph",
+            ylim_min=0.2,
+            ylim_max=0.8,
+            ylabel="Custom Y Label",
+            xlabel="Custom X Label",
+            xtick_rot=60.0,
+            xtick_labels_dict={"type_1": "Type One"},
+            color="blue",
+        )
+
+        mock_subplots.assert_called_once()
+        mock_ax.bar.assert_called_once()
+        mock_ax.set_title.assert_called_once_with("Custom Accuracy Graph")
+        mock_ax.set_xlabel.assert_called_once_with("Custom X Label", fontweight="bold")
+        mock_ax.set_ylabel.assert_called_once_with("Custom Y Label", fontweight="bold")
+        mock_ax.set_ylim.assert_called_once_with(bottom=0.2, top=0.8)
+        mock_tight_layout.assert_called_once()
+        mock_show.assert_called_once()
+
+
+def test_graph_accuracy_score_run_empty_answers():
+    empty_score_run = AccuracyScoreRunResponse(
+        score_run_uuid="test-uuid",
+        score_run_status=Status.COMPLETED,
+        test=BaseTestResponse(
+            test_name="Empty Test",
+            test_uuid="test-uuid",
+            test_status=Status.COMPLETED,
+            test_type=AymaraTestType.ACCURACY,
+            organization_name="Organization 1",
+            num_test_questions=0,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            test_policy="Test accuracy",
+            test_system_prompt=None,
+        ),
+        answers=[],
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+    )
+
+    with pytest.raises(ValueError, match="Score run has no answers"):
+        AymaraAI.graph_accuracy_score_run(empty_score_run)

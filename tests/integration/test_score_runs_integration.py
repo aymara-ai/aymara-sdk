@@ -7,6 +7,8 @@ import pytest
 from aymara_ai.core.sdk import AymaraAI
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
 from aymara_ai.types import (
+    AccuracyScoreRunResponse,
+    AccuracyTestResponse,
     BaseTestResponse,
     JailbreakTestResponse,
     ListScoreRunResponse,
@@ -61,7 +63,7 @@ class TestScoreRunMixin:
             test_name=test_name,
             student_description=student_description,
             knowledge_base=knowledge_base,
-            num_test_questions_per_category=num_test_questions,
+            num_test_questions_per_question_type=num_test_questions,
         )
         return test_response
 
@@ -899,7 +901,7 @@ class TestScoreRunMixin:
     def test_score_accuracy_test_with_scoring_examples_sync(
         self,
         aymara_client: AymaraAI,
-        accuracy_test_data: SafetyTestResponse,
+        accuracy_test_data: AccuracyTestResponse,
         accuracy_student_answers: List[StudentAnswerInput],
     ):
         scoring_examples = [
@@ -923,7 +925,7 @@ class TestScoreRunMixin:
             scoring_examples=scoring_examples,
         )
 
-        assert isinstance(score_response, ScoreRunResponse)
+        assert isinstance(score_response, AccuracyScoreRunResponse)
         assert score_response.score_run_status == Status.COMPLETED
         assert len(score_response.answers) == len(accuracy_student_answers)
 

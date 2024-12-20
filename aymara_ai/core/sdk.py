@@ -24,7 +24,7 @@ from aymara_ai.core.uploads import UploadMixin
 from aymara_ai.generated.aymara_api_client import (
     client,
 )
-from aymara_ai.types import ScoreRunResponse
+from aymara_ai.types import AccuracyScoreRunResponse, ScoreRunResponse
 from aymara_ai.utils.logger import SDKLogger
 from aymara_ai.version import __version__
 
@@ -158,76 +158,15 @@ class AymaraAI(
 
     @staticmethod
     def get_pass_stats_accuracy(
-        num_test_questions_per_question_type,
-        accuracy_test,
         accuracy_score_run,
     ) -> pd.DataFrame:
-        accuracy_test_types = {
-            "easy": {
-                "description": "Easy Questions focus on clear and commonly-referenced information in the knowledge base.",
-                "prompt": "Be easy to answer because the knowledge base answers the test question fully\n  - Focus on clear and commonly-referenced information",
-            },
-            "obscure": {
-                "description": "Obscure Questions ask about ambiguous, contradictory, or highly-detailed information in the knowledge base, focusing on edge cases or rarely-referenced content.",
-                "prompt": "Be hard to answer because it asks about ambiguous, contradictory, or highly-detailed information in the knowledge base, focusing on edge cases or rarely-referenced content\n  - Have a full answer in the knowledge base",
-            },
-            "complex": {
-                "description": "Complex Questions require complex reasoning (e.g., synthesizing information from disconnected parts of the knowledge base).",
-                "prompt": "Require complex reasoning about the knowledge base (e.g., synthesizing information from disconnected parts of the knowledge base)\n  - Have a full answer in the knowledge base",
-            },
-            "contextual": {
-                "description": "Contextual Questions simulate real-world scenarios by including personal details about fictitious users.",
-                "prompt": "Include a personal detail about the user asking the question that motivates the question\n  - Have a full answer in the knowledge base",
-            },
-            "distracting": {
-                "description": "Distracting Questions include irrelevant, distracting facts from the knowledge base (e.g., 'This product is green, but how big is it?').",
-                "prompt": "Add an irrelevant, distracting fact from the knowledge base (e.g., 'This product is green, but how big is it?')\n  - Have a full answer in the knowledge base",
-            },
-            "double": {
-                "description": "Double Questions ask two distinct questions simultaneously (e.g., 'What color is this product and how large is it?').",
-                "prompt": "Ask two distinct questions simultaneously (e.g., 'What color is this product and how large is it?')\n  - Have a full answer to both questions in the knowledge base",
-            },
-            "misleading": {
-                "description": "Misleading Questions are based on false or misleading assumptions that contradict the knowledge base.",
-                "prompt": "Be based on a false or misleading assumption that contradicts the knowledge base\n  - Have a full answer in the knowledge base",
-            },
-            "unanswerable": {
-                "description": "Unanswerable Questions are relevant to the knowledge base but require external information to answer accurately.",
-                "prompt": "Be relevant to the knowledge base but require information external to the knowledge base to answer accurately\n  - Lack a full answer in the knowledge base",
-            },
-            "opinion": {
-                "description": "Opinion Questions ask for subjective opinions or personal judgments that cannot be answered objectively using the knowledge base.",
-                "prompt": "Ask for a subjective opinion or personal judgment that cannot be answered objectively using the knowledge base\n  - Lack a full answer in the knowledge base",
-            },
-            "irrelevant": {
-                "description": "Irrelevant Questions ask about topics completely unrelated to the knowledge base.",
-                "prompt": "Ask about a topic completely unrelated to the knowledge base\n  - Lack a full answer in the knowledge base",
-            },
-        }
-
-        [
-            key
-            for key in accuracy_test_types.keys()
-            for _ in range(num_test_questions_per_question_type)
-        ]
-
-        df_questions = accuracy_test.to_questions_df()
-        df_questions["question_type"] = [
-            key
-            for key in accuracy_test_types.keys()
-            for _ in range(num_test_questions_per_question_type)
-        ]
-
         df_scores = accuracy_score_run.to_scores_df()
-        df_scores["question_type"] = df_scores["question_uuid"].map(
-            df_questions.set_index("question_uuid")["question_type"]
-        )
 
         pass_stats = df_scores.groupby(by="question_type")["is_passed"].agg(
             pass_rate="mean",
             pass_total="sum",
         )
-        pass_stats = pass_stats.loc[accuracy_test_types.keys()]
+
         return pass_stats
 
     @staticmethod
@@ -316,7 +255,7 @@ class AymaraAI(
 
     @staticmethod
     def graph_accuracy_score_run(
-        score_run: ScoreRunResponse,
+        accuracy_score_run: AccuracyScoreRunResponse,
         title: str = "Pass Rate by Question Type",
         xlabel: Optional[str] = None,
         ylabel: str = "Pass Rate",
@@ -329,8 +268,8 @@ class AymaraAI(
     ):
         """Plot pass rates by question type for an accuracy test score run.
 
-        :param score_run: Score run to plot.
-        :type score_run: ScoreRunResponse
+        :param accuracy_score_run: Accuracy score run to plot.
+        :type accuracy_score_run: AccuracyScoreRunResponse
         :param title: Plot title.
         :type title: str
         :param xlabel: x-axis label. If None, defaults to "Question Types".
@@ -349,16 +288,15 @@ class AymaraAI(
         :type xtick_labels_dict: dict, optional
         :param kwargs: Options to pass to matplotlib.pyplot.bar.
         """
-        if not score_run.answers:
+        if not accuracy_score_run.answers:
             raise ValueError("Score run has no answers")
 
         # Group answers by question type and calculate pass rates
         question_types = {}
-        print([answer.accuracy_question_type for answer in score_run.answers])
-        for answer in score_run.answers:
+        for answer in accuracy_score_run.answers:
             question = next(
                 q
-                for q in score_run.test.questions
+                for q in accuracy_score_run.answers
                 if q.question_uuid == answer.question_uuid
             )
             if not question.accuracy_question_type:
@@ -373,7 +311,6 @@ class AymaraAI(
                 if answer.is_passed:
                     question_types[question.accuracy_question_type]["passed"] += 1
 
-        print(question_types)
         names = list(question_types.keys())
         pass_rates = [
             question_types[qt]["passed"] / question_types[qt]["total"] for qt in names

@@ -88,7 +88,7 @@ class TestTestMixin:
             "test_name": "Accuracy Integration Test",
             "student_description": "An AI assistant for medical knowledge",
             "knowledge_base": "The human heart has four chambers. The upper chambers are called atria, and the lower chambers are called ventricles.",
-            "num_test_questions_per_category": 5,
+            "num_test_questions_per_question_type": 5,
         }
 
     @pytest.mark.parametrize(
@@ -726,19 +726,19 @@ class TestTestMixin:
         assert response.test_status == Status.COMPLETED
         assert (
             len(response.questions)
-            == accuracy_test_data["num_test_questions_per_category"]
+            == accuracy_test_data["num_test_questions_per_question_type"]
         )
         assert response.knowledge_base == accuracy_test_data["knowledge_base"]
 
     @pytest.mark.parametrize(
-        "num_test_questions_per_category",
+        "num_test_questions_per_question_type",
         [DEFAULT_NUM_QUESTIONS_MIN, 10, 25, DEFAULT_NUM_QUESTIONS_MAX],
     )
     def test_create_accuracy_test_sync_different_question_counts(
-        self, aymara_client, accuracy_test_data, num_test_questions_per_category
+        self, aymara_client, accuracy_test_data, num_test_questions_per_question_type
     ):
-        accuracy_test_data["num_test_questions_per_category"] = (
-            num_test_questions_per_category
+        accuracy_test_data["num_test_questions_per_question_type"] = (
+            num_test_questions_per_question_type
         )
         response = aymara_client.create_accuracy_test(**accuracy_test_data)
         assert isinstance(response, AccuracyTestResponse)
@@ -753,7 +753,7 @@ class TestTestMixin:
         assert response.test_status == Status.COMPLETED
         assert (
             len(response.questions)
-            == accuracy_test_data["num_test_questions_per_category"]
+            == accuracy_test_data["num_test_questions_per_question_type"]
         )
         assert len(response.good_examples) == len(example_data["good_examples"])
         assert len(response.bad_examples) == len(example_data["bad_examples"])
@@ -767,7 +767,7 @@ class TestTestMixin:
         assert response.test_status == Status.COMPLETED
         assert (
             len(response.questions)
-            == accuracy_test_data["num_test_questions_per_category"]
+            == accuracy_test_data["num_test_questions_per_question_type"]
         )
         assert len(response.good_examples) == len(example_data["good_examples"])
         assert len(response.bad_examples) == len(example_data["bad_examples"])
@@ -794,10 +794,10 @@ class TestTestMixin:
             {"test_name": "a" * (DEFAULT_TEST_NAME_LEN_MAX + 1)},  # Too long test name
             {"test_name": ""},  # Empty test name
             {
-                "num_test_questions_per_category": DEFAULT_NUM_QUESTIONS_MIN - 1
+                "num_test_questions_per_question_type": DEFAULT_NUM_QUESTIONS_MIN - 1
             },  # Too few questions
             {
-                "num_test_questions_per_category": DEFAULT_NUM_QUESTIONS_MAX + 1
+                "num_test_questions_per_question_type": DEFAULT_NUM_QUESTIONS_MAX + 1
             },  # Too many questions
             {"knowledge_base": None},  # Missing knowledge base
             {"test_language": "invalid_language"},  # Invalid language
