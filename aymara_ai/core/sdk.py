@@ -9,9 +9,12 @@ from __future__ import annotations
 
 import math
 import os
-from typing import List, Optional, Union
+import textwrap
+from typing import List, Dict, Optional, Union, Tuple
 
 import pandas as pd
+import matplotlib.image as mpimg
+import matplotlib.patches as patches
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
@@ -24,7 +27,7 @@ from aymara_ai.core.uploads import UploadMixin
 from aymara_ai.generated.aymara_api_client import (
     client,
 )
-from aymara_ai.types import AccuracyScoreRunResponse, ScoreRunResponse
+from aymara_ai.types import AccuracyScoreRunResponse, SafetyTestResponse, ScoreRunResponse
 from aymara_ai.utils.logger import SDKLogger
 from aymara_ai.version import __version__
 
@@ -348,6 +351,89 @@ class AymaraAI(
                 return f"{y * 100:.0f}%"
 
             ax.yaxis.set_major_formatter(FuncFormatter(to_percent))
+
+        plt.tight_layout()
+        plt.show()
+
+    @staticmethod
+    def show_image_test_answers(
+        tests: List[SafetyTestResponse],
+        test_answers: Dict[str, List[StudentAnswerInput]],
+        score_runs: Optional[List[ScoreRunResponse]] = None,
+        n_images_per_test: Optional[int] = 5,
+        figsize: Optional[Tuple[int, int]] = None,
+    ) -> None:
+        """
+        Display a grid of image test answers with their test questions as captions.
+        If score runs are included, display their test scores as captions instead
+        and add a red border to failed images.
+
+        :param tests: Tests corresponding to the test answers.
+        :type tests: List of SafetyTestResponse objects.
+        :param test_answers: Test answers.
+        :type test_answers: Dictionary of test UUIDs to lists of StudentAnswerInput objects.
+        :param score_runs: Score runs corresponding to the test answers.
+        :type score_runs: List of ScoreRunResponse objects, optional
+        :param n_images_per_test: Number of images to display per test.
+        :type n_images_per_test: int, optional
+        :param figsize: Figure size. Defaults to (n_images_per_test * 3, n_tests * 2 * 4).
+        :type figsize: integer tuple, optional
+        """
+        import matplotlib.patches as patches
+        import matplotlib.image as mpimg
+        import textwrap
+        import matplotlib.pyplot as plt
+        import matplotlib.gridspec as gridspec
+
+        def display_image_group(axs, images, captions):
+            for ax, img_path, caption in zip(axs, images, captions):
+                img = mpimg.imread(img_path)
+                ax.imshow(img)
+                ax.set_title("\n".join(textwrap.wrap(caption, width=30)), fontsize=10, wrap=True, loc="left")
+                ax.axis("off")
+
+                if caption.startswith("Fail"):
+                    rect = patches.Rectangle((0, 0), 1, 1, transform=ax.transAxes, color="red", linewidth=5, fill=False)
+                    ax.add_patch(rect)
+
+        # Create the figure and gridspec layout
+        n_tests = len(test_answers)
+        total_rows = n_tests * 2
+        fig = plt.figure(figsize=figsize or (n_images_per_test * 3, total_rows * 4))
+        gs = gridspec.GridSpec(total_rows, n_images_per_test, figure=fig, height_ratios=[1, 20] * n_tests)
+        fig.subplots_adjust(hspace=0.1, wspace=0.1)
+
+        row = 0
+        for test_uuid, answers in test_answers.items():
+            test = next(t for t in tests if t.test_uuid == test_uuid)
+
+            # Title row
+            ax_title = fig.add_subplot(gs[row, :])
+            ax_title.text(.5, 0, test.test_name, fontsize=16, fontweight="bold", ha="center", va="top")
+            ax_title.axis("off")
+            row += 1
+
+            # Image row
+            images = [a.answer_image_path for a in answers[:n_images_per_test]]
+            if score_runs is None:
+                captions = [
+                    next(q.question_text for q in test.questions if q.question_uuid == a.question_uuid)
+                    for a in answers[:n_images_per_test]
+                ]
+            else:
+                score_run = next(s for s in score_runs if s.test.test_uuid == test_uuid)
+                scores = [
+                    next(s for s in score_run.answers if s.question_uuid == a.question_uuid) 
+                    for a in answers[:n_images_per_test]
+                ]
+                captions = [
+                    f"{'Pass' if s.is_passed else 'Fail'} ({s.confidence:.1%} confidence): {s.explanation}" 
+                    for s in scores
+                ]
+
+            axs = [fig.add_subplot(gs[row, col]) for col in range(len(images))]
+            display_image_group(axs, images, captions)
+            row += 1
 
         plt.tight_layout()
         plt.show()

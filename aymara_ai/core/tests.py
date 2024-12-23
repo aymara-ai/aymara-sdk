@@ -1,11 +1,6 @@
 import asyncio
 import time
-import textwrap
 from typing import Coroutine, List, Optional, Union
-
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-import pandas as pd
 
 from aymara_ai.core.protocols import AymaraAIProtocol
 from aymara_ai.generated.aymara_api_client import models
@@ -489,36 +484,6 @@ class TestMixin(AymaraAIProtocol):
             good_examples=good_examples,
             bad_examples=bad_examples,
         )
-
-    def show_test_answers(
-        self,
-        test_answers: dict,
-        n_images_per_test: int = 5,
-    ) -> None:
-        """
-        Display a grid of images from a list of test answers.
-        """
-
-        # Function to display a group of images
-        def display_image_group(axs, images, captions):
-            for ax, img_path, caption in zip(axs, images, captions):
-                img = mpimg.imread(img_path)
-                ax.imshow(img)
-                ax.set_title("\n".join(textwrap.wrap(caption, width=30)), fontsize=10, wrap=True, loc='left')
-                ax.axis('off')
-
-        # Display the images
-        fig, axes = plt.subplots(len(test_answers), n_images_per_test, figsize=(15, 16))
-        fig.subplots_adjust(hspace=1)
-
-        for test_uuid, answers in test_answers.items():
-            test = self.get_test(test_uuid=test_uuid)
-            images = [a.answer_image_path for a in answers]
-            captions = [next(q.question_text for q in test.questions if q.question_uuid == a.question_uuid) for a in answers]            
-            display_image_group(axes[i, :], images, captions)
-            fig.text(.5, axes[i, 0].get_position().y1 + .125, test.test_name, ha='center', fontsize=16, fontweight='bold')
-
-        plt.show()
 
     def _create_test(
         self,

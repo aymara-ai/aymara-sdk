@@ -317,22 +317,19 @@ class BaseTestResponse(BaseModel):
     def to_questions_df(self) -> pd.DataFrame:
         """Create a questions DataFrame."""
 
-        rows = []
-        if self.questions:
-            rows = [
-                {
-                    **{
-                        "test_uuid": self.test_uuid,
-                        "test_name": self.test_name,
-                    },
-                    **{
-                        "question_uuid": question.question_uuid,
-                        "question_text": question.question_text,
-                        "accuracy_question_type": question.accuracy_question_type,
-                    },
-                }
-                for question in self.questions
-            ]
+        if not self.questions:
+            return pd.DataFrame()
+
+        rows = [
+            {
+                "test_uuid": self.test_uuid,
+                "test_name": self.test_name,
+                "question_uuid": question.question_uuid,
+                "question_text": question.question_text,
+                **({"accuracy_question_type": question.accuracy_question_type} if self.test_type == TestType.ACCURACY else {}),
+            }
+            for question in self.questions
+        ]
 
         return pd.DataFrame(rows)
 
