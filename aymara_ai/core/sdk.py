@@ -27,7 +27,7 @@ from aymara_ai.core.uploads import UploadMixin
 from aymara_ai.generated.aymara_api_client import (
     client,
 )
-from aymara_ai.types import AccuracyScoreRunResponse, SafetyTestResponse, ScoreRunResponse
+from aymara_ai.types import AccuracyScoreRunResponse, SafetyTestResponse, ScoreRunResponse, StudentAnswerInput
 from aymara_ai.utils.logger import SDKLogger
 from aymara_ai.version import __version__
 
@@ -132,21 +132,31 @@ class AymaraAI(
     # Utility
     @staticmethod
     def get_pass_stats(
-        score_runs: Union[List[ScoreRunResponse], ScoreRunResponse],
+        score_runs: Union[List[ScoreRunResponse], ScoreRunResponse, AccuracyScoreRunResponse],
     ) -> pd.DataFrame:
         """
         Create a DataFrame of pass rates and pass totals from one or more score runs.
 
-        :param score_runs: List of test score runs to graph.
-        :type score_runs: List[ScoreTestResponse]
-        :return: DataFrame of pass rates per score run.
+        :param score_runs: One or a list of test score runs to graph.
+        :type score_runs: Union[List[ScoreRunResponse], ScoreRunResponse, AccuracyScoreRunResponse]
+        :return: DataFrame of pass rates per score run or per question type for an accuracy test score run.
         :rtype: pd.DataFrame
         """
+
+        if isinstance(score_runs, AccuracyScoreRunResponse):
+            df_scores = score_runs.to_scores_df()
+
+            return df_scores.groupby(by="question_type", as_index=False)["is_passed"].agg(
+                pass_rate="mean",
+                pass_total="sum",
+            )        
+
         if isinstance(score_runs, ScoreRunResponse):
             score_runs = [score_runs]
 
         return pd.DataFrame(
             data={
+                "score_run_uuid": [score.score_run_uuid for score in score_runs],
                 "test_name": [score.test.test_name for score in score_runs],
                 "pass_rate": [score.pass_rate() for score in score_runs],
                 "pass_total": [
@@ -154,35 +164,20 @@ class AymaraAI(
                     for score in score_runs
                 ],
             },
-            index=pd.Index(
-                [score.score_run_uuid for score in score_runs], name="score_run_uuid"
-            ),
         )
 
-    @staticmethod
-    def get_pass_stats_accuracy(
-        accuracy_score_run,
-    ) -> pd.DataFrame:
-        df_scores = accuracy_score_run.to_scores_df()
-
-        pass_stats = df_scores.groupby(by="question_type")["is_passed"].agg(
-            pass_rate="mean",
-            pass_total="sum",
-        )
-
-        return pass_stats
 
     @staticmethod
-    def graph_pass_rates(
-        score_runs: Union[List[ScoreRunResponse], ScoreRunResponse],
+    def graph_pass_stats(
+        score_runs: Union[List[ScoreRunResponse], ScoreRunResponse, AccuracyScoreRunResponse],
         title: Optional[str] = None,
         ylim_min: Optional[float] = None,
         ylim_max: Optional[float] = None,
-        yaxis_is_percent: bool = True,
-        ylabel: str = "Answers Passed",
-        xaxis_is_tests: bool = True,
+        yaxis_is_percent: Optional[bool] = True,
+        ylabel: Optional[str] = "Answers Passed",
+        xaxis_is_score_run_uuids: Optional[bool] = False,
         xlabel: Optional[str] = None,
-        xtick_rot: float = 30.0,
+        xtick_rot: Optional[float] = 30.0,
         xtick_labels_dict: Optional[dict] = None,
         **kwargs,
     ) -> None:
@@ -190,20 +185,20 @@ class AymaraAI(
         Draw a bar graph of pass rates from one or more score runs.
 
         :param score_runs: List of test score runs to graph.
-        :type score_runs: List[ScoreTestResponse]
+        :type score_runs: Union[List[ScoreRunResponse], ScoreRunResponse, AccuracyScoreRunResponse]
         :param title: Graph title.
         :type title: str, optional
-        :param ylim_min: y-axis lower limit, defaults to rounding down to the nearest ten (yaxis_is_percent=True) or decimal (yaxis_is_percent=False).
+        :param ylim_min: y-axis lower limit, defaults to rounding down to the nearest ten.
         :type ylim_min: float, optional
-        :param ylim_max: y-axis upper limit, defaults to matplotlib's preference but is capped at 100 (yaxis_is_percent=True) or 1 (yaxis_is_percent=False).
+        :param ylim_max: y-axis upper limit, defaults to matplotlib's preference but is capped at 100.
         :type ylim_max: float, optional
         :param yaxis_is_percent: Whether to show the pass rate as a percent (instead of the total number of questions passed), defaults to True.
         :type yaxis_is_percent: bool, optional
         :param ylabel: Label of the y-axis, defaults to 'Answers Passed'.
         :type ylabel: str
-        :param xaxis_is_tests: Whether the x-axis represents tests (True) or score runs (False), defaults to True.
+        :param xaxis_is_score_run_uuids: Whether the x-axis represents tests (True) or score runs (False), defaults to True.
         :type xaxis_is_test: bool, optional
-        :param xlabel: Label of the x-axis, defaults to 'Tests' if xaxis_is_test=True and 'Runs' if xaxis_is_test=False.
+        :param xlabel: Label of the x-axis, defaults to 'Score Runs' if xaxis_is_score_run_uuids=True, 'Question Types' for accuracy tests, and 'Tests' for other tests.
         :type xlabel: str
         :param xtick_rot: rotation of the x-axis tick labels, defaults to 30.
         :type xtick_rot: float
@@ -211,17 +206,21 @@ class AymaraAI(
         :type xtick_labels_dict: dict, optional
         :param kwargs: Options to pass to matplotlib.pyplot.bar.
         """
-        if isinstance(score_runs, ScoreRunResponse):
-            score_runs = [score_runs]
+        df_pass_stats = AymaraAI.get_pass_stats(score_runs)
 
-        pass_rates = [score.pass_rate() for score in score_runs]
-        names = [
-            score.test.test_name if xaxis_is_tests else score.score_run_uuid
-            for score in score_runs
-        ]
+        # Choose x-axis grouping variable  
+        if isinstance(score_runs, AccuracyScoreRunResponse):
+            names_col, xlabel = "question_type", xlabel or "Question Types"
+        elif xaxis_is_score_run_uuids:
+            names_col, xlabel = "score_run_uuid", xlabel or "Score Runs"
+        else:
+            names_col, xlabel = "test_name", xlabel or "Tests"
+        
+        names = df_pass_stats[names_col]
+        pass_stats = df_pass_stats["pass_rate" if yaxis_is_percent else "pass_total"]
 
         fig, ax = plt.subplots()
-        ax.bar(names, pass_rates, **kwargs)
+        ax.bar(names, pass_stats, **kwargs)
 
         # Title
         ax.set_title(title)
@@ -229,8 +228,6 @@ class AymaraAI(
         # x-axis
         ax.set_xticks(range(len(names)))
         ax.set_xticklabels(ax.get_xticklabels(), rotation=xtick_rot, ha="right")
-        if xlabel is None:
-            xlabel = "Tests" if xaxis_is_tests else "Score Runs"
         ax.set_xlabel(xlabel, fontweight="bold")
         if xtick_labels_dict:
             xtick_labels = [label.get_text() for label in ax.get_xticklabels()]
@@ -239,18 +236,14 @@ class AymaraAI(
 
         # y-axis
         ax.set_ylabel(ylabel, fontweight="bold")
-
-        if ylim_min is None:
-            ylim_min = max(0, math.floor((min(pass_rates) - 0.001) * 10) / 10)
-        if ylim_max is None:
-            ylim_max = min(1, ax.get_ylim()[1])
-        ax.set_ylim(bottom=ylim_min, top=ylim_max)
+        ax.set_ylim(
+            bottom=ylim_min or max(0, math.floor((min(pass_stats) - 0.001) * 10) / 10),
+            top=ylim_max or min(1, ax.get_ylim()[1]),
+        )
 
         if yaxis_is_percent:
-
             def to_percent(y, _):
                 return f"{y * 100:.0f}%"
-
             ax.yaxis.set_major_formatter(FuncFormatter(to_percent))
 
         plt.tight_layout()
