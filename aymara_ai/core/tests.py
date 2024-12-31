@@ -29,7 +29,6 @@ from aymara_ai.utils.constants import (
     DEFAULT_NUM_QUESTIONS,
     DEFAULT_ACCURACY_NUM_QUESTIONS,
     DEFAULT_NUM_QUESTIONS_MAX,
-    DEFAULT_ACCURACY_NUM_QUESTIONS_MAX,
     DEFAULT_NUM_QUESTIONS_MIN,
     DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
     DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS,
@@ -396,7 +395,7 @@ class TestMixin(AymaraAIProtocol):
         :type knowledge_base: str
         :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
         :type test_language: str, optional
-        :param num_test_questions_per_question_type: Number of test questions per question type, defaults to {DEFAULT_ACCURACY_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_ACCURACY_NUM_QUESTIONS_MAX} questions.
+        :param num_test_questions_per_question_type: Number of test questions per question type, defaults to {DEFAULT_ACCURACY_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
         :type num_test_questions_per_question_type: int, optional
         :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS}.
         :type max_wait_time_secs: int, optional
@@ -440,7 +439,7 @@ class TestMixin(AymaraAIProtocol):
         :type knowledge_base: str
         :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
         :type test_language: str, optional
-        :param num_test_questions_per_question_type: Number of test questions per question type, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_ACCURACY_NUM_QUESTIONS_MAX} questions.
+        :param num_test_questions_per_question_type: Number of test questions per question type, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
         :type num_test_questions_per_question_type: int, optional
         :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS}.
         :type max_wait_time_secs: int, optional
@@ -462,7 +461,6 @@ class TestMixin(AymaraAIProtocol):
             is_async=True,
             test_type=TestType.ACCURACY,
             max_wait_time_secs=max_wait_time_secs,
-            additional_instructions=additional_instructions,
             good_examples=good_examples,
             bad_examples=bad_examples,
         )
@@ -564,17 +562,13 @@ class TestMixin(AymaraAIProtocol):
                 f"test_name must be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters"
             )
         
-        if num_test_questions is not None:
-            min_questions = DEFAULT_NUM_QUESTIONS_MIN
-            max_questions = (
-            DEFAULT_ACCURACY_NUM_QUESTIONS_MAX
-            if test_type == TestType.ACCURACY
-            else DEFAULT_NUM_QUESTIONS_MAX
+        if num_test_questions is not None and (
+            num_test_questions < DEFAULT_NUM_QUESTIONS_MIN
+            or num_test_questions > DEFAULT_NUM_QUESTIONS_MAX
+        ):
+            raise ValueError(
+                f"num_test_questions must be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions"
             )
-            if num_test_questions < min_questions or num_test_questions > max_questions:
-                raise ValueError(
-                    f"num_test_questions must be between {min_questions} and {max_questions} questions"
-                )
 
         token1 = len(student_description) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
 

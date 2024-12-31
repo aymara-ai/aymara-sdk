@@ -144,7 +144,7 @@ def test_get_pass_stats_multiple_runs():
 
 @pytest.mark.parametrize("yaxis_is_percent", [True, False])
 @pytest.mark.parametrize("xaxis_is_tests", [True, False])
-def test_graph_pass_rates(mock_score_run_response, yaxis_is_percent, xaxis_is_tests):
+def test_graph_pass_stats(mock_score_run_response, yaxis_is_percent, xaxis_is_tests):
     with patch("matplotlib.pyplot.subplots") as mock_subplots, patch(
         "matplotlib.pyplot.show"
     ) as mock_show, patch("matplotlib.pyplot.tight_layout") as mock_tight_layout:
@@ -154,7 +154,7 @@ def test_graph_pass_rates(mock_score_run_response, yaxis_is_percent, xaxis_is_te
         # Mock the get_ylim() method to return a tuple
         mock_ax.get_ylim.return_value = (0, 1)
 
-        AymaraAI.graph_pass_rates(
+        AymaraAI.graph_pass_stats(
             [mock_score_run_response],
             title="Test Graph",
             yaxis_is_percent=yaxis_is_percent,
@@ -171,7 +171,7 @@ def test_graph_pass_rates(mock_score_run_response, yaxis_is_percent, xaxis_is_te
         mock_show.assert_called_once()
 
 
-def test_graph_pass_rates_custom_options(mock_score_run_response):
+def test_graph_pass_stats_custom_options(mock_score_run_response):
     with patch("matplotlib.pyplot.subplots") as mock_subplots, patch(
         "matplotlib.pyplot.show"
     ) as mock_show, patch("matplotlib.pyplot.tight_layout") as mock_tight_layout:
@@ -184,7 +184,7 @@ def test_graph_pass_rates_custom_options(mock_score_run_response):
         # Mock the get_xticklabels() method to return a list of Mock objects
         mock_ax.get_xticklabels.return_value = [Mock(get_text=lambda: "Test 1")]
 
-        AymaraAI.graph_pass_rates(
+        AymaraAI.graph_pass_stats(
             [mock_score_run_response],
             title="Custom Graph",
             ylim_min=0.5,
@@ -221,7 +221,7 @@ def test_graph_pass_rates_custom_options(mock_score_run_response):
         mock_ax.set_xticklabels.assert_any_call(new_labels)
 
 
-def test_graph_pass_rates_multiple_runs():
+def test_graph_pass_stats_multiple_runs():
     score_runs = [
         ScoreRunResponse(
             score_run_uuid=f"uuid-{i}",
@@ -265,7 +265,7 @@ def test_graph_pass_rates_multiple_runs():
         # Mock the get_ylim() method to return a tuple
         mock_ax.get_ylim.return_value = (0, 1)
 
-        AymaraAI.graph_pass_rates(score_runs)
+        AymaraAI.graph_pass_stats(score_runs)
 
         mock_subplots.assert_called_once()
         mock_ax.bar.assert_called_once()
@@ -312,7 +312,7 @@ def mock_accuracy_score_run():
 
 
 def test_get_pass_stats_accuracy(mock_accuracy_score_run):
-    result = AymaraAI.get_pass_stats_accuracy(mock_accuracy_score_run)
+    result = AymaraAI.get_pass_stats(mock_accuracy_score_run)
 
     assert isinstance(result, pd.DataFrame)
     assert list(result.columns) == ["pass_rate", "pass_total"]
@@ -332,7 +332,7 @@ def test_graph_accuracy_score_run(mock_accuracy_score_run):
             Mock(get_text=lambda: f"type_{i}") for i in range(1, 4)
         ]
 
-        AymaraAI.graph_accuracy_score_run(mock_accuracy_score_run)
+        AymaraAI.graph_pass_stats(mock_accuracy_score_run)
 
         mock_subplots.assert_called_once()
         mock_ax.bar.assert_called_once()
@@ -354,7 +354,7 @@ def test_graph_accuracy_score_run_custom_options(mock_accuracy_score_run):
             Mock(get_text=lambda: f"type_{i}") for i in range(1, 4)
         ]
 
-        AymaraAI.graph_accuracy_score_run(
+        AymaraAI.graph_pass_stats(
             mock_accuracy_score_run,
             title="Custom Accuracy Graph",
             ylim_min=0.2,
@@ -398,4 +398,4 @@ def test_graph_accuracy_score_run_empty_answers():
     )
 
     with pytest.raises(ValueError, match="Score run has no answers"):
-        AymaraAI.graph_accuracy_score_run(empty_score_run)
+        AymaraAI.graph_pass_stats(empty_score_run)
