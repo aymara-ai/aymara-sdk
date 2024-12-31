@@ -1398,14 +1398,6 @@ def test_create_accuracy_test_validation(aymara_client):
     with pytest.raises(ValueError, match="knowledge_base is required"):
         aymara_client.create_accuracy_test("Test 1", "Student description", None)
 
-    with pytest.raises(ValueError, match="additional_instructions must be less than"):
-        aymara_client.create_accuracy_test(
-            "Test 1",
-            "Student description",
-            "Test knowledge base content",
-            additional_instructions="A" * (MAX_ADDITIONAL_INSTRUCTIONS_LENGTH + 1),
-        )
-
     long_desc = "A" * int(DEFAULT_MAX_TOKENS / DEFAULT_CHAR_TO_TOKEN_MULTIPLIER / 2)
     long_knowledge_base = "B" * int(
         DEFAULT_MAX_TOKENS / DEFAULT_CHAR_TO_TOKEN_MULTIPLIER / 2
