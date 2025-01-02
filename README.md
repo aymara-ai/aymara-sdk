@@ -2,19 +2,19 @@
 
 <!-- sphinx-doc-begin -->
 
-Hi! 👋 We're [Aymara](https://aymara.ai). We built this library to help you measure & improve the alignment of any text-to-text genAI model (e.g., a fine-tuned Llama model) or application (e.g., a chatbot powered by GPT).
+Hi! 👋 We're [Aymara](https://aymara.ai). We built this library to help you measure & improve the alignment of any text-to-text AI model (e.g., a fine-tuned Llama model) or application (e.g., a chatbot powered by GPT).
 
 Use Aymara to create custom red team tests.
 
-1. 🦺 **Safety**. Input text describing the content your genAI is(n't) allowed to generate & get a test to assess your genAI's compliance. Text-to-text and text-to-image.
+1. 🦺 **Safety**. Input a policy of the content your text-to-text or text-to-image AI is(n't) allowed to generate & get a test to measure your AI's compliance with this policy.
 
-2. 🧨 **Jailbreaks**. Input your genAI's system prompt & get a test to assess your genAI's ability to follow your instructions when tested across hundreds of jailbreaks.
+2. 🧨 **Jailbreaks**. Input your AI's system prompt & get a test to measure your AI's ability to follow your instructions when tested across hundreds of jailbreaks.
 
-3. 🎯 **Accuracy**. Input text from the knowledge base your genAI should know & get a test to assess the accuracy (& hallucinations) of your genAI's answers.
+3. 🎯 **Accuracy**. Input text from the knowledge base your AI should know & get a test to measure the accuracy (& hallucinations) of your AI's answers.
 
-4. 🔄 **Multiturn** (coming soon). Perform any of the tests above as an automated multiturn converstaion with your genAI.
+4. 🔄 **Multiturn** (coming soon). Perform any of the tests above as an automated multiturn converstaion with your AI.
 
-And use Aymara to score your genAI's test answers, get detailed explanations of failing test answers, & receive specific advice to improve the safety & accuracy of your genAI.
+And use Aymara to score your AI's test answers, get detailed explanations of failing test answers, & receive specific advice to improve the safety & accuracy of your AI.
 
 ## Access
 Access Aymara in a [free trial](https://aymara.ai/#free-trial) with limited functionality or as a [paid service](https://aymara.ai/demo) with full functionality.
