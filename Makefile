@@ -7,12 +7,16 @@ DOCS_DIR = docs
 .PHONY: docs
 docs:
 	@cp aymara_ai/examples/safety/safety_notebook.ipynb $(DOCS_DIR)/source/
+	@cp aymara_ai/examples/safety/image_safety_notebook.ipynb $(DOCS_DIR)/source/
 	@cp aymara_ai/examples/safety/free_trial_notebook.ipynb $(DOCS_DIR)/source/
 	@cp aymara_ai/examples/jailbreak/jailbreak_notebook.ipynb $(DOCS_DIR)/source/
+	@cp aymara_ai/examples/accuracy/accuracy_notebook.ipynb $(DOCS_DIR)/source/ 
 	@$(MAKE) -C $(DOCS_DIR) html
 	@rm $(DOCS_DIR)/source/safety_notebook.ipynb
+	@rm $(DOCS_DIR)/source/image_safety_notebook.ipynb
 	@rm $(DOCS_DIR)/source/free_trial_notebook.ipynb
 	@rm $(DOCS_DIR)/source/jailbreak_notebook.ipynb
+	@rm $(DOCS_DIR)/source/accuracy_notebook.ipynb
 
 # Other common targets
 .PHONY: clean

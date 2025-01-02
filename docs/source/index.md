@@ -8,6 +8,8 @@
 
 free_trial_notebook
 safety_notebook
+image_safety_notebook
 jailbreak_notebook
+accuracy_notebook
 sdk_reference
 ```
