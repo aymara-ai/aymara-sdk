@@ -9,12 +9,9 @@ from __future__ import annotations
 
 import math
 import os
-import textwrap
-from typing import List, Dict, Optional, Union, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import pandas as pd
-import matplotlib.image as mpimg
-import matplotlib.patches as patches
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
@@ -27,7 +24,12 @@ from aymara_ai.core.uploads import UploadMixin
 from aymara_ai.generated.aymara_api_client import (
     client,
 )
-from aymara_ai.types import AccuracyScoreRunResponse, SafetyTestResponse, ScoreRunResponse, StudentAnswerInput
+from aymara_ai.types import (
+    AccuracyScoreRunResponse,
+    SafetyTestResponse,
+    ScoreRunResponse,
+    StudentAnswerInput,
+)
 from aymara_ai.utils.logger import SDKLogger
 from aymara_ai.version import __version__
 
@@ -132,7 +134,9 @@ class AymaraAI(
     # Utility
     @staticmethod
     def get_pass_stats(
-        score_runs: Union[List[ScoreRunResponse], ScoreRunResponse, AccuracyScoreRunResponse],
+        score_runs: Union[
+            List[ScoreRunResponse], ScoreRunResponse, AccuracyScoreRunResponse
+        ],
     ) -> pd.DataFrame:
         """
         Create a DataFrame of pass rates and pass totals from one or more score runs.
@@ -146,17 +150,18 @@ class AymaraAI(
         if isinstance(score_runs, AccuracyScoreRunResponse):
             df_scores = score_runs.to_scores_df()
 
-            return df_scores.groupby(by="question_type", as_index=False)["is_passed"].agg(
+            return df_scores.groupby(by="question_type", as_index=False)[
+                "is_passed"
+            ].agg(
                 pass_rate="mean",
                 pass_total="sum",
-            )        
+            )
 
         if isinstance(score_runs, ScoreRunResponse):
             score_runs = [score_runs]
 
         return pd.DataFrame(
             data={
-                "score_run_uuid": [score.score_run_uuid for score in score_runs],
                 "test_name": [score.test.test_name for score in score_runs],
                 "pass_rate": [score.pass_rate() for score in score_runs],
                 "pass_total": [
@@ -164,12 +169,16 @@ class AymaraAI(
                     for score in score_runs
                 ],
             },
+            index=pd.Index(
+                [score.score_run_uuid for score in score_runs], name="score_run_uuid"
+            ),
         )
-
 
     @staticmethod
     def graph_pass_stats(
-        score_runs: Union[List[ScoreRunResponse], ScoreRunResponse, AccuracyScoreRunResponse],
+        score_runs: Union[
+            List[ScoreRunResponse], ScoreRunResponse, AccuracyScoreRunResponse
+        ],
         title: Optional[str] = None,
         ylim_min: Optional[float] = None,
         ylim_max: Optional[float] = None,
@@ -206,16 +215,24 @@ class AymaraAI(
         :type xtick_labels_dict: dict, optional
         :param kwargs: Options to pass to matplotlib.pyplot.bar.
         """
+
+        if isinstance(score_runs, ScoreRunResponse):
+            score_runs = [score_runs]
+
+        for score_run in score_runs:
+            if not score_run.answers:
+                raise ValueError(f"Score run {score_run.score_run_uuid} has no answers")
+
         df_pass_stats = AymaraAI.get_pass_stats(score_runs)
 
-        # Choose x-axis grouping variable  
+        # Choose x-axis grouping variable
         if isinstance(score_runs, AccuracyScoreRunResponse):
             names_col, xlabel = "question_type", xlabel or "Question Types"
         elif xaxis_is_score_run_uuids:
             names_col, xlabel = "score_run_uuid", xlabel or "Score Runs"
         else:
             names_col, xlabel = "test_name", xlabel or "Tests"
-        
+
         names = df_pass_stats[names_col]
         pass_stats = df_pass_stats["pass_rate" if yaxis_is_percent else "pass_total"]
 
@@ -240,103 +257,6 @@ class AymaraAI(
             bottom=ylim_min or max(0, math.floor((min(pass_stats) - 0.001) * 10) / 10),
             top=ylim_max or min(1, ax.get_ylim()[1]),
         )
-
-        if yaxis_is_percent:
-            def to_percent(y, _):
-                return f"{y * 100:.0f}%"
-            ax.yaxis.set_major_formatter(FuncFormatter(to_percent))
-
-        plt.tight_layout()
-        plt.show()
-
-    @staticmethod
-    def graph_accuracy_score_run(
-        accuracy_score_run: AccuracyScoreRunResponse,
-        title: str = "Pass Rate by Question Type",
-        xlabel: Optional[str] = None,
-        ylabel: str = "Pass Rate",
-        xtick_rot: float = 45,
-        ylim_min: Optional[float] = None,
-        ylim_max: Optional[float] = None,
-        yaxis_is_percent: bool = True,
-        xtick_labels_dict: Optional[dict] = None,
-        **kwargs,
-    ):
-        """Plot pass rates by question type for an accuracy test score run.
-
-        :param accuracy_score_run: Accuracy score run to plot.
-        :type accuracy_score_run: AccuracyScoreRunResponse
-        :param title: Plot title.
-        :type title: str
-        :param xlabel: x-axis label. If None, defaults to "Question Types".
-        :type xlabel: str, optional
-        :param ylabel: y-axis label.
-        :type ylabel: str
-        :param xtick_rot: Rotation of x-axis tick labels in degrees.
-        :type xtick_rot: float
-        :param ylim_min: Minimum y-axis limit. If None, defaults to floor of minimum pass rate.
-        :type ylim_min: float, optional
-        :param ylim_max: Maximum y-axis limit. If None, defaults to 1 or matplotlib default.
-        :type ylim_max: float, optional
-        :param yaxis_is_percent: Whether to format y-axis as percentages.
-        :type yaxis_is_percent: bool
-        :param xtick_labels_dict: Dictionary mapping x-tick labels to new labels.
-        :type xtick_labels_dict: dict, optional
-        :param kwargs: Options to pass to matplotlib.pyplot.bar.
-        """
-        if not accuracy_score_run.answers:
-            raise ValueError("Score run has no answers")
-
-        # Group answers by question type and calculate pass rates
-        question_types = {}
-        for answer in accuracy_score_run.answers:
-            question = next(
-                q
-                for q in accuracy_score_run.answers
-                if q.question_uuid == answer.question_uuid
-            )
-            if not question.accuracy_question_type:
-                continue
-            if question.accuracy_question_type not in question_types:
-                question_types[question.accuracy_question_type] = {
-                    "passed": 0,
-                    "total": 0,
-                }
-            if answer.is_passed is not None:
-                question_types[question.accuracy_question_type]["total"] += 1
-                if answer.is_passed:
-                    question_types[question.accuracy_question_type]["passed"] += 1
-
-        names = list(question_types.keys())
-        pass_rates = [
-            question_types[qt]["passed"] / question_types[qt]["total"] for qt in names
-        ]
-
-        fig, ax = plt.subplots()
-        ax.bar(names, pass_rates, **kwargs)
-
-        # Title
-        ax.set_title(title)
-
-        # x-axis
-        ax.set_xticks(range(len(names)))
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=xtick_rot, ha="right")
-        if xlabel is None:
-            xlabel = "Question Types"
-        ax.set_xlabel(xlabel, fontweight="bold")
-        if xtick_labels_dict:
-            xtick_labels = [label.get_text() for label in ax.get_xticklabels()]
-            new_labels = [xtick_labels_dict.get(label, label) for label in xtick_labels]
-            ax.set_xticklabels(new_labels)
-
-        # y-axis
-        ax.set_ylabel(ylabel, fontweight="bold")
-
-        if ylim_min is None:
-            ylim_min = max(0, math.floor((min(pass_rates) - 0.001) * 10) / 10)
-        if ylim_max is None:
-            ylim_max = min(1, ax.get_ylim()[1])
-        ax.set_ylim(bottom=ylim_min, top=ylim_max)
 
         if yaxis_is_percent:
 
@@ -372,28 +292,44 @@ class AymaraAI(
         :param figsize: Figure size. Defaults to (n_images_per_test * 3, n_tests * 2 * 4).
         :type figsize: integer tuple, optional
         """
-        import matplotlib.patches as patches
-        import matplotlib.image as mpimg
         import textwrap
-        import matplotlib.pyplot as plt
+
         import matplotlib.gridspec as gridspec
+        import matplotlib.image as mpimg
+        import matplotlib.patches as patches
+        import matplotlib.pyplot as plt
 
         def display_image_group(axs, images, captions):
             for ax, img_path, caption in zip(axs, images, captions):
                 img = mpimg.imread(img_path)
                 ax.imshow(img)
-                ax.set_title("\n".join(textwrap.wrap(caption, width=30)), fontsize=10, wrap=True, loc="left")
+                ax.set_title(
+                    "\n".join(textwrap.wrap(caption, width=30)),
+                    fontsize=10,
+                    wrap=True,
+                    loc="left",
+                )
                 ax.axis("off")
 
                 if caption.startswith("Fail"):
-                    rect = patches.Rectangle((0, 0), 1, 1, transform=ax.transAxes, color="red", linewidth=5, fill=False)
+                    rect = patches.Rectangle(
+                        (0, 0),
+                        1,
+                        1,
+                        transform=ax.transAxes,
+                        color="red",
+                        linewidth=5,
+                        fill=False,
+                    )
                     ax.add_patch(rect)
 
         # Create the figure and gridspec layout
         n_tests = len(test_answers)
         total_rows = n_tests * 2
         fig = plt.figure(figsize=figsize or (n_images_per_test * 3, total_rows * 4))
-        gs = gridspec.GridSpec(total_rows, n_images_per_test, figure=fig, height_ratios=[1, 20] * n_tests)
+        gs = gridspec.GridSpec(
+            total_rows, n_images_per_test, figure=fig, height_ratios=[1, 20] * n_tests
+        )
         fig.subplots_adjust(hspace=0.1, wspace=0.1)
 
         row = 0
@@ -402,7 +338,15 @@ class AymaraAI(
 
             # Title row
             ax_title = fig.add_subplot(gs[row, :])
-            ax_title.text(.5, 0, test.test_name, fontsize=16, fontweight="bold", ha="center", va="top")
+            ax_title.text(
+                0.5,
+                0,
+                test.test_name,
+                fontsize=16,
+                fontweight="bold",
+                ha="center",
+                va="top",
+            )
             ax_title.axis("off")
             row += 1
 
@@ -410,17 +354,25 @@ class AymaraAI(
             images = [a.answer_image_path for a in answers[:n_images_per_test]]
             if score_runs is None:
                 captions = [
-                    next(q.question_text for q in test.questions if q.question_uuid == a.question_uuid)
+                    next(
+                        q.question_text
+                        for q in test.questions
+                        if q.question_uuid == a.question_uuid
+                    )
                     for a in answers[:n_images_per_test]
                 ]
             else:
                 score_run = next(s for s in score_runs if s.test.test_uuid == test_uuid)
                 scores = [
-                    next(s for s in score_run.answers if s.question_uuid == a.question_uuid) 
+                    next(
+                        s
+                        for s in score_run.answers
+                        if s.question_uuid == a.question_uuid
+                    )
                     for a in answers[:n_images_per_test]
                 ]
                 captions = [
-                    f"{'Pass' if s.is_passed else 'Fail'} ({s.confidence:.1%} confidence): {s.explanation}" 
+                    f"{'Pass' if s.is_passed else 'Fail'} ({s.confidence:.1%} confidence): {s.explanation}"
                     for s in scores
                 ]
 

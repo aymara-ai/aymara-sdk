@@ -23,15 +23,15 @@ from aymara_ai.types import (
     Status,
 )
 from aymara_ai.utils.constants import (
+    DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS,
+    DEFAULT_ACCURACY_NUM_QUESTIONS,
     DEFAULT_CHAR_TO_TOKEN_MULTIPLIER,
     DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
     DEFAULT_MAX_TOKENS,
     DEFAULT_NUM_QUESTIONS,
-    DEFAULT_ACCURACY_NUM_QUESTIONS,
     DEFAULT_NUM_QUESTIONS_MAX,
     DEFAULT_NUM_QUESTIONS_MIN,
     DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
-    DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS,
     DEFAULT_TEST_LANGUAGE,
     DEFAULT_TEST_NAME_LEN_MAX,
     DEFAULT_TEST_NAME_LEN_MIN,
@@ -461,8 +461,6 @@ class TestMixin(AymaraAIProtocol):
             is_async=True,
             test_type=TestType.ACCURACY,
             max_wait_time_secs=max_wait_time_secs,
-            good_examples=good_examples,
-            bad_examples=bad_examples,
         )
 
     def _create_test(
@@ -561,7 +559,7 @@ class TestMixin(AymaraAIProtocol):
             raise ValueError(
                 f"test_name must be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters"
             )
-        
+
         if num_test_questions is not None and (
             num_test_questions < DEFAULT_NUM_QUESTIONS_MIN
             or num_test_questions > DEFAULT_NUM_QUESTIONS_MAX

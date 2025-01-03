@@ -336,7 +336,6 @@ def test_graph_accuracy_score_run(mock_accuracy_score_run):
 
         mock_subplots.assert_called_once()
         mock_ax.bar.assert_called_once()
-        mock_ax.set_title.assert_called_once_with("Pass Rate by Question Type")
         mock_ax.set_xlabel.assert_called_once_with("Question Types", fontweight="bold")
         mock_ax.set_ylabel.assert_called_once_with("Pass Rate", fontweight="bold")
         mock_tight_layout.assert_called_once()
@@ -396,6 +395,5 @@ def test_graph_accuracy_score_run_empty_answers():
         created_at=datetime.now(),
         updated_at=datetime.now(),
     )
-
-    with pytest.raises(ValueError, match="Score run has no answers"):
-        AymaraAI.graph_pass_stats(empty_score_run)
+    with pytest.raises(ValueError, match="Score run test-uuid has no answers"):
+        AymaraAI.graph_pass_stats([empty_score_run])
