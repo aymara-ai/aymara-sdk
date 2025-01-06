@@ -53,6 +53,8 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         :type student_answers: List[StudentAnswerInput]
         :param scoring_examples: Optional list of examples to guide the scoring process.
         :type scoring_examples: Optional[List[ScoringExample]]
+        :param max_wait_time_secs: Maximum wait time for test scoring, defaults to None.
+        :type max_wait_time_secs: optional, int
         :return: Score response.
         :rtype: ScoreRunResponse
         """
@@ -81,6 +83,8 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         :type student_answers: List[StudentAnswerInput]
         :param scoring_examples: Optional list of examples to guide the scoring process.
         :type scoring_examples: Optional[List[ScoringExample]]
+        :param max_wait_time_secs: Maximum wait time for test scoring, defaults to None.
+        :type max_wait_time_secs: optional, int
         :return: Score response.
         :rtype: ScoreRunResponse
         """
