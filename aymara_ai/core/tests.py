@@ -56,7 +56,24 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
     ) -> SafetyTestResponse:
-        """
+
+        return self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=test_policy,
+            test_system_prompt=None,
+            knowledge_base=None,
+            test_language=test_language,
+            num_test_questions=num_test_questions,
+            is_async=False,
+            test_type=TestType.SAFETY,
+            max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
+        )
+
+    create_safety_test.__doc__ = f"""
         Create an Aymara safety test synchronously and wait for completion.
 
         :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
@@ -84,21 +101,6 @@ class TestMixin(AymaraAIProtocol):
         :raises ValueError: If num_test_questions is not within the allowed range.
         :raises ValueError: If test_policy is not provided for safety tests.
         """
-        return self._create_test(
-            test_name=test_name,
-            student_description=student_description,
-            test_policy=test_policy,
-            test_system_prompt=None,
-            knowledge_base=None,
-            test_language=test_language,
-            num_test_questions=num_test_questions,
-            is_async=False,
-            test_type=TestType.SAFETY,
-            max_wait_time_secs=max_wait_time_secs,
-            additional_instructions=additional_instructions,
-            good_examples=good_examples,
-            bad_examples=bad_examples,
-        )
 
     async def create_safety_test_async(
         self,
@@ -112,7 +114,24 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
     ) -> SafetyTestResponse:
-        """
+
+        return await self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=test_policy,
+            test_system_prompt=None,
+            knowledge_base=None,
+            test_language=test_language,
+            num_test_questions=num_test_questions,
+            is_async=True,
+            test_type=TestType.SAFETY,
+            max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
+        )
+
+    create_safety_test_async.__doc__= f"""
         Create an Aymara safety test asynchronously and wait for completion.
 
         :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
@@ -140,21 +159,6 @@ class TestMixin(AymaraAIProtocol):
         :raises ValueError: If num_test_questions is not within the allowed range.
         :raises ValueError: If test_policy is not provided for safety tests.
         """
-        return await self._create_test(
-            test_name=test_name,
-            student_description=student_description,
-            test_policy=test_policy,
-            test_system_prompt=None,
-            knowledge_base=None,
-            test_language=test_language,
-            num_test_questions=num_test_questions,
-            is_async=True,
-            test_type=TestType.SAFETY,
-            max_wait_time_secs=max_wait_time_secs,
-            additional_instructions=additional_instructions,
-            good_examples=good_examples,
-            bad_examples=bad_examples,
-        )
 
     # Create Jailbreak Test Methods
     def create_jailbreak_test(
@@ -168,7 +172,24 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
     ) -> JailbreakTestResponse:
-        """
+        
+        return self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=None,
+            test_system_prompt=test_system_prompt,
+            knowledge_base=None,
+            test_language=test_language,
+            is_async=False,
+            test_type=TestType.JAILBREAK,
+            num_test_questions=None,
+            max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
+        )
+
+    create_jailbreak_test.__doc__ = f"""
         Create an Aymara jailbreak test synchronously and wait for completion.
 
         :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
@@ -194,21 +215,6 @@ class TestMixin(AymaraAIProtocol):
         :raises ValueError: If num_test_questions is not within the allowed range.
         :raises ValueError: If test_system_prompt is not provided for jailbreak tests.
         """
-        return self._create_test(
-            test_name=test_name,
-            student_description=student_description,
-            test_policy=None,
-            test_system_prompt=test_system_prompt,
-            knowledge_base=None,
-            test_language=test_language,
-            is_async=False,
-            test_type=TestType.JAILBREAK,
-            num_test_questions=None,
-            max_wait_time_secs=max_wait_time_secs,
-            additional_instructions=additional_instructions,
-            good_examples=good_examples,
-            bad_examples=bad_examples,
-        )
 
     async def create_jailbreak_test_async(
         self,
@@ -221,7 +227,24 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
     ) -> JailbreakTestResponse:
-        """
+        
+        return await self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=None,
+            test_system_prompt=test_system_prompt,
+            knowledge_base=None,
+            test_language=test_language,
+            is_async=True,
+            test_type=TestType.JAILBREAK,
+            num_test_questions=None,
+            max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
+        )
+
+    create_jailbreak_test_async.__doc__ = f"""
         Create an Aymara jailbreak test asynchronously and wait for completion.
 
         :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
@@ -247,21 +270,6 @@ class TestMixin(AymaraAIProtocol):
         :raises ValueError: If num_test_questions is not within the allowed range.
         :raises ValueError: If test_system_prompt is not provided for jailbreak tests.
         """
-        return await self._create_test(
-            test_name=test_name,
-            student_description=student_description,
-            test_policy=None,
-            test_system_prompt=test_system_prompt,
-            knowledge_base=None,
-            test_language=test_language,
-            is_async=True,
-            test_type=TestType.JAILBREAK,
-            num_test_questions=None,
-            max_wait_time_secs=max_wait_time_secs,
-            additional_instructions=additional_instructions,
-            good_examples=good_examples,
-            bad_examples=bad_examples,
-        )
 
     def create_image_safety_test(
         self,
@@ -275,7 +283,24 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
     ):
-        """
+        
+        return self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=test_policy,
+            is_async=False,
+            test_system_prompt=None,
+            knowledge_base=None,
+            test_language=test_language,
+            test_type=TestType.IMAGE_SAFETY,
+            num_test_questions=num_test_questions,
+            max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
+        )
+
+    create_image_safety_test.__doc__ = f"""
         Create an Aymara image safety test synchronously and wait for completion.
 
         :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
@@ -303,21 +328,6 @@ class TestMixin(AymaraAIProtocol):
         :raises ValueError: If num_test_questions is not within the allowed range.
         :raises ValueError: If test_policy is not provided for safety tests.
         """
-        return self._create_test(
-            test_name=test_name,
-            student_description=student_description,
-            test_policy=test_policy,
-            is_async=False,
-            test_system_prompt=None,
-            knowledge_base=None,
-            test_language=test_language,
-            test_type=TestType.IMAGE_SAFETY,
-            num_test_questions=num_test_questions,
-            max_wait_time_secs=max_wait_time_secs,
-            additional_instructions=additional_instructions,
-            good_examples=good_examples,
-            bad_examples=bad_examples,
-        )
 
     async def create_image_safety_test_async(
         self,
@@ -331,7 +341,24 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
     ):
-        """
+        
+        return await self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=test_policy,
+            is_async=True,
+            test_system_prompt=None,
+            knowledge_base=None,
+            test_language=test_language,
+            test_type=TestType.IMAGE_SAFETY,
+            num_test_questions=num_test_questions,
+            max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
+        )
+
+    create_image_safety_test_async.__doc__ = f"""
         Create an Aymara image safety test asynchronously and wait for completion.
 
         :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
@@ -359,21 +386,6 @@ class TestMixin(AymaraAIProtocol):
         :raises ValueError: If num_test_questions is not within the allowed range.
         :raises ValueError: If test_policy is not provided for safety tests.
         """
-        return await self._create_test(
-            test_name=test_name,
-            student_description=student_description,
-            test_policy=test_policy,
-            is_async=True,
-            test_system_prompt=None,
-            knowledge_base=None,
-            test_language=test_language,
-            test_type=TestType.IMAGE_SAFETY,
-            num_test_questions=num_test_questions,
-            max_wait_time_secs=max_wait_time_secs,
-            additional_instructions=additional_instructions,
-            good_examples=good_examples,
-            bad_examples=bad_examples,
-        )
 
     def create_accuracy_test(
         self,
@@ -384,7 +396,21 @@ class TestMixin(AymaraAIProtocol):
         num_test_questions_per_question_type: int = DEFAULT_ACCURACY_NUM_QUESTIONS,
         max_wait_time_secs: Optional[int] = DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS,
     ) -> AccuracyTestResponse:
-        """
+        
+        return self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=None,
+            test_system_prompt=None,
+            knowledge_base=knowledge_base,
+            test_language=test_language,
+            num_test_questions=num_test_questions_per_question_type,
+            is_async=False,
+            test_type=TestType.ACCURACY,
+            max_wait_time_secs=max_wait_time_secs,
+        )
+
+    create_accuracy_test.__doc__ = f"""
         Create an Aymara accuracy test synchronously and wait for completion.
 
         :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
@@ -406,18 +432,6 @@ class TestMixin(AymaraAIProtocol):
         :raises ValueError: If num_test_questions is not within the allowed range.
         :raises ValueError: If knowledge_base is not provided for accuracy tests.
         """
-        return self._create_test(
-            test_name=test_name,
-            student_description=student_description,
-            test_policy=None,
-            test_system_prompt=None,
-            knowledge_base=knowledge_base,
-            test_language=test_language,
-            num_test_questions=num_test_questions_per_question_type,
-            is_async=False,
-            test_type=TestType.ACCURACY,
-            max_wait_time_secs=max_wait_time_secs,
-        )
 
     async def create_accuracy_test_async(
         self,
@@ -428,7 +442,21 @@ class TestMixin(AymaraAIProtocol):
         num_test_questions_per_question_type: int = DEFAULT_ACCURACY_NUM_QUESTIONS,
         max_wait_time_secs: Optional[int] = DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS,
     ) -> AccuracyTestResponse:
-        """
+        
+        return await self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=None,
+            test_system_prompt=None,
+            knowledge_base=knowledge_base,
+            test_language=test_language,
+            num_test_questions=num_test_questions_per_question_type,
+            is_async=True,
+            test_type=TestType.ACCURACY,
+            max_wait_time_secs=max_wait_time_secs,
+        )
+
+    create_accuracy_test_async.__doc__ = f"""
         Create an Aymara accuracy test asynchronously and wait for completion.
 
         :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
@@ -450,18 +478,6 @@ class TestMixin(AymaraAIProtocol):
         :raises ValueError: If num_test_questions is not within the allowed range.
         :raises ValueError: If knowledge_base is not provided for accuracy tests.
         """
-        return await self._create_test(
-            test_name=test_name,
-            student_description=student_description,
-            test_policy=None,
-            test_system_prompt=None,
-            knowledge_base=knowledge_base,
-            test_language=test_language,
-            num_test_questions=num_test_questions_per_question_type,
-            is_async=True,
-            test_type=TestType.ACCURACY,
-            max_wait_time_secs=max_wait_time_secs,
-        )
 
     def _create_test(
         self,
