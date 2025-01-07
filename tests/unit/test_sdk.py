@@ -312,7 +312,7 @@ def mock_accuracy_score_run():
 
 
 def test_get_pass_stats_accuracy(mock_accuracy_score_run):
-    result = AymaraAI.get_pass_stats(mock_accuracy_score_run)
+    result = AymaraAI.get_pass_stats_accuracy(mock_accuracy_score_run)
 
     assert isinstance(result, pd.DataFrame)
     assert list(result.columns) == ["pass_rate", "pass_total"]
@@ -332,7 +332,7 @@ def test_graph_accuracy_score_run(mock_accuracy_score_run):
             Mock(get_text=lambda: f"type_{i}") for i in range(1, 4)
         ]
 
-        AymaraAI.graph_pass_stats(mock_accuracy_score_run)
+        AymaraAI.graph_pass_stats_accuracy(mock_accuracy_score_run)
 
         mock_subplots.assert_called_once()
         mock_ax.bar.assert_called_once()
@@ -353,7 +353,7 @@ def test_graph_accuracy_score_run_custom_options(mock_accuracy_score_run):
             Mock(get_text=lambda: f"type_{i}") for i in range(1, 4)
         ]
 
-        AymaraAI.graph_pass_stats(
+        AymaraAI.graph_pass_stats_accuracy(
             mock_accuracy_score_run,
             title="Custom Accuracy Graph",
             ylim_min=0.2,

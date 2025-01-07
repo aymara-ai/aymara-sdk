@@ -134,108 +134,72 @@ class AymaraAI(
     # Utility
     @staticmethod
     def get_pass_stats(
-        score_runs: Union[
-            List[ScoreRunResponse], ScoreRunResponse, AccuracyScoreRunResponse
-        ],
+        score_runs: Union[ScoreRunResponse, List[ScoreRunResponse]],
     ) -> pd.DataFrame:
         """
         Create a DataFrame of pass rates and pass totals from one or more score runs.
 
         :param score_runs: One or a list of test score runs to graph.
-        :type score_runs: Union[List[ScoreRunResponse], ScoreRunResponse, AccuracyScoreRunResponse]
-        :return: DataFrame of pass rates per score run or per question type for an accuracy test score run.
+        :type score_runs: Union[ScoreRunResponse, List[ScoreRunResponse]]
+        :return: DataFrame of pass rates per test score run.
         :rtype: pd.DataFrame
         """
 
-        if isinstance(score_runs, AccuracyScoreRunResponse):
-            df_scores = score_runs.to_scores_df()
-
-            return df_scores.groupby(by="question_type", as_index=False)[
-                "is_passed"
-            ].agg(
-                pass_rate="mean",
-                pass_total="sum",
-            )
-
-        if isinstance(score_runs, ScoreRunResponse):
+        if not isinstance(score_runs, list):
             score_runs = [score_runs]
 
+        data = [
+            (
+                score.test.test_name,
+                score.pass_rate(),
+                score.pass_rate() * score.test.num_test_questions,
+            )
+            for score in score_runs
+        ]
+
         return pd.DataFrame(
-            data={
-                "test_name": [score.test.test_name for score in score_runs],
-                "pass_rate": [score.pass_rate() for score in score_runs],
-                "pass_total": [
-                    score.pass_rate() * score.test.num_test_questions
-                    for score in score_runs
-                ],
-            },
-            index=pd.Index(
-                [score.score_run_uuid for score in score_runs], name="score_run_uuid"
-            ),
+            data=data,
+            columns=["test_name", "pass_rate", "pass_total"],
+            index=pd.Index([score.score_run_uuid for score in score_runs], name="score_run_uuid"),
         )
 
     @staticmethod
-    def graph_pass_stats(
-        score_runs: Union[
-            List[ScoreRunResponse], ScoreRunResponse, AccuracyScoreRunResponse
-        ],
-        title: Optional[str] = None,
-        ylim_min: Optional[float] = None,
-        ylim_max: Optional[float] = None,
-        yaxis_is_percent: Optional[bool] = True,
-        ylabel: Optional[str] = "Answers Passed",
-        xaxis_is_score_run_uuids: Optional[bool] = False,
-        xlabel: Optional[str] = None,
-        xtick_rot: Optional[float] = 30.0,
-        xtick_labels_dict: Optional[dict] = None,
+    def get_pass_stats_accuracy(
+        score_run: AccuracyScoreRunResponse,
+    ) -> pd.DataFrame:
+        """
+        Create a DataFrame of pass rates and pass totals from one accuracy score run.
+
+        :param score_run: One accuracy test score run to graph.
+        :type score_run: AccuracyScoreRunResponse
+        :return: DataFrame of pass rates per accuracy test question type.
+        :rtype: pd.DataFrame
+        """
+
+        df_scores = score_run.to_scores_df()
+
+        return df_scores.groupby(by="question_type", as_index=False)[
+            "is_passed"
+        ].agg(
+            pass_rate="mean",
+            pass_total="sum",
+        )
+
+    @staticmethod
+    def _plot_pass_stats(
+        names: pd.Series,
+        pass_stats: pd.Series,
+        title: Optional[str],
+        xlabel: Optional[str],
+        ylabel: Optional[str],
+        xtick_rot: Optional[float],
+        xtick_labels_dict: Optional[dict],
+        yaxis_is_percent: bool,
+        ylim_min: Optional[float],
+        ylim_max: Optional[float],
         **kwargs,
     ) -> None:
-        """
-        Draw a bar graph of pass rates from one or more score runs.
-
-        :param score_runs: List of test score runs to graph.
-        :type score_runs: Union[List[ScoreRunResponse], ScoreRunResponse, AccuracyScoreRunResponse]
-        :param title: Graph title.
-        :type title: str, optional
-        :param ylim_min: y-axis lower limit, defaults to rounding down to the nearest ten.
-        :type ylim_min: float, optional
-        :param ylim_max: y-axis upper limit, defaults to matplotlib's preference but is capped at 100.
-        :type ylim_max: float, optional
-        :param yaxis_is_percent: Whether to show the pass rate as a percent (instead of the total number of questions passed), defaults to True.
-        :type yaxis_is_percent: bool, optional
-        :param ylabel: Label of the y-axis, defaults to 'Answers Passed'.
-        :type ylabel: str
-        :param xaxis_is_score_run_uuids: Whether the x-axis represents tests (True) or score runs (False), defaults to True.
-        :type xaxis_is_test: bool, optional
-        :param xlabel: Label of the x-axis, defaults to 'Score Runs' if xaxis_is_score_run_uuids=True, 'Question Types' for accuracy tests, and 'Tests' for other tests.
-        :type xlabel: str
-        :param xtick_rot: rotation of the x-axis tick labels, defaults to 30.
-        :type xtick_rot: float
-        :param xtick_labels_dict: Maps test_names (keys) to x-axis tick labels (values).
-        :type xtick_labels_dict: dict, optional
-        :param kwargs: Options to pass to matplotlib.pyplot.bar.
-        """
-
-        if isinstance(score_runs, ScoreRunResponse):
-            score_runs = [score_runs]
-
-        for score_run in score_runs:
-            if not score_run.answers:
-                raise ValueError(f"Score run {score_run.score_run_uuid} has no answers")
-
-        df_pass_stats = AymaraAI.get_pass_stats(score_runs)
-
-        # Choose x-axis grouping variable
-        if isinstance(score_runs, AccuracyScoreRunResponse):
-            names_col, xlabel = "question_type", xlabel or "Question Types"
-        elif xaxis_is_score_run_uuids:
-            names_col, xlabel = "score_run_uuid", xlabel or "Score Runs"
-        else:
-            names_col, xlabel = "test_name", xlabel or "Tests"
-
-        names = df_pass_stats[names_col]
-        pass_stats = df_pass_stats["pass_rate" if yaxis_is_percent else "pass_total"]
-
+        """Helper function to plot pass statistics."""
         fig, ax = plt.subplots()
         ax.bar(names, pass_stats, **kwargs)
 
@@ -259,14 +223,131 @@ class AymaraAI(
         )
 
         if yaxis_is_percent:
-
             def to_percent(y, _):
                 return f"{y * 100:.0f}%"
-
             ax.yaxis.set_major_formatter(FuncFormatter(to_percent))
 
         plt.tight_layout()
         plt.show()
+
+    @staticmethod
+    def graph_pass_stats(
+        score_runs: Union[List[ScoreRunResponse], ScoreRunResponse],
+        title: Optional[str] = None,
+        ylim_min: Optional[float] = None,
+        ylim_max: Optional[float] = None,
+        yaxis_is_percent: Optional[bool] = True,
+        ylabel: Optional[str] = "Answers Passed",
+        xaxis_is_score_run_uuids: Optional[bool] = False,
+        xlabel: Optional[str] = None,
+        xtick_rot: Optional[float] = 30.0,
+        xtick_labels_dict: Optional[dict] = None,
+        **kwargs,
+    ) -> None:
+        """
+        Draw a bar graph of pass rates from one or more score runs.
+
+        :param score_runs: One or a list of test score runs to graph.
+        :type score_runs: Union[List[ScoreRunResponse], ScoreRunResponse]
+        :param title: Graph title.
+        :type title: str, optional
+        :param ylim_min: y-axis lower limit, defaults to rounding down to the nearest ten.
+        :type ylim_min: float, optional
+        :param ylim_max: y-axis upper limit, defaults to matplotlib's preference but is capped at 100.
+        :type ylim_max: float, optional
+        :param yaxis_is_percent: Whether to show the pass rate as a percent (instead of the total number of questions passed), defaults to True.
+        :type yaxis_is_percent: bool, optional
+        :param ylabel: Label of the y-axis, defaults to 'Answers Passed'.
+        :type ylabel: str
+        :param xaxis_is_score_run_uuids: Whether the x-axis represents tests (True) or score runs (False), defaults to True.
+        :type xaxis_is_test: bool, optional
+        :param xlabel: Label of the x-axis, defaults to 'Score Runs' if xaxis_is_score_run_uuids=True and 'Tests' otherwise.
+        :type xlabel: str
+        :param xtick_rot: rotation of the x-axis tick labels, defaults to 30.
+        :type xtick_rot: float
+        :param xtick_labels_dict: Maps test_names (keys) to x-axis tick labels (values).
+        :type xtick_labels_dict: dict, optional
+        :param kwargs: Options to pass to matplotlib.pyplot.bar.
+        """
+
+        if not isinstance(score_runs, list):
+            score_runs = [score_runs]
+
+        for score_run in score_runs:
+            if not score_run.answers:
+                raise ValueError(f"Score run {score_run.score_run_uuid} has no answers")
+
+        df_pass_stats = AymaraAI.get_pass_stats(score_runs)
+
+        AymaraAI._plot_pass_stats(
+            names=df_pass_stats["score_run_uuid" if xaxis_is_score_run_uuids else "test_name"],
+            pass_stats=df_pass_stats["pass_rate" if yaxis_is_percent else "pass_total"],
+            title=title,
+            xlabel="Score Runs" if xaxis_is_score_run_uuids else "Tests",
+            ylabel=ylabel,
+            xtick_rot=xtick_rot,
+            xtick_labels_dict=xtick_labels_dict,
+            yaxis_is_percent=yaxis_is_percent,
+            ylim_min=ylim_min,
+            ylim_max=ylim_max,
+            **kwargs,
+        )
+
+    @staticmethod
+    def graph_pass_stats_accuracy(
+        score_run: AccuracyScoreRunResponse,
+        title: Optional[str] = None,
+        ylim_min: Optional[float] = None,
+        ylim_max: Optional[float] = None,
+        yaxis_is_percent: Optional[bool] = True,
+        ylabel: Optional[str] = "Answers Passed",
+        xlabel: Optional[str] = "Question Types",
+        xtick_rot: Optional[float] = 30.0,
+        xtick_labels_dict: Optional[dict] = None,
+        **kwargs,
+    ) -> None:
+        """
+        Draw a bar graph of pass rates from one accuracy score run.
+
+        :param score_run: The accuracy score run to graph.
+        :type score_run: AccuracyScoreRunResponse
+        :param title: Graph title.
+        :type title: str, optional
+        :param ylim_min: y-axis lower limit, defaults to rounding down to the nearest ten.
+        :type ylim_min: float, optional
+        :param ylim_max: y-axis upper limit, defaults to matplotlib's preference but is capped at 100.
+        :type ylim_max: float, optional
+        :param yaxis_is_percent: Whether to show the pass rate as a percent (instead of the total number of questions passed), defaults to True.
+        :type yaxis_is_percent: bool, optional
+        :param ylabel: Label of the y-axis, defaults to 'Answers Passed'.
+        :type ylabel: str
+        :param xlabel: Label of the x-axis, defaults to 'Question Types'.
+        :type xlabel: str
+        :param xtick_rot: rotation of the x-axis tick labels, defaults to 30.
+        :type xtick_rot: float
+        :param xtick_labels_dict: Maps test_names (keys) to x-axis tick labels (values).
+        :type xtick_labels_dict: dict, optional
+        :param kwargs: Options to pass to matplotlib.pyplot.bar.
+        """
+
+        if not score_run.answers:
+            raise ValueError(f"Score run has no answers")
+
+        df_pass_stats = AymaraAI.get_pass_stats_accuracy(score_run)        
+
+        AymaraAI._plot_pass_stats(
+            names=df_pass_stats["question_type"],
+            pass_stats=df_pass_stats["pass_rate" if yaxis_is_percent else "pass_total"],
+            title=title,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            xtick_rot=xtick_rot,
+            xtick_labels_dict=xtick_labels_dict,
+            yaxis_is_percent=yaxis_is_percent,
+            ylim_min=ylim_min,
+            ylim_max=ylim_max,
+            **kwargs,
+        )
 
     @staticmethod
     def show_image_test_answers(

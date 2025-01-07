@@ -56,34 +56,7 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
     ) -> SafetyTestResponse:
-        """
-        Create an Aymara safety test synchronously and wait for completion.
 
-        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
-        :type test_name: str
-        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
-        :type student_description: str
-        :param test_policy: Policy of the test, which will measure compliance against this policy (required for safety tests).
-        :type test_policy: str
-        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
-        :type test_language: str, optional
-        :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
-        :type num_test_questions: int, optional
-        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
-        :type max_wait_time_secs: int, optional
-        :param additional_instructions: Optional additional instructions for test generation
-        :type additional_instructions: str, optional
-        :param good_examples: Optional list of good examples to guide question generation
-        :type good_examples: List[GoodExample], optional
-        :param bad_examples: Optional list of bad examples to guide question generation
-        :type bad_examples: List[BadExample], optional
-        :return: Test response containing test details and generated questions.
-        :rtype: SafetyTestResponse
-
-        :raises ValueError: If the test_name length is not within the allowed range.
-        :raises ValueError: If num_test_questions is not within the allowed range.
-        :raises ValueError: If test_policy is not provided for safety tests.
-        """
         return self._create_test(
             test_name=test_name,
             student_description=student_description,
@@ -99,6 +72,35 @@ class TestMixin(AymaraAIProtocol):
             good_examples=good_examples,
             bad_examples=bad_examples,
         )
+
+    create_safety_test.__doc__ = f"""
+        Create an Aymara safety test synchronously and wait for completion.
+
+        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
+        :type test_name: str
+        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
+        :type student_description: str
+        :param test_policy: Policy of the test, which will measure compliance against this policy (required for safety tests).
+        :type test_policy: str
+        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
+        :type test_language: str, optional
+        :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
+        :type num_test_questions: int, optional
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS} seconds.
+        :type max_wait_time_secs: int, optional
+        :param additional_instructions: Optional additional instructions for test generation
+        :type additional_instructions: str, optional
+        :param good_examples: Optional list of good examples to guide question generation
+        :type good_examples: List[GoodExample], optional
+        :param bad_examples: Optional list of bad examples to guide question generation
+        :type bad_examples: List[BadExample], optional
+        :return: Test response containing test details and generated questions.
+        :rtype: SafetyTestResponse
+
+        :raises ValueError: If the test_name length is not within the allowed range.
+        :raises ValueError: If num_test_questions is not within the allowed range.
+        :raises ValueError: If test_policy is not provided for safety tests.
+        """
 
     async def create_safety_test_async(
         self,
@@ -112,34 +114,7 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
     ) -> SafetyTestResponse:
-        """
-        Create an Aymara safety test asynchronously and wait for completion.
 
-        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
-        :type test_name: str
-        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
-        :type student_description: str
-        :param test_policy: Policy of the test, which will measure compliance against this policy (required for safety tests).
-        :type test_policy: str
-        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
-        :type test_language: str, optional
-        :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
-        :type num_test_questions: int, optional
-        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
-        :type max_wait_time_secs: int, optional
-        :param additional_instructions: Optional additional instructions for test generation
-        :type additional_instructions: str, optional
-        :param good_examples: Optional list of good examples to guide question generation
-        :type good_examples: List[GoodExample], optional
-        :param bad_examples: Optional list of bad examples to guide question generation
-        :type bad_examples: List[BadExample], optional
-        :return: Test response containing test details and generated questions.
-        :rtype: SafetyTestResponse
-
-        :raises ValueError: If the test_name length is not within the allowed range.
-        :raises ValueError: If num_test_questions is not within the allowed range.
-        :raises ValueError: If test_policy is not provided for safety tests.
-        """
         return await self._create_test(
             test_name=test_name,
             student_description=student_description,
@@ -156,6 +131,35 @@ class TestMixin(AymaraAIProtocol):
             bad_examples=bad_examples,
         )
 
+    create_safety_test_async.__doc__= f"""
+        Create an Aymara safety test asynchronously and wait for completion.
+
+        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
+        :type test_name: str
+        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
+        :type student_description: str
+        :param test_policy: Policy of the test, which will measure compliance against this policy (required for safety tests).
+        :type test_policy: str
+        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
+        :type test_language: str, optional
+        :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
+        :type num_test_questions: int, optional
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS} seconds.
+        :type max_wait_time_secs: int, optional
+        :param additional_instructions: Optional additional instructions for test generation
+        :type additional_instructions: str, optional
+        :param good_examples: Optional list of good examples to guide question generation
+        :type good_examples: List[GoodExample], optional
+        :param bad_examples: Optional list of bad examples to guide question generation
+        :type bad_examples: List[BadExample], optional
+        :return: Test response containing test details and generated questions.
+        :rtype: SafetyTestResponse
+
+        :raises ValueError: If the test_name length is not within the allowed range.
+        :raises ValueError: If num_test_questions is not within the allowed range.
+        :raises ValueError: If test_policy is not provided for safety tests.
+        """
+
     # Create Jailbreak Test Methods
     def create_jailbreak_test(
         self,
@@ -168,32 +172,7 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
     ) -> JailbreakTestResponse:
-        """
-        Create an Aymara jailbreak test synchronously and wait for completion.
-
-        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
-        :type test_name: str
-        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
-        :type student_description: str
-        :param test_system_prompt: System prompt of the jailbreak test.
-        :type test_system_prompt: str
-        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
-        :type test_language: str, optional
-        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS}.
-        :type max_wait_time_secs: int, optional
-        :param additional_instructions: Optional additional instructions for test generation
-        :type additional_instructions: str, optional
-        :param good_examples: Optional list of good examples to guide question generation
-        :type good_examples: List[GoodExample], optional
-        :param bad_examples: Optional list of bad examples to guide question generation
-        :type bad_examples: List[BadExample], optional
-        :return: Test response containing test details and generated questions.
-        :rtype: JailbreakTestResponse
-
-        :raises ValueError: If the test_name length is not within the allowed range.
-        :raises ValueError: If num_test_questions is not within the allowed range.
-        :raises ValueError: If test_system_prompt is not provided for jailbreak tests.
-        """
+        
         return self._create_test(
             test_name=test_name,
             student_description=student_description,
@@ -210,19 +189,8 @@ class TestMixin(AymaraAIProtocol):
             bad_examples=bad_examples,
         )
 
-    async def create_jailbreak_test_async(
-        self,
-        test_name: str,
-        student_description: str,
-        test_system_prompt: str,
-        test_language: str = DEFAULT_TEST_LANGUAGE,
-        max_wait_time_secs: int = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
-        additional_instructions: Optional[str] = None,
-        good_examples: Optional[List[GoodExample]] = None,
-        bad_examples: Optional[List[BadExample]] = None,
-    ) -> JailbreakTestResponse:
-        """
-        Create an Aymara jailbreak test asynchronously and wait for completion.
+    create_jailbreak_test.__doc__ = f"""
+        Create an Aymara jailbreak test synchronously and wait for completion.
 
         :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
         :type test_name: str
@@ -232,7 +200,7 @@ class TestMixin(AymaraAIProtocol):
         :type test_system_prompt: str
         :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
         :type test_language: str, optional
-        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS}.
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS} seconds.
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
         :type additional_instructions: str, optional
@@ -247,6 +215,19 @@ class TestMixin(AymaraAIProtocol):
         :raises ValueError: If num_test_questions is not within the allowed range.
         :raises ValueError: If test_system_prompt is not provided for jailbreak tests.
         """
+
+    async def create_jailbreak_test_async(
+        self,
+        test_name: str,
+        student_description: str,
+        test_system_prompt: str,
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        max_wait_time_secs: int = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
+        additional_instructions: Optional[str] = None,
+        good_examples: Optional[List[GoodExample]] = None,
+        bad_examples: Optional[List[BadExample]] = None,
+    ) -> JailbreakTestResponse:
+        
         return await self._create_test(
             test_name=test_name,
             student_description=student_description,
@@ -262,6 +243,33 @@ class TestMixin(AymaraAIProtocol):
             good_examples=good_examples,
             bad_examples=bad_examples,
         )
+
+    create_jailbreak_test_async.__doc__ = f"""
+        Create an Aymara jailbreak test asynchronously and wait for completion.
+
+        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
+        :type test_name: str
+        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
+        :type student_description: str
+        :param test_system_prompt: System prompt of the jailbreak test.
+        :type test_system_prompt: str
+        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
+        :type test_language: str, optional
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS} seconds.
+        :type max_wait_time_secs: int, optional
+        :param additional_instructions: Optional additional instructions for test generation
+        :type additional_instructions: str, optional
+        :param good_examples: Optional list of good examples to guide question generation
+        :type good_examples: List[GoodExample], optional
+        :param bad_examples: Optional list of bad examples to guide question generation
+        :type bad_examples: List[BadExample], optional
+        :return: Test response containing test details and generated questions.
+        :rtype: JailbreakTestResponse
+
+        :raises ValueError: If the test_name length is not within the allowed range.
+        :raises ValueError: If num_test_questions is not within the allowed range.
+        :raises ValueError: If test_system_prompt is not provided for jailbreak tests.
+        """
 
     def create_image_safety_test(
         self,
@@ -275,34 +283,7 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
     ):
-        """
-        Create an Aymara image safety test synchronously and wait for completion.
-
-        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
-        :type test_name: str
-        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
-        :type student_description: str
-        :param test_policy: Policy of the test, which will measure compliance against this policy (required for safety tests).
-        :type test_policy: str
-        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
-        :type test_language: str, optional
-        :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
-        :type num_test_questions: int, optional
-        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
-        :type max_wait_time_secs: int, optional
-        :param additional_instructions: Optional additional instructions for test generation
-        :type additional_instructions: str, optional
-        :param good_examples: Optional list of good examples to guide question generation
-        :type good_examples: List[GoodExample], optional
-        :param bad_examples: Optional list of bad examples to guide question generation
-        :type bad_examples: List[BadExample], optional
-        :return: Test response containing test details and generated questions.
-        :rtype: SafetyTestResponse
-
-        :raises ValueError: If the test_name length is not within the allowed range.
-        :raises ValueError: If num_test_questions is not within the allowed range.
-        :raises ValueError: If test_policy is not provided for safety tests.
-        """
+        
         return self._create_test(
             test_name=test_name,
             student_description=student_description,
@@ -318,6 +299,35 @@ class TestMixin(AymaraAIProtocol):
             good_examples=good_examples,
             bad_examples=bad_examples,
         )
+
+    create_image_safety_test.__doc__ = f"""
+        Create an Aymara image safety test synchronously and wait for completion.
+
+        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
+        :type test_name: str
+        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
+        :type student_description: str
+        :param test_policy: Policy of the test, which will measure compliance against this policy (required for safety tests).
+        :type test_policy: str
+        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
+        :type test_language: str, optional
+        :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
+        :type num_test_questions: int, optional
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS} seconds.
+        :type max_wait_time_secs: int, optional
+        :param additional_instructions: Optional additional instructions for test generation
+        :type additional_instructions: str, optional
+        :param good_examples: Optional list of good examples to guide question generation
+        :type good_examples: List[GoodExample], optional
+        :param bad_examples: Optional list of bad examples to guide question generation
+        :type bad_examples: List[BadExample], optional
+        :return: Test response containing test details and generated questions.
+        :rtype: SafetyTestResponse
+
+        :raises ValueError: If the test_name length is not within the allowed range.
+        :raises ValueError: If num_test_questions is not within the allowed range.
+        :raises ValueError: If test_policy is not provided for safety tests.
+        """
 
     async def create_image_safety_test_async(
         self,
@@ -331,34 +341,7 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
     ):
-        """
-        Create an Aymara image safety test asynchronously and wait for completion.
-
-        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
-        :type test_name: str
-        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
-        :type student_description: str
-        :param test_policy: Policy of the test, which will measure compliance against this policy (required for safety tests).
-        :type test_policy: str
-        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
-        :type test_language: str, optional
-        :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
-        :type num_test_questions: int, optional
-        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
-        :type max_wait_time_secs: int, optional
-        :param additional_instructions: Optional additional instructions for test generation
-        :type additional_instructions: str, optional
-        :param good_examples: Optional list of good examples to guide question generation
-        :type good_examples: List[GoodExample], optional
-        :param bad_examples: Optional list of bad examples to guide question generation
-        :type bad_examples: List[BadExample], optional
-        :return: Test response containing test details and generated questions.
-        :rtype: SafetyTestResponse
-
-        :raises ValueError: If the test_name length is not within the allowed range.
-        :raises ValueError: If num_test_questions is not within the allowed range.
-        :raises ValueError: If test_policy is not provided for safety tests.
-        """
+        
         return await self._create_test(
             test_name=test_name,
             student_description=student_description,
@@ -375,6 +358,35 @@ class TestMixin(AymaraAIProtocol):
             bad_examples=bad_examples,
         )
 
+    create_image_safety_test_async.__doc__ = f"""
+        Create an Aymara image safety test asynchronously and wait for completion.
+
+        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
+        :type test_name: str
+        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
+        :type student_description: str
+        :param test_policy: Policy of the test, which will measure compliance against this policy (required for safety tests).
+        :type test_policy: str
+        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
+        :type test_language: str, optional
+        :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
+        :type num_test_questions: int, optional
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS} seconds.
+        :type max_wait_time_secs: int, optional
+        :param additional_instructions: Optional additional instructions for test generation
+        :type additional_instructions: str, optional
+        :param good_examples: Optional list of good examples to guide question generation
+        :type good_examples: List[GoodExample], optional
+        :param bad_examples: Optional list of bad examples to guide question generation
+        :type bad_examples: List[BadExample], optional
+        :return: Test response containing test details and generated questions.
+        :rtype: SafetyTestResponse
+
+        :raises ValueError: If the test_name length is not within the allowed range.
+        :raises ValueError: If num_test_questions is not within the allowed range.
+        :raises ValueError: If test_policy is not provided for safety tests.
+        """
+
     def create_accuracy_test(
         self,
         test_name: str,
@@ -384,28 +396,7 @@ class TestMixin(AymaraAIProtocol):
         num_test_questions_per_question_type: int = DEFAULT_ACCURACY_NUM_QUESTIONS,
         max_wait_time_secs: Optional[int] = DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS,
     ) -> AccuracyTestResponse:
-        """
-        Create an Aymara accuracy test synchronously and wait for completion.
-
-        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
-        :type test_name: str
-        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
-        :type student_description: str
-        :param knowledge_base: Knowledge base text that will be used to generate accuracy test questions.
-        :type knowledge_base: str
-        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
-        :type test_language: str, optional
-        :param num_test_questions_per_question_type: Number of test questions per question type, defaults to {DEFAULT_ACCURACY_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
-        :type num_test_questions_per_question_type: int, optional
-        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS}.
-        :type max_wait_time_secs: int, optional
-        :return: Test response containing test details and generated questions.
-        :rtype: AccuracyTestResponse
-
-        :raises ValueError: If the test_name length is not within the allowed range.
-        :raises ValueError: If num_test_questions is not within the allowed range.
-        :raises ValueError: If knowledge_base is not provided for accuracy tests.
-        """
+        
         return self._create_test(
             test_name=test_name,
             student_description=student_description,
@@ -419,17 +410,8 @@ class TestMixin(AymaraAIProtocol):
             max_wait_time_secs=max_wait_time_secs,
         )
 
-    async def create_accuracy_test_async(
-        self,
-        test_name: str,
-        student_description: str,
-        knowledge_base: str,
-        test_language: str = DEFAULT_TEST_LANGUAGE,
-        num_test_questions_per_question_type: int = DEFAULT_ACCURACY_NUM_QUESTIONS,
-        max_wait_time_secs: Optional[int] = DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS,
-    ) -> AccuracyTestResponse:
-        """
-        Create an Aymara accuracy test asynchronously and wait for completion.
+    create_accuracy_test.__doc__ = f"""
+        Create an Aymara accuracy test synchronously and wait for completion.
 
         :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
         :type test_name: str
@@ -439,9 +421,9 @@ class TestMixin(AymaraAIProtocol):
         :type knowledge_base: str
         :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
         :type test_language: str, optional
-        :param num_test_questions_per_question_type: Number of test questions per question type, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
+        :param num_test_questions_per_question_type: Number of test questions per question type, defaults to {DEFAULT_ACCURACY_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
         :type num_test_questions_per_question_type: int, optional
-        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS}.
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS} seconds.
         :type max_wait_time_secs: int, optional
         :return: Test response containing test details and generated questions.
         :rtype: AccuracyTestResponse
@@ -450,6 +432,17 @@ class TestMixin(AymaraAIProtocol):
         :raises ValueError: If num_test_questions is not within the allowed range.
         :raises ValueError: If knowledge_base is not provided for accuracy tests.
         """
+
+    async def create_accuracy_test_async(
+        self,
+        test_name: str,
+        student_description: str,
+        knowledge_base: str,
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        num_test_questions_per_question_type: int = DEFAULT_ACCURACY_NUM_QUESTIONS,
+        max_wait_time_secs: Optional[int] = DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS,
+    ) -> AccuracyTestResponse:
+        
         return await self._create_test(
             test_name=test_name,
             student_description=student_description,
@@ -462,6 +455,29 @@ class TestMixin(AymaraAIProtocol):
             test_type=TestType.ACCURACY,
             max_wait_time_secs=max_wait_time_secs,
         )
+
+    create_accuracy_test_async.__doc__ = f"""
+        Create an Aymara accuracy test asynchronously and wait for completion.
+
+        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
+        :type test_name: str
+        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
+        :type student_description: str
+        :param knowledge_base: Knowledge base text that will be used to generate accuracy test questions.
+        :type knowledge_base: str
+        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
+        :type test_language: str, optional
+        :param num_test_questions_per_question_type: Number of test questions per question type, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
+        :type num_test_questions_per_question_type: int, optional
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS} seconds.
+        :type max_wait_time_secs: int, optional
+        :return: Test response containing test details and generated questions.
+        :rtype: AccuracyTestResponse
+
+        :raises ValueError: If the test_name length is not within the allowed range.
+        :raises ValueError: If num_test_questions is not within the allowed range.
+        :raises ValueError: If knowledge_base is not provided for accuracy tests.
+        """
 
     def _create_test(
         self,

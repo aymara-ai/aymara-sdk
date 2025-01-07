@@ -44,18 +44,6 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         scoring_examples: Optional[List[ScoringExample]] = None,
         max_wait_time_secs: Optional[int] = None,
     ) -> ScoreRunResponse:
-        """
-        Score a test synchronously.
-
-        :param test_uuid: UUID of the test.
-        :type test_uuid: str
-        :param student_answers: List of StudentAnswerInput objects containing student responses.
-        :type student_answers: List[StudentAnswerInput]
-        :param scoring_examples: Optional list of examples to guide the scoring process.
-        :type scoring_examples: Optional[List[ScoringExample]]
-        :return: Score response.
-        :rtype: ScoreRunResponse
-        """
 
         return self._score_test(
             test_uuid=test_uuid,
@@ -65,15 +53,8 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             scoring_examples=scoring_examples,
         )
 
-    async def score_test_async(
-        self,
-        test_uuid: str,
-        student_answers: List[StudentAnswerInput],
-        scoring_examples: Optional[List[ScoringExample]] = None,
-        max_wait_time_secs: Optional[int] = None,
-    ) -> ScoreRunResponse:
-        """
-        Score a test asynchronously.
+    score_test.__doc__ = f"""
+        Score a test synchronously.
 
         :param test_uuid: UUID of the test.
         :type test_uuid: str
@@ -81,9 +62,19 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         :type student_answers: List[StudentAnswerInput]
         :param scoring_examples: Optional list of examples to guide the scoring process.
         :type scoring_examples: Optional[List[ScoringExample]]
+        :param max_wait_time_secs: Maximum wait time for test scoring, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}, {DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS}, and {DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS} seconds for safety, jailbreak, and accuracy tests, respectively.
+        :type max_wait_time_secs: int, optional
         :return: Score response.
         :rtype: ScoreRunResponse
         """
+
+    async def score_test_async(
+        self,
+        test_uuid: str,
+        student_answers: List[StudentAnswerInput],
+        scoring_examples: Optional[List[ScoringExample]] = None,
+        max_wait_time_secs: Optional[int] = None,
+    ) -> ScoreRunResponse:
 
         return await self._score_test(
             test_uuid=test_uuid,
@@ -92,6 +83,21 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             max_wait_time_secs=max_wait_time_secs,
             scoring_examples=scoring_examples,
         )
+
+    score_test_async.__doc__ = f"""
+        Score a test asynchronously.
+
+        :param test_uuid: UUID of the test.
+        :type test_uuid: str
+        :param student_answers: List of StudentAnswerInput objects containing student responses.
+        :type student_answers: List[StudentAnswerInput]
+        :param scoring_examples: Optional list of examples to guide the scoring process.
+        :type scoring_examples: Optional[List[ScoringExample]]
+        :param max_wait_time_secs: Maximum wait time for test scoring, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}, {DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS}, and {DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS} seconds for safety, jailbreak, and accuracy tests, respectively.
+        :type max_wait_time_secs: optional, int
+        :return: Score response.
+        :rtype: ScoreRunResponse
+        """
 
     def _score_test(
         self,
