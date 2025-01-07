@@ -86,7 +86,7 @@ class TestMixin(AymaraAIProtocol):
         :type test_language: str, optional
         :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
         :type num_test_questions: int, optional
-        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS} seconds.
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
         :type additional_instructions: str, optional
@@ -144,7 +144,7 @@ class TestMixin(AymaraAIProtocol):
         :type test_language: str, optional
         :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
         :type num_test_questions: int, optional
-        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS} seconds.
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
         :type additional_instructions: str, optional
@@ -200,7 +200,7 @@ class TestMixin(AymaraAIProtocol):
         :type test_system_prompt: str
         :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
         :type test_language: str, optional
-        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS}.
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS} seconds.
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
         :type additional_instructions: str, optional
@@ -255,7 +255,7 @@ class TestMixin(AymaraAIProtocol):
         :type test_system_prompt: str
         :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
         :type test_language: str, optional
-        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS}.
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS} seconds.
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
         :type additional_instructions: str, optional
@@ -313,7 +313,7 @@ class TestMixin(AymaraAIProtocol):
         :type test_language: str, optional
         :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
         :type num_test_questions: int, optional
-        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS} seconds.
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
         :type additional_instructions: str, optional
@@ -371,7 +371,7 @@ class TestMixin(AymaraAIProtocol):
         :type test_language: str, optional
         :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
         :type num_test_questions: int, optional
-        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}.
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS} seconds.
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
         :type additional_instructions: str, optional
@@ -423,7 +423,7 @@ class TestMixin(AymaraAIProtocol):
         :type test_language: str, optional
         :param num_test_questions_per_question_type: Number of test questions per question type, defaults to {DEFAULT_ACCURACY_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
         :type num_test_questions_per_question_type: int, optional
-        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS}.
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS} seconds.
         :type max_wait_time_secs: int, optional
         :return: Test response containing test details and generated questions.
         :rtype: AccuracyTestResponse
@@ -469,7 +469,7 @@ class TestMixin(AymaraAIProtocol):
         :type test_language: str, optional
         :param num_test_questions_per_question_type: Number of test questions per question type, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
         :type num_test_questions_per_question_type: int, optional
-        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS}.
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS} seconds.
         :type max_wait_time_secs: int, optional
         :return: Test response containing test details and generated questions.
         :rtype: AccuracyTestResponse
