@@ -160,7 +160,9 @@ class AymaraAI(
         return pd.DataFrame(
             data=data,
             columns=["test_name", "pass_rate", "pass_total"],
-            index=pd.Index([score.score_run_uuid for score in score_runs], name="score_run_uuid"),
+            index=pd.Index(
+                [score.score_run_uuid for score in score_runs], name="score_run_uuid"
+            ),
         )
 
     @staticmethod
@@ -178,9 +180,7 @@ class AymaraAI(
 
         df_scores = score_run.to_scores_df()
 
-        return df_scores.groupby(by="question_type", as_index=False)[
-            "is_passed"
-        ].agg(
+        return df_scores.groupby(by="question_type", as_index=False)["is_passed"].agg(
             pass_rate="mean",
             pass_total="sum",
         )
@@ -223,8 +223,10 @@ class AymaraAI(
         )
 
         if yaxis_is_percent:
+
             def to_percent(y, _):
                 return f"{y * 100:.0f}%"
+
             ax.yaxis.set_major_formatter(FuncFormatter(to_percent))
 
         plt.tight_layout()
@@ -279,11 +281,16 @@ class AymaraAI(
 
         df_pass_stats = AymaraAI.get_pass_stats(score_runs)
 
+        if not xlabel:
+            xlabel = "Score Runs" if xaxis_is_score_run_uuids else "Tests"
+
         AymaraAI._plot_pass_stats(
-            names=df_pass_stats["score_run_uuid" if xaxis_is_score_run_uuids else "test_name"],
+            names=df_pass_stats[
+                "score_run_uuid" if xaxis_is_score_run_uuids else "test_name"
+            ],
             pass_stats=df_pass_stats["pass_rate" if yaxis_is_percent else "pass_total"],
             title=title,
-            xlabel="Score Runs" if xaxis_is_score_run_uuids else "Tests",
+            xlabel=xlabel,
             ylabel=ylabel,
             xtick_rot=xtick_rot,
             xtick_labels_dict=xtick_labels_dict,
@@ -331,9 +338,9 @@ class AymaraAI(
         """
 
         if not score_run.answers:
-            raise ValueError(f"Score run has no answers")
+            raise ValueError("Score run has no answers")
 
-        df_pass_stats = AymaraAI.get_pass_stats_accuracy(score_run)        
+        df_pass_stats = AymaraAI.get_pass_stats_accuracy(score_run)
 
         AymaraAI._plot_pass_stats(
             names=df_pass_stats["question_type"],

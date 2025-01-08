@@ -315,7 +315,7 @@ def test_get_pass_stats_accuracy(mock_accuracy_score_run):
     result = AymaraAI.get_pass_stats_accuracy(mock_accuracy_score_run)
 
     assert isinstance(result, pd.DataFrame)
-    assert list(result.columns) == ["pass_rate", "pass_total"]
+    assert list(result.columns) == ["question_type", "pass_rate", "pass_total"]
     assert len(result.index) == 3  # Three different question types
     assert all(0 <= rate <= 1 for rate in result["pass_rate"])
     assert all(isinstance(total, (int, float)) for total in result["pass_total"])
@@ -337,7 +337,7 @@ def test_graph_accuracy_score_run(mock_accuracy_score_run):
         mock_subplots.assert_called_once()
         mock_ax.bar.assert_called_once()
         mock_ax.set_xlabel.assert_called_once_with("Question Types", fontweight="bold")
-        mock_ax.set_ylabel.assert_called_once_with("Pass Rate", fontweight="bold")
+        mock_ax.set_ylabel.assert_called_once_with("Answers Passed", fontweight="bold")
         mock_tight_layout.assert_called_once()
         mock_show.assert_called_once()
 
