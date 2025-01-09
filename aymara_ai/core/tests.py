@@ -56,7 +56,6 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
     ) -> SafetyTestResponse:
-
         return self._create_test(
             test_name=test_name,
             student_description=student_description,
@@ -114,7 +113,6 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
     ) -> SafetyTestResponse:
-
         return await self._create_test(
             test_name=test_name,
             student_description=student_description,
@@ -131,7 +129,7 @@ class TestMixin(AymaraAIProtocol):
             bad_examples=bad_examples,
         )
 
-    create_safety_test_async.__doc__= f"""
+    create_safety_test_async.__doc__ = f"""
         Create an Aymara safety test asynchronously and wait for completion.
 
         :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
@@ -171,8 +169,8 @@ class TestMixin(AymaraAIProtocol):
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
+        limit_num_questions: Optional[int] = None,
     ) -> JailbreakTestResponse:
-        
         return self._create_test(
             test_name=test_name,
             student_description=student_description,
@@ -182,7 +180,7 @@ class TestMixin(AymaraAIProtocol):
             test_language=test_language,
             is_async=False,
             test_type=TestType.JAILBREAK,
-            num_test_questions=None,
+            num_test_questions=limit_num_questions,
             max_wait_time_secs=max_wait_time_secs,
             additional_instructions=additional_instructions,
             good_examples=good_examples,
@@ -208,6 +206,8 @@ class TestMixin(AymaraAIProtocol):
         :type good_examples: List[GoodExample], optional
         :param bad_examples: Optional list of bad examples to guide question generation
         :type bad_examples: List[BadExample], optional
+        :param limit_num_questions: Optional limit on the number of questions generated
+        :type limit_num_questions: int, optional
         :return: Test response containing test details and generated questions.
         :rtype: JailbreakTestResponse
 
@@ -226,8 +226,8 @@ class TestMixin(AymaraAIProtocol):
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
+        limit_num_questions: Optional[int] = None,
     ) -> JailbreakTestResponse:
-        
         return await self._create_test(
             test_name=test_name,
             student_description=student_description,
@@ -237,7 +237,7 @@ class TestMixin(AymaraAIProtocol):
             test_language=test_language,
             is_async=True,
             test_type=TestType.JAILBREAK,
-            num_test_questions=None,
+            num_test_questions=limit_num_questions,
             max_wait_time_secs=max_wait_time_secs,
             additional_instructions=additional_instructions,
             good_examples=good_examples,
@@ -263,6 +263,8 @@ class TestMixin(AymaraAIProtocol):
         :type good_examples: List[GoodExample], optional
         :param bad_examples: Optional list of bad examples to guide question generation
         :type bad_examples: List[BadExample], optional
+        :param limit_num_questions: Optional limit on the number of questions generated
+        :type limit_num_questions: int, optional
         :return: Test response containing test details and generated questions.
         :rtype: JailbreakTestResponse
 
@@ -283,7 +285,6 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
     ):
-        
         return self._create_test(
             test_name=test_name,
             student_description=student_description,
@@ -341,7 +342,6 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
     ):
-        
         return await self._create_test(
             test_name=test_name,
             student_description=student_description,
@@ -396,7 +396,6 @@ class TestMixin(AymaraAIProtocol):
         num_test_questions_per_question_type: int = DEFAULT_ACCURACY_NUM_QUESTIONS,
         max_wait_time_secs: Optional[int] = DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS,
     ) -> AccuracyTestResponse:
-        
         return self._create_test(
             test_name=test_name,
             student_description=student_description,
@@ -442,7 +441,6 @@ class TestMixin(AymaraAIProtocol):
         num_test_questions_per_question_type: int = DEFAULT_ACCURACY_NUM_QUESTIONS,
         max_wait_time_secs: Optional[int] = DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS,
     ) -> AccuracyTestResponse:
-        
         return await self._create_test(
             test_name=test_name,
             student_description=student_description,

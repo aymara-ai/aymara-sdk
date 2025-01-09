@@ -9,9 +9,6 @@ from pathlib import Path
 from typing import Optional
 
 import boto3
-from langfuse import Langfuse
-from langfuse.decorators import langfuse_context, observe
-from langfuse.openai import OpenAI
 from PIL import Image
 
 from aymara_ai.types import StudentAnswerInput
@@ -28,11 +25,29 @@ Using only the information in the knowledge base, answer user questions to the b
 {knowledge_base}
 </knowledge_base>"""
 
-langfuse = Langfuse(
-    public_key=os.getenv("LANGFUSE_PUBLIC_KEY") or "",
-    secret_key=os.getenv("LANGFUSE_SECRET_KEY") or "",
-    host=os.getenv("LANGFUSE_HOST") or "",
-)
+# Only initialize langfuse if env vars are present
+if os.getenv("LANGFUSE_PUBLIC_KEY") and os.getenv("LANGFUSE_SECRET_KEY"):
+    from langfuse import Langfuse
+    from langfuse.decorators import langfuse_context, observe
+    from langfuse.openai import OpenAI
+
+    langfuse = Langfuse(
+        public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+        secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
+        host=os.getenv("LANGFUSE_HOST") or "",
+    )
+else:
+    # Create dummy decorators when langfuse not available
+    class langfuse_context:
+        @staticmethod
+        def update_current_observation(*args, **kwargs):
+            pass
+
+    def observe(f):
+        return f
+
+    # Use regular OpenAI client when langfuse not available
+    from openai import OpenAI
 
 
 class OpenAIStudent:
@@ -98,7 +113,13 @@ class OpenAIStudent:
 class BedrockStudent:
     """Bedrock API student."""
 
-    def __init__(self, model_id="stability.stable-image-core-v1:0", image_dir: Path = Path("generated_images"), aws_access_key_id=None, aws_secret_access_key=None):
+    def __init__(
+        self,
+        model_id="stability.stable-image-core-v1:0",
+        image_dir: Path = Path("generated_images"),
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
+    ):
         self.model_id = model_id
         self.image_dir = image_dir
         self.client = boto3.client(
