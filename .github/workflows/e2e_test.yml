@@ -1,7 +1,7 @@
 name: End-to-End Testing
 on:
   schedule:
-    - cron: "0 2 * * *" # Runs at 2 AM UTC daily
+    - cron: "0 5 * * *" # Runs at 12 AM EDT/EST daily
   workflow_dispatch:
     inputs:
       version:
@@ -79,7 +79,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "* :white_check_mark: SDK E2E Testing Passed*\nEnvironment: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}\nVersion: ${{ github.ref }}\nDuration: ${{ fromJSON(steps.e2e_tests.outputs.duration) }}s\nCheck the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
+                    "text": "* :white_check_mark: SDK E2E Testing Passed*\nEnvironment: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}\nVersion: ${{ github.ref }}\nDuration: ${{ steps.e2e_tests.outputs.duration }}s\nCheck the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
                   }
                 }
               ]
@@ -99,7 +99,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "* :warning: SDK E2E Testing Failed*\nEnvironment: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}\nVersion: ${{ github.ref }}\nDuration: ${{ fromJSON(steps.e2e_tests.outputs.duration) }}s\n\nCheck the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
+                    "text": "* :warning: SDK E2E Testing Failed*\nEnvironment: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}\nVersion: ${{ github.ref }}\nDuration: ${{ steps.e2e_tests.outputs.duration }}s\n\nCheck the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
                   }
                 }
               ]
