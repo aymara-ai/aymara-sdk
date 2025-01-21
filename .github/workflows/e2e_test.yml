@@ -59,7 +59,7 @@ jobs:
         run: |
           echo "Running e2e tests against API environment: $API_TEST_ENV"
           start_time=$(date +%s)
-          pytest_output=$(uv run pytest tests/end_to_end/ -v -m e2e --junit-xml=test-results.xml 2>&1) || true
+          pytest_output=$(uv run pytest tests/end_to_end/ -v -m e2e --junit-xml=test-results.xml 2>&1)
           exit_code=$?
           end_time=$(date +%s)
           duration=$((end_time - start_time))
@@ -68,6 +68,7 @@ jobs:
           echo "pytest_output<<EOF" >> $GITHUB_OUTPUT
           echo "$pytest_output" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+          exit $exit_code
 
       - name: Process test results
         if: always()
