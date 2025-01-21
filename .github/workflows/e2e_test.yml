@@ -59,18 +59,28 @@ jobs:
         run: |
           echo "Running e2e tests against API environment: $API_TEST_ENV"
           start_time=$(date +%s)
-          uv run pytest tests/end_to_end/ -v -m e2e --junit-xml=test-results.xml || echo "Tests failed"
+          pytest_output=$(uv run pytest tests/end_to_end/ -v -m e2e --junit-xml=test-results.xml 2>&1) || true
+          exit_code=$?
           end_time=$(date +%s)
           duration=$((end_time - start_time))
-          echo "test_exit_code=$?" >> $GITHUB_OUTPUT
+          echo "test_exit_code=$exit_code" >> $GITHUB_OUTPUT
           echo "duration=$duration" >> $GITHUB_OUTPUT
+          echo "pytest_output<<EOF" >> $GITHUB_OUTPUT
+          echo "$pytest_output" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Process test results
-        if: steps.e2e_tests.outputs.test_exit_code != '0'
+        if: always()
         id: process_results
         run: |
-          FAILED_TESTS=$(grep -A 1 "FAILED tests/end_to_end/" test-results.xml | grep -v "FAILED tests/end_to_end/" | tr '\n' ' ' | head -c 800)
-          echo "failed_tests=$FAILED_TESTS" >> $GITHUB_OUTPUT
+          if [ -f "test-results.xml" ]; then
+            FAILED_TESTS=$(grep -A 1 "FAILED tests/end_to_end/" test-results.xml | grep -v "FAILED tests/end_to_end/" | tr '\n' ' ')
+            echo "failed_tests<<EOF" >> $GITHUB_OUTPUT
+            echo "$FAILED_TESTS" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "failed_tests=No test results file found" >> $GITHUB_OUTPUT
+          fi
 
       - name: Report Success
         if: steps.e2e_tests.outputs.test_exit_code == '0'
@@ -106,7 +116,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "* :warning: SDK E2E Testing Failed*\nEnvironment: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}\nVersion: ${{ github.ref }}\nDuration: ${{ steps.e2e_tests.outputs.duration }}s\n\n*Failed Tests:*\n```${{ steps.process_results.outputs.failed_tests }}```\n\nCheck the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
+                    "text": "* :warning: SDK E2E Testing Failed*\nEnvironment: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}\nVersion: ${{ github.ref }}\nDuration: ${{ steps.e2e_tests.outputs.duration }}s\n\n*Failed Tests:*\n```${{ steps.e2e_tests.outputs.pytest_output }}```\n\nCheck the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
                   }
                 }
               ]
