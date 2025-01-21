@@ -73,7 +73,7 @@ jobs:
           echo "failed_tests=$FAILED_TESTS" >> $GITHUB_OUTPUT
 
       - name: Report Success
-        if: success()
+        if: steps.e2e_tests.outputs.test_exit_code == '0'
         uses: slackapi/slack-github-action@v2.0.0
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
