@@ -59,20 +59,21 @@ jobs:
         run: |
           echo "Running e2e tests against API environment: $API_TEST_ENV"
           start_time=$(date +%s)
-          uv run pytest tests/end_to_end/ -v -m e2e
+          # Capture pytest output
+          pytest_output=$(uv run pytest tests/end_to_end/ -v -m e2e 2>&1)
           exit_code=$?
           end_time=$(date +%s)
           duration=$((end_time - start_time))
           echo "test_exit_code=$exit_code" >> $GITHUB_OUTPUT
           echo "duration=$duration" >> $GITHUB_OUTPUT
-
-      - name: Print exit code
-        if: always()
-        run: |
-          echo "E2E test exit code: ${{ steps.e2e_tests.outputs.test_exit_code }}"
+          # Escape the pytest output for GitHub Actions
+          pytest_output="${pytest_output//'%'/'%25'}"
+          pytest_output="${pytest_output//$'\n'/'%0A'}"
+          pytest_output="${pytest_output//$'\r'/'%0D'}"
+          echo "pytest_output=$pytest_output" >> $GITHUB_OUTPUT
 
       - name: Report Success
-        if: steps.e2e_tests.outputs.test_exit_code == '0'
+        if: success()
         uses: slackapi/slack-github-action@v2.0.0
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -92,7 +93,7 @@ jobs:
             }
 
       - name: Report Failure
-        if: steps.e2e_tests.outputs.test_exit_code != '0'
+        if: failure()
         uses: slackapi/slack-github-action@v2.0.0
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
