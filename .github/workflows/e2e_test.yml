@@ -44,7 +44,7 @@ jobs:
           git checkout $VERSION
           echo "Running e2e tests for version: $VERSION"
 
-      - name: Run e2e tests
+      - name: Run E2E Tests
         id: e2e_tests
         env:
           PROD_E2E_TESTING_API_KEY: ${{ secrets.PROD_E2E_TESTING_API_KEY }}
@@ -57,13 +57,7 @@ jobs:
           RUN_E2E: true
         run: |
           echo "Running e2e tests against API environment: $API_TEST_ENV"
-          start_time=$(date +%s)
           uv run pytest tests/end_to_end/ -v -m e2e
-          exit_code=$?
-          end_time=$(date +%s)
-          duration=$((end_time - start_time))
-          echo "test_exit_code=$exit_code" >> $GITHUB_OUTPUT
-          echo "duration=$duration" >> $GITHUB_OUTPUT
 
       - name: Report Success
         if: success()
@@ -79,7 +73,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "* :white_check_mark: SDK E2E Testing Passed*\nEnvironment: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}\nVersion: ${{ github.ref }}\nDuration: ${{ steps.e2e_tests.outputs.duration }}s\nCheck the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
+                    "text": "* :white_check_mark: SDK E2E Testing Passed*\nEnvironment: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}\nVersion: ${{ github.ref }}\nCheck the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
                   }
                 }
               ]
@@ -99,7 +93,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "* :warning: SDK E2E Testing Failed*\nEnvironment: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}\nVersion: ${{ github.ref }}\nDuration: ${{ steps.e2e_tests.outputs.duration }}s\n\nCheck the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
+                    "text": "* :warning: SDK E2E Testing Failed*\nEnvironment: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}\nVersion: ${{ github.ref }}\nCheck the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
                   }
                 }
               ]
