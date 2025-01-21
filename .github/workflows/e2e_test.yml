@@ -66,18 +66,10 @@ jobs:
           echo "test_exit_code=$exit_code" >> $GITHUB_OUTPUT
           echo "duration=$duration" >> $GITHUB_OUTPUT
 
-      - name: Process test results
+      - name: Print exit code
         if: always()
-        id: process_results
         run: |
-          if [ -f "test-results.xml" ]; then
-            FAILED_TESTS=$(grep -A 1 "FAILED tests/end_to_end/" test-results.xml | grep -v "FAILED tests/end_to_end/" | tr '\n' ' ')
-            echo "failed_tests<<EOF" >> $GITHUB_OUTPUT
-            echo "$FAILED_TESTS" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          else
-            echo "failed_tests=No test results file found" >> $GITHUB_OUTPUT
-          fi
+          echo "E2E test exit code: ${{ steps.e2e_tests.outputs.test_exit_code }}"
 
       - name: Report Success
         if: steps.e2e_tests.outputs.test_exit_code == '0'
