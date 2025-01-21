@@ -67,4 +67,4 @@ jobs:
           if [ -z "$VERSION" ]; then
             echo "Running tests on ${GITHUB_HEAD_REF:-$GITHUB_REF_NAME} branch"
           fi
-          uv run pytest
+          uv run pytest -m "not e2e"

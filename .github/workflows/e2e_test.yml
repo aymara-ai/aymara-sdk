@@ -1,0 +1,73 @@
+name: End-to-End Testing
+on:
+  schedule:
+    - cron: "0 2 * * *" # Runs at 2 AM UTC daily
+  workflow_dispatch:
+    inputs:
+      api_test_env:
+        description: "API test environment"
+        required: false
+        type: choice
+        options:
+          - production
+          - staging
+        default: "production"
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Checkout latest release
+        run: |
+          LATEST_VERSION=$(git describe --tags `git rev-list --tags --max-count=1`)
+          git checkout $LATEST_VERSION
+          echo "Running monitoring on version: $LATEST_VERSION"
+
+      - name: Install dependencies
+        run: |
+          uv pip install -e .
+
+      - name: Run e2e tests
+        env:
+          PROD_E2E_TESTING_API_KEY: ${{ secrets.PROD_E2E_TESTING_API_KEY }}
+          STAGING_E2E_TESTING_API_KEY: ${{ secrets.STAGING_E2E_TESTING_API_KEY }}
+          API_TEST_ENV: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}
+          RUN_E2E: true
+        run: |
+          echo "Running monitoring against API environment: $API_TEST_ENV"
+          pytest tests/end_to_end/ -v -m e2e
+
+      - name: Report Failure
+        if: failure()
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          payload-delimiter: "_"
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: webhook-trigger
+          payload: |
+            {
+              "text": ":warning: SDK E2E Testing Failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*SDK E2E Testing Failed*\nEnvironment: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}\nVersion: ${{ github.ref }}\nCheck the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
+                  }
+                }
+              ]
+            }

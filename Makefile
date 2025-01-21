@@ -30,14 +30,16 @@ help:
 
 .PHONY: test
 test:
-	@pytest $(case) -s
+	pytest $(case) -m "not e2e"
 
 test-unit:
-	@pytest tests/unit/ $(case)
+	pytest tests/unit/ $(case) -v -s -m "not e2e"
 
 test-integration:
-	@pytest tests/integration/ -s $(case)
+	pytest tests/integration/ -s $(case) -v -m "not e2e"
 
+test-e2e:
+	pytest tests/end_to_end/ -v -s -m "e2e" $(case)
 
 generate-client:
 	openapi-python-client generate --url http://localhost:8000/openapi.json --output-path aymara_ai/generated --overwrite --config aymara_ai/client_config.yml

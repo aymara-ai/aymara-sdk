@@ -191,7 +191,7 @@ requires-dist = [
     { name = "ipykernel", specifier = "==6.29.5" },
     { name = "ipywidgets", specifier = "==8.1.5" },
     { name = "jupyter", specifier = "==1.1.0" },
-    { name = "langfuse", specifier = ">=2.57.0" },
+    { name = "langfuse", specifier = ">=2.57.3" },
     { name = "matplotlib", specifier = ">=3.7.5" },
     { name = "multiprocess", specifier = "==0.70.16" },
     { name = "openai", specifier = ">=1.55.0" },
@@ -1626,7 +1626,7 @@ wheels = [
 
 [[package]]
 name = "langfuse"
-version = "2.57.0"
+version = "2.57.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1638,9 +1638,9 @@ dependencies = [
     { name = "requests" },
     { name = "wrapt" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1c/50/22fd15606b6ac469d30f355693578f725dca1eb17f053301e62c4941e2ec/langfuse-2.57.0.tar.gz", hash = "sha256:8aa0b59af12c46417d1c9993f17921a984ec4688c0cd50004ef18647c9c5ae77", size = 142786 }
+sdist = { url = "https://files.pythonhosted.org/packages/8a/fd/e2dc57452a9458c2dcd9c64908731b4fdc1363dba9a2f730ab76f9855040/langfuse-2.57.11.tar.gz", hash = "sha256:f1c220decdd9c858fb58916af1775ac999836859553c6ffef33ebf2197030697", size = 143290 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d9/9c/1897e11cabd3f11b1e5cd087cb07cebf41fe323f784f0a7011099fd3eba3/langfuse-2.57.0-py3-none-any.whl", hash = "sha256:cb14b2393b73e5548ddd7e5cf2967210e24706e10b2699a727ece9077e69c990", size = 254784 },
+    { url = "https://files.pythonhosted.org/packages/ee/c6/cf4f817cbd7a7b7f6f3e2a46685fcba229e62426498155af6600785f4b06/langfuse-2.57.11-py3-none-any.whl", hash = "sha256:c9a074c68de62b7a7b144c02577a1a124df84274f13c80488f077147e93d6e78", size = 255407 },
 ]
 
 [[package]]
