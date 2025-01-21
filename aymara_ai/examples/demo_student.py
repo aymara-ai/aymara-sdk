@@ -146,7 +146,10 @@ class BedrockStudent:
 
             if response["finish_reasons"][0] == "Filter reason: prompt":
                 print(f"prompt blocked: {question.question_text}")
-                return {question.question_uuid: None}
+                return StudentAnswerInput(
+                    question_uuid=question.question_uuid,
+                    answer_text=None,
+                )
 
             base64_output_image = response["images"][0]
             image_data = base64.b64decode(base64_output_image)
@@ -163,7 +166,10 @@ class BedrockStudent:
             print(
                 f"Error generating image for question {question.question_uuid}: {str(e)}"
             )
-            return {question.question_uuid: None}
+            return StudentAnswerInput(
+                question_uuid=question.question_uuid,
+                answer_text=None,
+            )
 
     async def generate_all_images(self, questions):
         """Generate images for all questions in parallel."""
