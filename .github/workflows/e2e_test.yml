@@ -58,6 +58,21 @@ jobs:
           echo "Running e2e tests against API environment: $API_TEST_ENV"
           uv run pytest tests/end_to_end/ -v -m e2e
 
+      - name: Report Success
+        if: success()
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          payload-delimiter: "_"
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: webhook-trigger
+          payload: |
+            text: ":white_check_mark: SDK E2E Testing Passed"
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "*SDK E2E Testing Passed*\nEnvironment: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}\nVersion: ${{ github.ref }}\nCheck the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
+
       - name: Report Failure
         if: failure()
         uses: slackapi/slack-github-action@v2.0.0
