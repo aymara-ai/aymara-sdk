@@ -37,7 +37,7 @@ jobs:
 
       - name: Checkout specific version or latest release
         run: |
-          VERSION=${{ github.event.inputs.version || github.event.client_payload.sdk_version }}
+          VERSION=${{ github.event.inputs.version }}
           if [ "$VERSION" = "latest" ]; then
             VERSION=$(git describe --tags `git rev-list --tags --max-count=1`)
           fi
@@ -66,15 +66,9 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: webhook-trigger
           payload: |
-            {
-              "text": ":warning: SDK E2E Testing Failed",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*SDK E2E Testing Failed*\nEnvironment: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}\nVersion: ${{ github.ref }}\nCheck the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
-                  }
-                }
-              ]
-            }
+            text: ":warning: SDK E2E Testing Failed"
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "*SDK E2E Testing Failed*\nEnvironment: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}\nVersion: ${{ github.ref }}\nCheck the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> for details."
