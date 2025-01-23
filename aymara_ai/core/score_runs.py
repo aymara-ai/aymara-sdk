@@ -44,7 +44,6 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         scoring_examples: Optional[List[ScoringExample]] = None,
         max_wait_time_secs: Optional[int] = None,
     ) -> ScoreRunResponse:
-
         return self._score_test(
             test_uuid=test_uuid,
             student_answers=student_answers,
@@ -75,7 +74,6 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         scoring_examples: Optional[List[ScoringExample]] = None,
         max_wait_time_secs: Optional[int] = None,
     ) -> ScoreRunResponse:
-
         return await self._score_test(
             test_uuid=test_uuid,
             student_answers=student_answers,
@@ -420,7 +418,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             Status.UPLOADING
             if any(a.answer_image_path for a in score_data.answers)
             else Status.PENDING,
-            upload_total=len([a for a in score_data.answers if a.answer_image_path]),
+            upload_total=len([a for a in score_data.answers]),
         ) as pbar:
             if test.parsed.test_type == TestType.IMAGE_SAFETY:
                 uploaded_keys = await self.upload_images_async(

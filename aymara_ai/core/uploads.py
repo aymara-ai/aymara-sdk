@@ -1,6 +1,5 @@
 import asyncio
 import mimetypes
-import os
 from typing import Callable, Coroutine, Dict, List, Optional, Union
 
 import httpx
@@ -70,19 +69,6 @@ class UploadMixin(AymaraAIProtocol):
         is_async: bool,
         progress_callback: Optional[Callable[[int], None]] = None,
     ) -> Union[Dict[str, str], Coroutine[None, None, Dict[str, str]]]:
-        # Validate inputs
-
-        for answer in student_answers:
-            if not answer.answer_image_path:
-                raise ValueError(
-                    f"Image path is required for question {answer.question_uuid}"
-                )
-
-            if not os.path.exists(answer.answer_image_path):
-                raise ValueError(
-                    f"Image path does not exist: {answer.answer_image_path}"
-                )
-
         if is_async:
             return self._upload_images_async_impl(
                 test_uuid, student_answers, batch_size, progress_callback
@@ -104,7 +90,9 @@ class UploadMixin(AymaraAIProtocol):
             client=self.client,
             body=ImageUploadRequestInSchema(
                 test_uuid=test_uuid,
-                answers=student_answers,
+                answers=[
+                    a for a in student_answers if a.answer_image_path
+                ],  # Only request URLs for non-None paths
             ),
         )
 
@@ -112,14 +100,21 @@ class UploadMixin(AymaraAIProtocol):
             raise ValueError(f"{response.parsed.detail}")
 
         presigned_urls = response.parsed.to_dict()
-        uploaded_keys = {}
-        uploaded_count = 0
+        uploaded_keys = {
+            answer.question_uuid: None
+            for answer in student_answers
+            if not answer.answer_image_path
+        }  # Initialize with None for skipped uploads
+        uploaded_count = len(uploaded_keys)  # Start count with skipped uploads
+        if progress_callback:
+            progress_callback(uploaded_count)
 
         # Upload images in batches
         for i in range(0, len(student_answers), batch_size):
             batch = {
                 answer.question_uuid: answer.answer_image_path
                 for answer in student_answers[i : i + batch_size]
+                if answer.answer_image_path  # Only include non-None paths
             }
 
             for uuid, path in batch.items():
@@ -153,7 +148,9 @@ class UploadMixin(AymaraAIProtocol):
             client=self.client,
             body=ImageUploadRequestInSchema(
                 test_uuid=test_uuid,
-                answers=student_answers,
+                answers=[
+                    a for a in student_answers if a.answer_image_path
+                ],  # Only request URLs for non-None paths
             ),
         )
 
@@ -161,8 +158,14 @@ class UploadMixin(AymaraAIProtocol):
             raise ValueError(f"{response.parsed.detail}")
 
         presigned_urls = response.parsed.to_dict()
-        uploaded_keys = {}
-        uploaded_count = 0
+        uploaded_keys = {
+            answer.question_uuid: None
+            for answer in student_answers
+            if not answer.answer_image_path
+        }  # Initialize with None for skipped uploads
+        uploaded_count = len(uploaded_keys)  # Start count with skipped uploads
+        if progress_callback:
+            progress_callback(uploaded_count)
         max_retries = 3
         timeout = httpx.Timeout(
             timeout=30.0, write=10.0
@@ -174,6 +177,7 @@ class UploadMixin(AymaraAIProtocol):
                 batch = {
                     answer.question_uuid: answer.answer_image_path
                     for answer in student_answers[i : i + batch_size]
+                    if answer.answer_image_path  # Only include non-None paths
                 }
                 tasks = []
                 batch_keys = []
@@ -213,6 +217,9 @@ class UploadMixin(AymaraAIProtocol):
                                 zip(responses, batch_keys, batch_urls)
                             ):
                                 if isinstance(response, Exception):
+                                    print(
+                                        f"Failed to upload image {uuid} with url {url} with exception {response}s"
+                                    )
                                     if (
                                         attempt < max_retries - 1
                                     ):  # Don't retry on last attempt
