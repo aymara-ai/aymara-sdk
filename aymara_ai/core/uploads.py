@@ -217,9 +217,6 @@ class UploadMixin(AymaraAIProtocol):
                                 zip(responses, batch_keys, batch_urls)
                             ):
                                 if isinstance(response, Exception):
-                                    print(
-                                        f"Failed to upload image {uuid} with url {url} with exception {response}s"
-                                    )
                                     if (
                                         attempt < max_retries - 1
                                     ):  # Don't retry on last attempt
