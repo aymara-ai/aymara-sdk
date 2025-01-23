@@ -163,9 +163,13 @@ class UploadMixin(AymaraAIProtocol):
         presigned_urls = response.parsed.to_dict()
         uploaded_keys = {}
         uploaded_count = 0
+        max_retries = 3
+        timeout = httpx.Timeout(
+            timeout=30.0, write=10.0
+        )  # 30s total timeout, 10s write timeout
 
         # Upload images in batches
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=timeout) as client:
             for i in range(0, len(student_answers), batch_size):
                 batch = {
                     answer.question_uuid: answer.answer_image_path
@@ -174,6 +178,7 @@ class UploadMixin(AymaraAIProtocol):
                 tasks = []
                 batch_keys = []
                 batch_urls = []
+                batch_contents = []
 
                 for uuid, path in batch.items():
                     url = presigned_urls[uuid]
@@ -187,16 +192,67 @@ class UploadMixin(AymaraAIProtocol):
                         tasks.append(
                             client.put(url, content=file_content, headers=headers)
                         )
-
                         batch_keys.append(uuid)
                         batch_urls.append(url)
+                        batch_contents.append((file_content, headers))
 
                 if tasks:
-                    responses = await asyncio.gather(*tasks)
-                    for response, uuid, url in zip(responses, batch_keys, batch_urls):
-                        if response.status_code == 200:
-                            uploaded_keys[uuid] = url.split("?")[0].split("/")[-1]
-                            uploaded_count += 1
-                            if progress_callback:
-                                progress_callback(uploaded_count)
+                    # Try uploading with retries
+                    for attempt in range(max_retries):
+                        try:
+                            responses = await asyncio.gather(
+                                *tasks, return_exceptions=True
+                            )
+
+                            # Handle responses and retry failed uploads
+                            retry_tasks = []
+                            retry_keys = []
+                            retry_urls = []
+
+                            for idx, (response, uuid, url) in enumerate(
+                                zip(responses, batch_keys, batch_urls)
+                            ):
+                                if isinstance(response, Exception):
+                                    if (
+                                        attempt < max_retries - 1
+                                    ):  # Don't retry on last attempt
+                                        retry_tasks.append(
+                                            client.put(
+                                                url,
+                                                content=batch_contents[idx][0],
+                                                headers=batch_contents[idx][1],
+                                            )
+                                        )
+                                        retry_keys.append(uuid)
+                                        retry_urls.append(url)
+                                elif response.status_code == 200:
+                                    uploaded_keys[uuid] = url.split("?")[0].split("/")[
+                                        -1
+                                    ]
+                                    uploaded_count += 1
+                                    if progress_callback:
+                                        progress_callback(uploaded_count)
+
+                            # If there are no more retries needed, break
+                            if not retry_tasks:
+                                break
+
+                            # Update tasks for next retry attempt
+                            tasks = retry_tasks
+                            batch_keys = retry_keys
+                            batch_urls = retry_urls
+
+                        except Exception as e:
+                            if attempt == max_retries - 1:
+                                self.logger.error(
+                                    f"Failed to upload images after {max_retries} attempts: {str(e)}"
+                                )
+                                raise
+
+                            # Add delay between retries
+                            if attempt < max_retries - 1 and retry_tasks:
+                                await asyncio.sleep(
+                                    1 * (attempt + 1)
+                                )  # Exponential backoff
+
         return uploaded_keys

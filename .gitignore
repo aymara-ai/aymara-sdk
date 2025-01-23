@@ -161,3 +161,5 @@ cython_debug/
 # Test Files
 aymara_ai/examples/nikita_test_notebook.ipynb
 aymara_ai/examples/check_langfuse.ipynb
+aymara_ai/examples/safety/generated_images
+tests/end_to_end/test_generated_images
