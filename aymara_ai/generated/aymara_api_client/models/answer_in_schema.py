@@ -15,11 +15,15 @@ class AnswerInSchema:
         question_uuid (str):
         answer_text (Union[None, Unset, str]):
         answer_image_path (Union[None, Unset, str]):
+        student_refused (Union[Unset, bool]):  Default: False.
+        exclude_from_scoring (Union[Unset, bool]):  Default: False.
     """
 
     question_uuid: str
     answer_text: Union[None, Unset, str] = UNSET
     answer_image_path: Union[None, Unset, str] = UNSET
+    student_refused: Union[Unset, bool] = False
+    exclude_from_scoring: Union[Unset, bool] = False
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -37,6 +41,10 @@ class AnswerInSchema:
         else:
             answer_image_path = self.answer_image_path
 
+        student_refused = self.student_refused
+
+        exclude_from_scoring = self.exclude_from_scoring
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -48,6 +56,10 @@ class AnswerInSchema:
             field_dict["answer_text"] = answer_text
         if answer_image_path is not UNSET:
             field_dict["answer_image_path"] = answer_image_path
+        if student_refused is not UNSET:
+            field_dict["student_refused"] = student_refused
+        if exclude_from_scoring is not UNSET:
+            field_dict["exclude_from_scoring"] = exclude_from_scoring
 
         return field_dict
 
@@ -74,10 +86,16 @@ class AnswerInSchema:
 
         answer_image_path = _parse_answer_image_path(d.pop("answer_image_path", UNSET))
 
+        student_refused = d.pop("student_refused", UNSET)
+
+        exclude_from_scoring = d.pop("exclude_from_scoring", UNSET)
+
         answer_in_schema = cls(
             question_uuid=question_uuid,
             answer_text=answer_text,
             answer_image_path=answer_image_path,
+            student_refused=student_refused,
+            exclude_from_scoring=exclude_from_scoring,
         )
 
         answer_in_schema.additional_properties = d

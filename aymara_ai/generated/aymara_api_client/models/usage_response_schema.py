@@ -8,6 +8,7 @@ from ..types import UNSET, Unset
 if TYPE_CHECKING:
     from ..models.billing_cycle_usage_schema import BillingCycleUsageSchema
     from ..models.score_run_out_schema import ScoreRunOutSchema
+    from ..models.usage_response_schema_test_type_displays import UsageResponseSchemaTestTypeDisplays
 
 
 T = TypeVar("T", bound="UsageResponseSchema")
@@ -17,15 +18,19 @@ T = TypeVar("T", bound="UsageResponseSchema")
 class UsageResponseSchema:
     """
     Attributes:
+        test_type_displays (UsageResponseSchemaTestTypeDisplays):
         billing_cycles (Union[List['BillingCycleUsageSchema'], None, Unset]):
         free_score_runs (Union[List['ScoreRunOutSchema'], None, Unset]):
     """
 
+    test_type_displays: "UsageResponseSchemaTestTypeDisplays"
     billing_cycles: Union[List["BillingCycleUsageSchema"], None, Unset] = UNSET
     free_score_runs: Union[List["ScoreRunOutSchema"], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
+        test_type_displays = self.test_type_displays.to_dict()
+
         billing_cycles: Union[List[Dict[str, Any]], None, Unset]
         if isinstance(self.billing_cycles, Unset):
             billing_cycles = UNSET
@@ -52,7 +57,11 @@ class UsageResponseSchema:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({})
+        field_dict.update(
+            {
+                "test_type_displays": test_type_displays,
+            }
+        )
         if billing_cycles is not UNSET:
             field_dict["billing_cycles"] = billing_cycles
         if free_score_runs is not UNSET:
@@ -64,8 +73,10 @@ class UsageResponseSchema:
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         from ..models.billing_cycle_usage_schema import BillingCycleUsageSchema
         from ..models.score_run_out_schema import ScoreRunOutSchema
+        from ..models.usage_response_schema_test_type_displays import UsageResponseSchemaTestTypeDisplays
 
         d = src_dict.copy()
+        test_type_displays = UsageResponseSchemaTestTypeDisplays.from_dict(d.pop("test_type_displays"))
 
         def _parse_billing_cycles(data: object) -> Union[List["BillingCycleUsageSchema"], None, Unset]:
             if data is None:
@@ -112,6 +123,7 @@ class UsageResponseSchema:
         free_score_runs = _parse_free_score_runs(d.pop("free_score_runs", UNSET))
 
         usage_response_schema = cls(
+            test_type_displays=test_type_displays,
             billing_cycles=billing_cycles,
             free_score_runs=free_score_runs,
         )

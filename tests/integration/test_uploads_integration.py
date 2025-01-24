@@ -4,8 +4,8 @@ import pytest
 
 from aymara_ai.core.sdk import AymaraAI
 from aymara_ai.types import (
+    ImageStudentAnswerInput,
     SafetyTestResponse,
-    StudentAnswerInput,
 )
 
 
@@ -40,11 +40,11 @@ class TestUploadMixin:
     @pytest.fixture(scope="class")
     def image_student_answers(
         self, image_safety_test_data, test_image_path
-    ) -> List[StudentAnswerInput]:
+    ) -> List[ImageStudentAnswerInput]:
         questions = image_safety_test_data.questions
 
         answers = [
-            StudentAnswerInput(
+            ImageStudentAnswerInput(
                 question_uuid=question.question_uuid,
                 answer_image_path=test_image_path,
             )
@@ -57,7 +57,7 @@ class TestUploadMixin:
         self,
         aymara_client: AymaraAI,
         image_safety_test_data: SafetyTestResponse,
-        image_student_answers: List[StudentAnswerInput],
+        image_student_answers: List[ImageStudentAnswerInput],
     ):
         # Test async upload
         uploaded_keys = await aymara_client.upload_images_async(
@@ -73,7 +73,7 @@ class TestUploadMixin:
         self,
         aymara_client: AymaraAI,
         image_safety_test_data: SafetyTestResponse,
-        image_student_answers: List[StudentAnswerInput],
+        image_student_answers: List[ImageStudentAnswerInput],
     ):
         # Test sync upload
         uploaded_keys = aymara_client.upload_images(
@@ -89,7 +89,7 @@ class TestUploadMixin:
         self,
         aymara_client: AymaraAI,
         image_safety_test_data: SafetyTestResponse,
-        image_student_answers: List[StudentAnswerInput],
+        image_student_answers: List[ImageStudentAnswerInput],
     ):
         progress_calls = []
 
@@ -111,7 +111,7 @@ class TestUploadMixin:
         image_safety_test_data: SafetyTestResponse,
     ):
         invalid_answers = [
-            StudentAnswerInput(
+            ImageStudentAnswerInput(
                 question_uuid=image_safety_test_data.questions[0].question_uuid,
                 answer_image_path="non_existent_file.jpg",
             ),
@@ -128,7 +128,7 @@ class TestUploadMixin:
         self,
         aymara_client: AymaraAI,
         image_safety_test_data: SafetyTestResponse,
-        image_student_answers: List[StudentAnswerInput],
+        image_student_answers: List[ImageStudentAnswerInput],
     ):
         # Test with different batch sizes
         for batch_size in [1, 2, 5]:
@@ -152,7 +152,7 @@ class TestUploadMixin:
         text_file.write_text("This is not an image")
 
         invalid_answers = [
-            StudentAnswerInput(
+            ImageStudentAnswerInput(
                 question_uuid=image_safety_test_data.questions[0].question_uuid,
                 answer_image_path=str(text_file),
             ),

@@ -7,6 +7,7 @@ from .error_schema import ErrorSchema
 from .example_in_schema import ExampleInSchema
 from .example_out_schema import ExampleOutSchema
 from .example_type import ExampleType
+from .feature_flags import FeatureFlags
 from .get_image_presigned_urls_response import GetImagePresignedUrlsResponse
 from .image_upload_request_in_schema import ImageUploadRequestInSchema
 from .input_ import Input
@@ -35,8 +36,8 @@ from .test_out_schema import TestOutSchema
 from .test_status import TestStatus
 from .test_type import TestType
 from .usage_response_schema import UsageResponseSchema
+from .usage_response_schema_test_type_displays import UsageResponseSchemaTestTypeDisplays
 from .user_out_schema import UserOutSchema
-from .user_out_schema_feature_flags import UserOutSchemaFeatureFlags
 from .workspace_in_schema import WorkspaceInSchema
 from .workspace_out_schema import WorkspaceOutSchema
 
@@ -48,6 +49,7 @@ __all__ = (
     "ExampleInSchema",
     "ExampleOutSchema",
     "ExampleType",
+    "FeatureFlags",
     "GetImagePresignedUrlsResponse",
     "ImageUploadRequestInSchema",
     "Input",
@@ -76,8 +78,8 @@ __all__ = (
     "TestStatus",
     "TestType",
     "UsageResponseSchema",
+    "UsageResponseSchemaTestTypeDisplays",
     "UserOutSchema",
-    "UserOutSchemaFeatureFlags",
     "WorkspaceInSchema",
     "WorkspaceOutSchema",
 )

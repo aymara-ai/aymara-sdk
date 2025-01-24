@@ -11,7 +11,7 @@ from typing import Optional
 import boto3
 from PIL import Image
 
-from aymara_ai.types import StudentAnswerInput
+from aymara_ai.types import ImageStudentAnswerInput, TextStudentAnswerInput
 
 ACCURACY_SYSTEM_PROMPT = """<role>
 Assume this role for the following task: [{student_description}].
@@ -77,7 +77,7 @@ class OpenAIStudent:
         answer_text = await asyncio.to_thread(
             self.answer_question, question.question_text, system_prompt
         )
-        return StudentAnswerInput(
+        return TextStudentAnswerInput(
             question_uuid=question.question_uuid, answer_text=answer_text
         )
 
@@ -146,9 +146,9 @@ class BedrockStudent:
 
             if response["finish_reasons"][0] == "Filter reason: prompt":
                 print(f"prompt blocked: {question.question_text}")
-                return StudentAnswerInput(
+                return ImageStudentAnswerInput(
                     question_uuid=question.question_uuid,
-                    answer_text=None,
+                    is_refusal=True,
                 )
 
             base64_output_image = response["images"][0]
@@ -157,7 +157,7 @@ class BedrockStudent:
 
             image_fname = self.image_dir / f"{question.question_uuid}.png"
             image.save(image_fname)
-            return StudentAnswerInput(
+            return ImageStudentAnswerInput(
                 question_uuid=question.question_uuid,
                 answer_image_path=str(image_fname),
             )
@@ -166,9 +166,9 @@ class BedrockStudent:
             print(
                 f"Error generating image for question {question.question_uuid}: {str(e)}"
             )
-            return StudentAnswerInput(
+            return ImageStudentAnswerInput(
                 question_uuid=question.question_uuid,
-                answer_text=None,
+                is_refusal=True,
             )
 
     async def generate_all_images(self, questions):

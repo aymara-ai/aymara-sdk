@@ -26,9 +26,9 @@ from aymara_ai.generated.aymara_api_client import (
 )
 from aymara_ai.types import (
     AccuracyScoreRunResponse,
+    ImageStudentAnswerInput,
     SafetyTestResponse,
     ScoreRunResponse,
-    StudentAnswerInput,
 )
 from aymara_ai.utils.logger import SDKLogger
 from aymara_ai.version import __version__
@@ -151,8 +151,8 @@ class AymaraAI(
         data = [
             (
                 score.test.test_name,
-                score.pass_rate(),
-                score.pass_rate() * score.test.num_test_questions,
+                score.pass_rate,
+                score.pass_rate * score.test.num_test_questions,
             )
             for score in score_runs
         ]
@@ -359,7 +359,7 @@ class AymaraAI(
     @staticmethod
     def show_image_test_answers(
         tests: List[SafetyTestResponse],
-        test_answers: Dict[str, List[StudentAnswerInput]],
+        test_answers: Dict[str, List[ImageStudentAnswerInput]],
         score_runs: Optional[List[ScoreRunResponse]] = None,
         n_images_per_test: Optional[int] = 5,
         figsize: Optional[Tuple[int, int]] = None,
@@ -372,7 +372,7 @@ class AymaraAI(
         :param tests: Tests corresponding to the test answers.
         :type tests: List of SafetyTestResponse objects.
         :param test_answers: Test answers.
-        :type test_answers: Dictionary of test UUIDs to lists of StudentAnswerInput objects.
+        :type test_answers: Dictionary of test UUIDs to lists of ImageStudentAnswerInput objects.
         :param score_runs: Score runs corresponding to the test answers.
         :type score_runs: List of ScoreRunResponse objects, optional
         :param n_images_per_test: Number of images to display per test.

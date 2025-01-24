@@ -26,7 +26,7 @@ class TestInSchema:
         test_system_prompt (Union[None, Unset, str]):
         knowledge_base (Union[None, Unset, str]):
         additional_instructions (Union[None, Unset, str]):
-        examples (Union[List['ExampleInSchema'], None, Unset]):
+        test_examples (Union[List['ExampleInSchema'], None, Unset]):
     """
 
     test_name: str
@@ -38,7 +38,7 @@ class TestInSchema:
     test_system_prompt: Union[None, Unset, str] = UNSET
     knowledge_base: Union[None, Unset, str] = UNSET
     additional_instructions: Union[None, Unset, str] = UNSET
-    examples: Union[List["ExampleInSchema"], None, Unset] = UNSET
+    test_examples: Union[List["ExampleInSchema"], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -82,17 +82,17 @@ class TestInSchema:
         else:
             additional_instructions = self.additional_instructions
 
-        examples: Union[List[Dict[str, Any]], None, Unset]
-        if isinstance(self.examples, Unset):
-            examples = UNSET
-        elif isinstance(self.examples, list):
-            examples = []
-            for examples_type_0_item_data in self.examples:
-                examples_type_0_item = examples_type_0_item_data.to_dict()
-                examples.append(examples_type_0_item)
+        test_examples: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.test_examples, Unset):
+            test_examples = UNSET
+        elif isinstance(self.test_examples, list):
+            test_examples = []
+            for test_examples_type_0_item_data in self.test_examples:
+                test_examples_type_0_item = test_examples_type_0_item_data.to_dict()
+                test_examples.append(test_examples_type_0_item)
 
         else:
-            examples = self.examples
+            test_examples = self.test_examples
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -116,8 +116,8 @@ class TestInSchema:
             field_dict["knowledge_base"] = knowledge_base
         if additional_instructions is not UNSET:
             field_dict["additional_instructions"] = additional_instructions
-        if examples is not UNSET:
-            field_dict["examples"] = examples
+        if test_examples is not UNSET:
+            field_dict["test_examples"] = test_examples
 
         return field_dict
 
@@ -184,7 +184,7 @@ class TestInSchema:
 
         additional_instructions = _parse_additional_instructions(d.pop("additional_instructions", UNSET))
 
-        def _parse_examples(data: object) -> Union[List["ExampleInSchema"], None, Unset]:
+        def _parse_test_examples(data: object) -> Union[List["ExampleInSchema"], None, Unset]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -192,19 +192,19 @@ class TestInSchema:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                examples_type_0 = []
-                _examples_type_0 = data
-                for examples_type_0_item_data in _examples_type_0:
-                    examples_type_0_item = ExampleInSchema.from_dict(examples_type_0_item_data)
+                test_examples_type_0 = []
+                _test_examples_type_0 = data
+                for test_examples_type_0_item_data in _test_examples_type_0:
+                    test_examples_type_0_item = ExampleInSchema.from_dict(test_examples_type_0_item_data)
 
-                    examples_type_0.append(examples_type_0_item)
+                    test_examples_type_0.append(test_examples_type_0_item)
 
-                return examples_type_0
+                return test_examples_type_0
             except:  # noqa: E722
                 pass
             return cast(Union[List["ExampleInSchema"], None, Unset], data)
 
-        examples = _parse_examples(d.pop("examples", UNSET))
+        test_examples = _parse_test_examples(d.pop("test_examples", UNSET))
 
         test_in_schema = cls(
             test_name=test_name,
@@ -216,7 +216,7 @@ class TestInSchema:
             test_system_prompt=test_system_prompt,
             knowledge_base=knowledge_base,
             additional_instructions=additional_instructions,
-            examples=examples,
+            test_examples=test_examples,
         )
 
         test_in_schema.additional_properties = d

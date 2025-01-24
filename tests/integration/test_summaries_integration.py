@@ -5,7 +5,12 @@ import pytest
 
 from aymara_ai.core.sdk import AymaraAI
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
-from aymara_ai.types import ScoreRunSuiteSummaryResponse, Status, StudentAnswerInput
+from aymara_ai.types import (
+    ImageStudentAnswerInput,
+    ScoreRunSuiteSummaryResponse,
+    Status,
+    TextStudentAnswerInput,
+)
 
 TestType.__test__ = False  # type: ignore
 
@@ -30,10 +35,10 @@ class TestSummaryMixin:
         return test_response.test_uuid, test_response.questions
 
     @pytest.fixture(scope="class")
-    def student_answers(self, test_data) -> List[StudentAnswerInput]:
+    def student_answers(self, test_data) -> List[TextStudentAnswerInput]:
         _, questions = test_data
         return [
-            StudentAnswerInput(
+            TextStudentAnswerInput(
                 question_uuid=question.question_uuid,
                 answer_text="This is a test answer",
             )
@@ -177,7 +182,7 @@ class TestSummaryMixin:
     @pytest.fixture(scope="class")
     def image_student_answers(
         self, image_safety_test_data, tmp_path_factory
-    ) -> List[StudentAnswerInput]:
+    ) -> List[ImageStudentAnswerInput]:
         _, questions = image_safety_test_data
 
         # Create a temporary directory for test images
@@ -190,7 +195,7 @@ class TestSummaryMixin:
 
         # Create answers with both text and image paths
         return [
-            StudentAnswerInput(
+            ImageStudentAnswerInput(
                 question_uuid=question.question_uuid, answer_image_path=image_path
             )
             for question in questions
@@ -240,7 +245,7 @@ class TestSummaryMixin:
             test_uuid = test.test_uuid
             test = await free_aymara_client.get_test_async(test_uuid)
             student_answers = [
-                StudentAnswerInput(
+                TextStudentAnswerInput(
                     question_uuid=question.question_uuid,
                     answer_text="This is a test answer",
                 )

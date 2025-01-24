@@ -58,6 +58,7 @@ def mock_score_run_response():
     return ScoreRunResponse(
         score_run_uuid="test-uuid",
         score_run_status=Status.COMPLETED,
+        pass_rate=0.5,
         test=BaseTestResponse(
             test_name="Test 1",
             test_uuid="test-test-uuid",
@@ -103,6 +104,7 @@ def test_get_pass_stats_multiple_runs():
         ScoreRunResponse(
             score_run_uuid=f"uuid-{i}",
             score_run_status=Status.COMPLETED,
+            pass_rate=0.5,
             test=BaseTestResponse(
                 test_name=f"Test {i}",
                 test_uuid=f"test-uuid-{i}",
@@ -138,8 +140,8 @@ def test_get_pass_stats_multiple_runs():
     assert isinstance(result, pd.DataFrame)
     assert result.shape == (3, 3)
     assert list(result.index) == ["uuid-1", "uuid-2", "uuid-3"]
-    assert list(result["pass_rate"]) == [0.0, 0.1, 0.2]
-    assert list(result["pass_total"]) == [0.0, 1.0, 2.0]
+    assert list(result["pass_rate"]) == [0.5, 0.5, 0.5]
+    assert list(result["pass_total"]) == [5.0, 5.0, 5.0]
 
 
 @pytest.mark.parametrize("yaxis_is_percent", [True, False])
@@ -226,6 +228,7 @@ def test_graph_pass_stats_multiple_runs():
         ScoreRunResponse(
             score_run_uuid=f"uuid-{i}",
             score_run_status=Status.COMPLETED,
+            pass_rate=0.5,
             test=BaseTestResponse(
                 test_name=f"Test {i}",
                 test_uuid=f"test-uuid-{i}",

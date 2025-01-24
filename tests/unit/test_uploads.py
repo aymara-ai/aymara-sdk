@@ -3,14 +3,18 @@ from unittest.mock import mock_open, patch
 import pytest
 
 from aymara_ai.generated.aymara_api_client.models import GetImagePresignedUrlsResponse
-from aymara_ai.types import StudentAnswerInput
+from aymara_ai.types import ImageStudentAnswerInput
 
 
 def test_upload_images(aymara_client):
     test_uuid = "test123"
     student_answers = [
-        StudentAnswerInput(question_uuid="q1", answer_image_path="path/to/image1.jpg"),
-        StudentAnswerInput(question_uuid="q2", answer_image_path="path/to/image2.jpg"),
+        ImageStudentAnswerInput(
+            question_uuid="q1", answer_image_path="path/to/image1.jpg"
+        ),
+        ImageStudentAnswerInput(
+            question_uuid="q2", answer_image_path="path/to/image2.jpg"
+        ),
     ]
 
     with patch(
@@ -47,10 +51,17 @@ def test_upload_images(aymara_client):
 def test_upload_images_validation(aymara_client):
     test_uuid = "test123"
     student_answers = [
-        StudentAnswerInput(question_uuid="q1", answer_image_path="nonexistent/path.jpg")
+        ImageStudentAnswerInput(
+            question_uuid="q1", answer_image_path="nonexistent/path.jpg"
+        )
     ]
 
-    with patch("os.path.exists", return_value=False):
+    with patch(
+        "aymara_ai.core.uploads.get_image_presigned_urls.sync_detailed"
+    ) as mock_get_urls, patch("os.path.exists", return_value=False):
+        mock_get_urls.return_value.status_code = (
+            200  # Mock the get call before error check
+        )
         with pytest.raises(ValueError, match="Image path does not exist"):
             aymara_client.upload_images(
                 test_uuid=test_uuid, student_answers=student_answers
@@ -61,8 +72,12 @@ def test_upload_images_validation(aymara_client):
 async def test_upload_images_async(aymara_client):
     test_uuid = "test123"
     student_answers = [
-        StudentAnswerInput(question_uuid="q1", answer_image_path="path/to/image1.jpg"),
-        StudentAnswerInput(question_uuid="q2", answer_image_path="path/to/image2.jpg"),
+        ImageStudentAnswerInput(
+            question_uuid="q1", answer_image_path="path/to/image1.jpg"
+        ),
+        ImageStudentAnswerInput(
+            question_uuid="q2", answer_image_path="path/to/image2.jpg"
+        ),
     ]
 
     with patch(
@@ -107,8 +122,12 @@ async def test_upload_images_async(aymara_client):
 def test_upload_images_with_progress(aymara_client):
     test_uuid = "test123"
     student_answers = [
-        StudentAnswerInput(question_uuid="q1", answer_image_path="path/to/image1.jpg"),
-        StudentAnswerInput(question_uuid="q2", answer_image_path="path/to/image2.jpg"),
+        ImageStudentAnswerInput(
+            question_uuid="q1", answer_image_path="path/to/image1.jpg"
+        ),
+        ImageStudentAnswerInput(
+            question_uuid="q2", answer_image_path="path/to/image2.jpg"
+        ),
     ]
     progress_calls = []
 
@@ -141,7 +160,9 @@ def test_upload_images_with_progress(aymara_client):
 def test_upload_images_error_handling(aymara_client):
     test_uuid = "test123"
     student_answers = [
-        StudentAnswerInput(question_uuid="q1", answer_image_path="path/to/image1.jpg")
+        ImageStudentAnswerInput(
+            question_uuid="q1", answer_image_path="path/to/image1.jpg"
+        )
     ]
 
     with patch(

@@ -1,4 +1,5 @@
 import asyncio
+import os
 import time
 from typing import Coroutine, List, Optional, Union
 
@@ -15,11 +16,13 @@ from aymara_ai.generated.aymara_api_client.api.score_runs import (
 from aymara_ai.generated.aymara_api_client.api.tests import get_test
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
 from aymara_ai.types import (
+    BaseStudentAnswerInput,
+    ImageStudentAnswerInput,
     ListScoreRunResponse,
     ScoreRunResponse,
     ScoringExample,
     Status,
-    StudentAnswerInput,
+    TextStudentAnswerInput,
 )
 from aymara_ai.utils.constants import (
     DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS,
@@ -40,7 +43,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
     def score_test(
         self,
         test_uuid: str,
-        student_answers: List[StudentAnswerInput],
+        student_answers: List[BaseStudentAnswerInput],
         scoring_examples: Optional[List[ScoringExample]] = None,
         max_wait_time_secs: Optional[int] = None,
     ) -> ScoreRunResponse:
@@ -57,8 +60,8 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
 
         :param test_uuid: UUID of the test.
         :type test_uuid: str
-        :param student_answers: List of StudentAnswerInput objects containing student responses.
-        :type student_answers: List[StudentAnswerInput]
+        :param student_answers: List of BaseStudentAnswerInput objects containing student responses.
+        :type student_answers: List[BaseStudentAnswerInput]
         :param scoring_examples: Optional list of examples to guide the scoring process.
         :type scoring_examples: Optional[List[ScoringExample]]
         :param max_wait_time_secs: Maximum wait time for test scoring, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}, {DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS}, and {DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS} seconds for safety, jailbreak, and accuracy tests, respectively.
@@ -70,7 +73,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
     async def score_test_async(
         self,
         test_uuid: str,
-        student_answers: List[StudentAnswerInput],
+        student_answers: List[BaseStudentAnswerInput],
         scoring_examples: Optional[List[ScoringExample]] = None,
         max_wait_time_secs: Optional[int] = None,
     ) -> ScoreRunResponse:
@@ -87,8 +90,8 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
 
         :param test_uuid: UUID of the test.
         :type test_uuid: str
-        :param student_answers: List of StudentAnswerInput objects containing student responses.
-        :type student_answers: List[StudentAnswerInput]
+        :param student_answers: List of BaseStudentAnswerInput objects containing student responses.
+        :type student_answers: List[BaseStudentAnswerInput]
         :param scoring_examples: Optional list of examples to guide the scoring process.
         :type scoring_examples: Optional[List[ScoringExample]]
         :param max_wait_time_secs: Maximum wait time for test scoring, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS}, {DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS}, and {DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS} seconds for safety, jailbreak, and accuracy tests, respectively.
@@ -100,7 +103,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
     def _score_test(
         self,
         test_uuid: str,
-        student_answers: List[StudentAnswerInput],
+        student_answers: List[BaseStudentAnswerInput],
         is_async: bool,
         max_wait_time_secs: Optional[int] = None,
         scoring_examples: Optional[List[ScoringExample]] = None,
@@ -113,10 +116,10 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         score_data = models.ScoreRunInSchema(
             test_uuid=test_uuid,
             answers=[
-                StudentAnswerInput.to_answer_in_schema(student_answer)
+                BaseStudentAnswerInput.to_answer_in_schema(student_answer)
                 for student_answer in student_answers
             ],
-            examples=[
+            score_run_examples=[
                 example.to_scoring_example_in_schema() for example in scoring_examples
             ]
             if scoring_examples
@@ -534,19 +537,41 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             offset += len(paged_response.items)
         return answers
 
-    def _validate_student_answers(self, student_answers: List[StudentAnswerInput]):
+    def _validate_student_answers(self, student_answers: List[BaseStudentAnswerInput]):
         if not student_answers:
             raise ValueError("Student answers cannot be empty.")
+
         if not all(
-            isinstance(answer, StudentAnswerInput) for answer in student_answers
+            isinstance(answer, (TextStudentAnswerInput, ImageStudentAnswerInput))
+            for answer in student_answers
         ):
             non_student_answers = [
                 answer
                 for answer in student_answers
-                if not isinstance(answer, StudentAnswerInput)
+                if not isinstance(
+                    answer, (TextStudentAnswerInput, ImageStudentAnswerInput)
+                )
             ]
             self.logger.error(f"Invalid answers: {non_student_answers}")
-            raise ValueError("All items in student answers must be StudentAnswerInput.")
+            raise ValueError(
+                "All items in student answers must be either TextStudentAnswerInput or ImageStudentAnswerInput."
+            )
+
+        if any(
+            isinstance(answer, ImageStudentAnswerInput) for answer in student_answers
+        ):
+            self._validate_image_paths(student_answers)
+
+    def _validate_image_paths(self, student_answers: List[ImageStudentAnswerInput]):
+        for answer in student_answers:
+            if answer.answer_image_path:
+                if not os.path.exists(answer.answer_image_path):
+                    self.logger.error(
+                        f"Image path does not exist: {answer.answer_image_path}"
+                    )
+                    raise ValueError(
+                        f"Image path does not exist: {answer.answer_image_path}"
+                    )
 
     def _validate_scoring_examples(self, scoring_examples: List[ScoringExample]):
         if len(scoring_examples) > MAX_EXAMPLES_LENGTH:

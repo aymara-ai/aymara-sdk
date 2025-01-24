@@ -1,5 +1,6 @@
 import asyncio
 import mimetypes
+import os
 from typing import Callable, Coroutine, Dict, List, Optional, Union
 
 import httpx
@@ -9,14 +10,14 @@ from aymara_ai.generated.aymara_api_client.api.score_runs import (
     get_image_presigned_urls,
 )
 from aymara_ai.generated.aymara_api_client.models import ImageUploadRequestInSchema
-from aymara_ai.types import StudentAnswerInput
+from aymara_ai.types import ImageStudentAnswerInput
 
 
 class UploadMixin(AymaraAIProtocol):
     def upload_images(
         self,
         test_uuid: str,
-        student_answers: List[StudentAnswerInput],
+        student_answers: List[ImageStudentAnswerInput],
         batch_size: int = 10,
         progress_callback: Callable[[int], None] = None,
     ) -> Dict[str, str]:
@@ -40,7 +41,7 @@ class UploadMixin(AymaraAIProtocol):
     async def upload_images_async(
         self,
         test_uuid: str,
-        student_answers: List[StudentAnswerInput],
+        student_answers: List[ImageStudentAnswerInput],
         batch_size: int = 10,
         progress_callback: Callable[[int], None] = None,
     ) -> Dict[str, str]:
@@ -64,7 +65,7 @@ class UploadMixin(AymaraAIProtocol):
     def _upload_images(
         self,
         test_uuid: str,
-        student_answers: List[StudentAnswerInput],
+        student_answers: List[ImageStudentAnswerInput],
         batch_size: int,
         is_async: bool,
         progress_callback: Optional[Callable[[int], None]] = None,
@@ -81,7 +82,7 @@ class UploadMixin(AymaraAIProtocol):
     def _upload_images_sync_impl(
         self,
         test_uuid: str,
-        student_answers: List[StudentAnswerInput],
+        student_answers: List[ImageStudentAnswerInput],
         batch_size: int,
         progress_callback: Optional[Callable[[int], None]] = None,
     ) -> Dict[str, str]:
@@ -106,8 +107,6 @@ class UploadMixin(AymaraAIProtocol):
             if not answer.answer_image_path
         }  # Initialize with None for skipped uploads
         uploaded_count = len(uploaded_keys)  # Start count with skipped uploads
-        if progress_callback:
-            progress_callback(uploaded_count)
 
         # Upload images in batches
         for i in range(0, len(student_answers), batch_size):
@@ -116,9 +115,12 @@ class UploadMixin(AymaraAIProtocol):
                 for answer in student_answers[i : i + batch_size]
                 if answer.answer_image_path  # Only include non-None paths
             }
-
             for uuid, path in batch.items():
                 url = presigned_urls[uuid]
+
+                if not os.path.exists(path):
+                    raise ValueError(f"Image path does not exist: {path}")
+
                 with open(path, "rb") as f:
                     mime_type = mimetypes.guess_type(path)[0]
                     if not mime_type or not mime_type.startswith("image/"):
@@ -139,7 +141,7 @@ class UploadMixin(AymaraAIProtocol):
     async def _upload_images_async_impl(
         self,
         test_uuid: str,
-        student_answers: List[StudentAnswerInput],
+        student_answers: List[ImageStudentAnswerInput],
         batch_size: int,
         progress_callback: Optional[Callable[[int], None]] = None,
     ) -> Dict[str, str]:
@@ -189,6 +191,9 @@ class UploadMixin(AymaraAIProtocol):
                     mime_type = mimetypes.guess_type(path)[0]
                     if not mime_type or not mime_type.startswith("image/"):
                         continue
+
+                    if not os.path.exists(path):
+                        raise ValueError(f"Image path does not exist: {path}")
 
                     with open(path, "rb") as f:
                         file_content = f.read()

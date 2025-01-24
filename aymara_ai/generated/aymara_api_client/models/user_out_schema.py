@@ -6,8 +6,8 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.feature_flags import FeatureFlags
     from ..models.organization_out_schema import OrganizationOutSchema
-    from ..models.user_out_schema_feature_flags import UserOutSchemaFeatureFlags
 
 
 T = TypeVar("T", bound="UserOutSchema")
@@ -20,14 +20,14 @@ class UserOutSchema:
         email (str):
         is_admin (bool):
         is_impersonating (bool):
-        feature_flags (UserOutSchemaFeatureFlags):
+        feature_flags (FeatureFlags):
         organization (Union['OrganizationOutSchema', None, Unset]):
     """
 
     email: str
     is_admin: bool
     is_impersonating: bool
-    feature_flags: "UserOutSchemaFeatureFlags"
+    feature_flags: "FeatureFlags"
     organization: Union["OrganizationOutSchema", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -67,8 +67,8 @@ class UserOutSchema:
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+        from ..models.feature_flags import FeatureFlags
         from ..models.organization_out_schema import OrganizationOutSchema
-        from ..models.user_out_schema_feature_flags import UserOutSchemaFeatureFlags
 
         d = src_dict.copy()
         email = d.pop("email")
@@ -77,7 +77,7 @@ class UserOutSchema:
 
         is_impersonating = d.pop("is_impersonating")
 
-        feature_flags = UserOutSchemaFeatureFlags.from_dict(d.pop("feature_flags"))
+        feature_flags = FeatureFlags.from_dict(d.pop("feature_flags"))
 
         def _parse_organization(data: object) -> Union["OrganizationOutSchema", None, Unset]:
             if data is None:

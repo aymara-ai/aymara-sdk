@@ -1,4 +1,3 @@
-import os
 from typing import List
 
 import pandas as pd
@@ -10,13 +9,14 @@ from aymara_ai.types import (
     AccuracyScoreRunResponse,
     AccuracyTestResponse,
     BaseTestResponse,
+    ImageStudentAnswerInput,
     JailbreakTestResponse,
     ListScoreRunResponse,
     SafetyTestResponse,
     ScoreRunResponse,
     ScoringExample,
     Status,
-    StudentAnswerInput,
+    TextStudentAnswerInput,
 )
 from aymara_ai.utils.constants import MAX_EXAMPLES_LENGTH
 
@@ -31,7 +31,7 @@ class TestScoreRunMixin:
         test_name = "Score Run Integration Test"
         student_description = "An AI assistant for customer support"
         test_policy = "No self harm"
-        num_test_questions = 2
+        num_test_questions = 3
 
         test_response = await aymara_client.create_safety_test_async(
             test_name=test_name,
@@ -84,11 +84,11 @@ class TestScoreRunMixin:
         return test_response
 
     @pytest.fixture(scope="class")
-    def safety_student_answers(self, safety_test_data) -> List[StudentAnswerInput]:
+    def safety_student_answers(self, safety_test_data) -> List[TextStudentAnswerInput]:
         questions = safety_test_data.questions
 
         answers = [
-            StudentAnswerInput(
+            TextStudentAnswerInput(
                 question_uuid=question.question_uuid,
                 answer_text="This is a test answer",
             )
@@ -100,11 +100,11 @@ class TestScoreRunMixin:
     @pytest.fixture(scope="class")
     def jailbreak_student_answers(
         self, jailbreak_test_data
-    ) -> List[StudentAnswerInput]:
+    ) -> List[TextStudentAnswerInput]:
         questions = jailbreak_test_data.questions
 
         answers = [
-            StudentAnswerInput(
+            TextStudentAnswerInput(
                 question_uuid=question.question_uuid,
                 answer_text="This is a test answer",
             )
@@ -115,11 +115,11 @@ class TestScoreRunMixin:
     @pytest.fixture(scope="class")
     def image_safety_student_answers(
         self, image_safety_test_data, test_image_path
-    ) -> List[StudentAnswerInput]:
+    ) -> List[ImageStudentAnswerInput]:
         questions = image_safety_test_data.questions
 
         answers = [
-            StudentAnswerInput(
+            ImageStudentAnswerInput(
                 question_uuid=question.question_uuid,
                 answer_image_path=test_image_path,  # Use the test image for all answers
             )
@@ -143,7 +143,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         safety_test_data: SafetyTestResponse,
-        safety_student_answers: List[StudentAnswerInput],
+        safety_student_answers: List[TextStudentAnswerInput],
     ):
         score_response = await aymara_client.score_test_async(
             test_uuid=safety_test_data.test_uuid,
@@ -175,7 +175,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         safety_test_data: SafetyTestResponse,
-        safety_student_answers: List[StudentAnswerInput],
+        safety_student_answers: List[TextStudentAnswerInput],
     ):
         test_uuid = safety_test_data.test_uuid
 
@@ -209,7 +209,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         jailbreak_test_data: JailbreakTestResponse,
-        jailbreak_student_answers: List[StudentAnswerInput],
+        jailbreak_student_answers: List[TextStudentAnswerInput],
     ):
         score_response = await aymara_client.score_test_async(
             jailbreak_test_data.test_uuid,
@@ -241,7 +241,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         jailbreak_test_data: JailbreakTestResponse,
-        jailbreak_student_answers: List[StudentAnswerInput],
+        jailbreak_student_answers: List[TextStudentAnswerInput],
     ):
         test_uuid = jailbreak_test_data.test_uuid
 
@@ -275,7 +275,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         safety_test_data: SafetyTestResponse,
-        safety_student_answers: List[StudentAnswerInput],
+        safety_student_answers: List[TextStudentAnswerInput],
     ):
         score_response = await aymara_client.score_test_async(
             test_uuid=safety_test_data.test_uuid,
@@ -310,7 +310,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         safety_test_data: SafetyTestResponse,
-        safety_student_answers: List[StudentAnswerInput],
+        safety_student_answers: List[TextStudentAnswerInput],
     ):
         score_response = aymara_client.score_test(
             safety_test_data.test_uuid,
@@ -339,12 +339,11 @@ class TestScoreRunMixin:
                 for answer in non_passing_answers
             ), "Not all non-passing answers have an explanation"
 
-    @pytest.mark.asyncio
     async def test_list_score_runs_async(
         self,
         aymara_client: AymaraAI,
         safety_test_data: SafetyTestResponse,
-        safety_student_answers: List[StudentAnswerInput],
+        safety_student_answers: List[TextStudentAnswerInput],
     ):
         await aymara_client.score_test_async(
             test_uuid=safety_test_data.test_uuid,
@@ -367,7 +366,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         safety_test_data: SafetyTestResponse,
-        safety_student_answers: List[StudentAnswerInput],
+        safety_student_answers: List[TextStudentAnswerInput],
     ):
         aymara_client.score_test(
             test_uuid=safety_test_data.test_uuid,
@@ -387,7 +386,7 @@ class TestScoreRunMixin:
     ):
         # Not all questions have been answered
         partial_answers = [
-            StudentAnswerInput(
+            TextStudentAnswerInput(
                 question_uuid=safety_test_data.questions[0].question_uuid,
                 answer_text="4",
             ),
@@ -402,11 +401,11 @@ class TestScoreRunMixin:
 
         # Extra answers
         extra_answers = [
-            StudentAnswerInput(
+            TextStudentAnswerInput(
                 question_uuid=safety_test_data.questions[0].question_uuid,
                 answer_text="4",
             ),
-            StudentAnswerInput(
+            TextStudentAnswerInput(
                 question_uuid="non-existent-question-uuid", answer_text="5"
             ),
         ]
@@ -418,23 +417,15 @@ class TestScoreRunMixin:
             )
         assert "Extra answers provided" in str(exc_info.value)
 
-        # Unanswered questions with null answers - no error
-        unanswered_answers = [
-            StudentAnswerInput(
+        with pytest.raises(ValueError) as exc_info:
+            # Unanswered questions with null answers - raises error
+            TextStudentAnswerInput(
                 question_uuid=safety_test_data.questions[0].question_uuid,
                 answer_text=None,
-            ),
-            StudentAnswerInput(
-                question_uuid=safety_test_data.questions[1].question_uuid,
-                answer_text="answer",
-            ),
-        ]
-
-        response = aymara_client.score_test(
-            test_uuid=safety_test_data.test_uuid,
-            student_answers=unanswered_answers,
-        )
-        assert response.score_run_status == Status.COMPLETED
+            )
+            assert "Either answer_text or answer_image_path must be provided" in str(
+                exc_info.value
+            )
 
     def test_get_non_existent_score_run(self, aymara_client: AymaraAI):
         with pytest.raises(Exception):
@@ -459,7 +450,7 @@ class TestScoreRunMixin:
         self, aymara_client: AymaraAI, safety_test_data: SafetyTestResponse
     ):
         invalid_answers = [
-            StudentAnswerInput(question_uuid="invalid_uuid", answer_text="Invalid"),
+            TextStudentAnswerInput(question_uuid="invalid_uuid", answer_text="Invalid"),
         ]
         with pytest.raises(ValueError):
             aymara_client.score_test(
@@ -467,12 +458,11 @@ class TestScoreRunMixin:
                 student_answers=invalid_answers,
             )
 
-    @pytest.mark.asyncio
     async def test_score_test_async_timeout(
         self,
         aymara_client: AymaraAI,
         safety_test_data: SafetyTestResponse,
-        safety_student_answers: List[StudentAnswerInput],
+        safety_student_answers: List[TextStudentAnswerInput],
     ):
         score_response = await aymara_client.score_test_async(
             test_uuid=safety_test_data.test_uuid,
@@ -487,7 +477,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         safety_test_data: SafetyTestResponse,
-        safety_student_answers: List[StudentAnswerInput],
+        safety_student_answers: List[TextStudentAnswerInput],
     ):
         score_response = aymara_client.score_test(
             test_uuid=safety_test_data.test_uuid,
@@ -498,12 +488,11 @@ class TestScoreRunMixin:
         assert score_response.score_run_status == Status.FAILED
         assert score_response.failure_reason == "Score run creation timed out."
 
-    @pytest.mark.asyncio
     async def test_score_jailbreak_test_async_timeout(
         self,
         aymara_client: AymaraAI,
         jailbreak_test_data: JailbreakTestResponse,
-        jailbreak_student_answers: List[StudentAnswerInput],
+        jailbreak_student_answers: List[TextStudentAnswerInput],
     ):
         score_response = await aymara_client.score_test_async(
             test_uuid=jailbreak_test_data.test_uuid,
@@ -518,7 +507,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         jailbreak_test_data: JailbreakTestResponse,
-        jailbreak_student_answers: List[StudentAnswerInput],
+        jailbreak_student_answers: List[TextStudentAnswerInput],
     ):
         score_response = aymara_client.score_test(
             test_uuid=jailbreak_test_data.test_uuid,
@@ -533,7 +522,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         image_safety_test_data: SafetyTestResponse,
-        image_safety_student_answers: List[StudentAnswerInput],
+        image_safety_student_answers: List[ImageStudentAnswerInput],
     ):
         score_response = await aymara_client.score_test_async(
             image_safety_test_data.test_uuid,
@@ -565,7 +554,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         image_safety_test_data: SafetyTestResponse,
-        image_safety_student_answers: List[StudentAnswerInput],
+        image_safety_student_answers: List[ImageStudentAnswerInput],
     ):
         score_response = aymara_client.score_test(
             test_uuid=image_safety_test_data.test_uuid,
@@ -600,7 +589,7 @@ class TestScoreRunMixin:
     ):
         # Test with non-existent file
         invalid_answers = [
-            StudentAnswerInput(
+            ImageStudentAnswerInput(
                 question_uuid=image_safety_test_data.questions[0].question_uuid,
                 answer_image_path="non_existent_file.jpg",
             ),
@@ -612,31 +601,11 @@ class TestScoreRunMixin:
             )
         assert "Image path does not exist" in str(exc_info.value)
 
-    def test_score_image_safety_test_with_text_answer(
-        self,
-        aymara_client: AymaraAI,
-        image_safety_test_data: SafetyTestResponse,
-    ):
-        # Test with text answer instead of image
-        text_answers = [
-            StudentAnswerInput(
-                question_uuid=image_safety_test_data.questions[0].question_uuid,
-                answer_text="This is a text answer",
-            ),
-        ]
-        with pytest.raises(ValueError) as exc_info:
-            aymara_client.score_test(
-                test_uuid=image_safety_test_data.test_uuid,
-                student_answers=text_answers,
-            )
-        assert "Image path is required" in str(exc_info.value)
-
-    @pytest.mark.asyncio
     async def test_score_image_safety_test_async_timeout(
         self,
         aymara_client: AymaraAI,
         image_safety_test_data: SafetyTestResponse,
-        image_safety_student_answers: List[StudentAnswerInput],
+        image_safety_student_answers: List[ImageStudentAnswerInput],
     ):
         score_response = await aymara_client.score_test_async(
             test_uuid=image_safety_test_data.test_uuid,
@@ -651,7 +620,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         safety_test_data: SafetyTestResponse,
-        safety_student_answers: List[StudentAnswerInput],
+        safety_student_answers: List[TextStudentAnswerInput],
     ):
         scoring_examples = [
             ScoringExample(
@@ -682,7 +651,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         safety_test_data: SafetyTestResponse,
-        safety_student_answers: List[StudentAnswerInput],
+        safety_student_answers: List[TextStudentAnswerInput],
     ):
         scoring_examples = [
             ScoringExample(
@@ -713,7 +682,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         safety_test_data: SafetyTestResponse,
-        safety_student_answers: List[StudentAnswerInput],
+        safety_student_answers: List[TextStudentAnswerInput],
     ):
         # Create more examples than MAX_EXAMPLES_LENGTH
         scoring_examples = [
@@ -740,7 +709,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         safety_test_data: SafetyTestResponse,
-        safety_student_answers: List[StudentAnswerInput],
+        safety_student_answers: List[TextStudentAnswerInput],
     ):
         # Test with invalid example (missing required fields)
         invalid_examples = [
@@ -758,11 +727,13 @@ class TestScoreRunMixin:
         )
 
     @pytest.fixture(scope="class")
-    def accuracy_student_answers(self, accuracy_test_data) -> List[StudentAnswerInput]:
+    def accuracy_student_answers(
+        self, accuracy_test_data
+    ) -> List[TextStudentAnswerInput]:
         questions = accuracy_test_data.questions
 
         answers = [
-            StudentAnswerInput(
+            TextStudentAnswerInput(
                 question_uuid=question.question_uuid,
                 answer_text="The heart has four chambers: two atria and two ventricles",
             )
@@ -774,7 +745,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         accuracy_test_data: SafetyTestResponse,
-        accuracy_student_answers: List[StudentAnswerInput],
+        accuracy_student_answers: List[TextStudentAnswerInput],
     ):
         score_response = await aymara_client.score_test_async(
             test_uuid=accuracy_test_data.test_uuid,
@@ -806,7 +777,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         accuracy_test_data: SafetyTestResponse,
-        accuracy_student_answers: List[StudentAnswerInput],
+        accuracy_student_answers: List[TextStudentAnswerInput],
     ):
         test_uuid = accuracy_test_data.test_uuid
 
@@ -836,12 +807,11 @@ class TestScoreRunMixin:
                 for answer in non_passing_answers
             ), "Not all non-passing answers have an explanation"
 
-    @pytest.mark.asyncio
     async def test_score_accuracy_test_async_timeout(
         self,
         aymara_client: AymaraAI,
         accuracy_test_data: SafetyTestResponse,
-        accuracy_student_answers: List[StudentAnswerInput],
+        accuracy_student_answers: List[TextStudentAnswerInput],
     ):
         score_response = await aymara_client.score_test_async(
             test_uuid=accuracy_test_data.test_uuid,
@@ -856,7 +826,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         accuracy_test_data: SafetyTestResponse,
-        accuracy_student_answers: List[StudentAnswerInput],
+        accuracy_student_answers: List[TextStudentAnswerInput],
     ):
         score_response = aymara_client.score_test(
             test_uuid=accuracy_test_data.test_uuid,
@@ -871,7 +841,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         accuracy_test_data: SafetyTestResponse,
-        accuracy_student_answers: List[StudentAnswerInput],
+        accuracy_student_answers: List[TextStudentAnswerInput],
     ):
         scoring_examples = [
             ScoringExample(
@@ -902,7 +872,7 @@ class TestScoreRunMixin:
         self,
         aymara_client: AymaraAI,
         accuracy_test_data: AccuracyTestResponse,
-        accuracy_student_answers: List[StudentAnswerInput],
+        accuracy_student_answers: List[TextStudentAnswerInput],
     ):
         scoring_examples = [
             ScoringExample(
@@ -929,8 +899,77 @@ class TestScoreRunMixin:
         assert score_response.score_run_status == Status.COMPLETED
         assert len(score_response.answers) == len(accuracy_student_answers)
 
+    def test_score_test_with_different_answer_types(
+        self, aymara_client: AymaraAI, safety_test_data: SafetyTestResponse
+    ):
+        """Test scoring with regular answers, refusals and exclusions"""
 
-ENVIRONMENT = os.getenv("API_TEST_ENV")
+        # Score a test with different types of answers
+        result = aymara_client.score_test(
+            test_uuid=safety_test_data.test_uuid,
+            student_answers=[
+                TextStudentAnswerInput(
+                    question_uuid=safety_test_data.questions[0].question_uuid,
+                    answer_text="This is a regular answer that should be scored normally",
+                ),
+                TextStudentAnswerInput(
+                    question_uuid=safety_test_data.questions[1].question_uuid,
+                    answer_text="I refuse to provide an answer as it would be harmful",
+                    is_refusal=True,
+                ),
+                TextStudentAnswerInput(
+                    question_uuid=safety_test_data.questions[2].question_uuid,
+                    answer_text="This answer should be excluded based on test criteria",
+                    exclude_from_scoring=True,
+                ),
+            ],
+        )
+
+        assert result.score_run_status == Status.COMPLETED
+        assert len(result.answers) == 3
+
+        regular_answer = next(
+            (
+                answer
+                for answer in result.answers
+                if answer.question_uuid == safety_test_data.questions[0].question_uuid
+            ),
+            None,
+        )
+        refusal_answer = next(
+            (
+                answer
+                for answer in result.answers
+                if answer.question_uuid == safety_test_data.questions[1].question_uuid
+            ),
+            None,
+        )
+        exclusion_answer = next(
+            (
+                answer
+                for answer in result.answers
+                if answer.question_uuid == safety_test_data.questions[2].question_uuid
+            ),
+            None,
+        )
+
+        # Regular answer should have a boolean is_passed
+        assert isinstance(regular_answer.is_passed, bool)
+        assert regular_answer.student_refused is False
+        assert regular_answer.exclude_from_scoring is False
+
+        # Refusal should be marked as passed
+        assert refusal_answer.is_passed is True
+        assert refusal_answer.student_refused is True
+        assert refusal_answer.exclude_from_scoring is False
+
+        # Exclusion should have is_passed as None
+        assert exclusion_answer.is_passed is None
+        assert exclusion_answer.exclude_from_scoring is True
+        assert exclusion_answer.student_refused is False
+
+        # All answers should have explanations
+        assert all(a.explanation for a in result.answers)
 
 
 class TestFreeUserScoreRunRestrictions:
@@ -943,9 +982,9 @@ class TestFreeUserScoreRunRestrictions:
         return free_aymara_client.get_test(tests[0].test_uuid)
 
     @pytest.fixture(scope="class")
-    def student_answers(self, default_test) -> List[StudentAnswerInput]:
+    def student_answers(self, default_test) -> List[TextStudentAnswerInput]:
         return [
-            StudentAnswerInput(
+            TextStudentAnswerInput(
                 question_uuid=question.question_uuid,
                 answer_text="This is a test answer",
             )
@@ -998,7 +1037,6 @@ class TestFreeUserScoreRunRestrictions:
         with pytest.raises(ValueError):
             free_aymara_client.delete_score_run("some-score-run-uuid")
 
-    @pytest.mark.asyncio
     async def test_free_user_cannot_delete_score_run_async(self, free_aymara_client):
         with pytest.raises(ValueError):
             await free_aymara_client.delete_score_run_async("some-score-run-uuid")

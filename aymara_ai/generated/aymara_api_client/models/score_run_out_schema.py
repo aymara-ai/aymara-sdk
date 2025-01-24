@@ -30,7 +30,8 @@ class ScoreRunOutSchema:
         remaining_score_runs (Union[None, Unset, int]):
         price_adjustment_note (Union[None, Unset, str]):
         created_by (Union['UserOutSchema', None, Unset]):
-        examples (Union[List['ScoringExampleOutSchema'], None, Unset]):
+        score_run_examples (Union[List['ScoringExampleOutSchema'], None, Unset]):
+        pass_rate (Union[None, Unset, float]):
     """
 
     score_run_uuid: str
@@ -42,7 +43,8 @@ class ScoreRunOutSchema:
     remaining_score_runs: Union[None, Unset, int] = UNSET
     price_adjustment_note: Union[None, Unset, str] = UNSET
     created_by: Union["UserOutSchema", None, Unset] = UNSET
-    examples: Union[List["ScoringExampleOutSchema"], None, Unset] = UNSET
+    score_run_examples: Union[List["ScoringExampleOutSchema"], None, Unset] = UNSET
+    pass_rate: Union[None, Unset, float] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -80,17 +82,23 @@ class ScoreRunOutSchema:
         else:
             created_by = self.created_by
 
-        examples: Union[List[Dict[str, Any]], None, Unset]
-        if isinstance(self.examples, Unset):
-            examples = UNSET
-        elif isinstance(self.examples, list):
-            examples = []
-            for examples_type_0_item_data in self.examples:
-                examples_type_0_item = examples_type_0_item_data.to_dict()
-                examples.append(examples_type_0_item)
+        score_run_examples: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.score_run_examples, Unset):
+            score_run_examples = UNSET
+        elif isinstance(self.score_run_examples, list):
+            score_run_examples = []
+            for score_run_examples_type_0_item_data in self.score_run_examples:
+                score_run_examples_type_0_item = score_run_examples_type_0_item_data.to_dict()
+                score_run_examples.append(score_run_examples_type_0_item)
 
         else:
-            examples = self.examples
+            score_run_examples = self.score_run_examples
+
+        pass_rate: Union[None, Unset, float]
+        if isinstance(self.pass_rate, Unset):
+            pass_rate = UNSET
+        else:
+            pass_rate = self.pass_rate
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -110,8 +118,10 @@ class ScoreRunOutSchema:
             field_dict["price_adjustment_note"] = price_adjustment_note
         if created_by is not UNSET:
             field_dict["created_by"] = created_by
-        if examples is not UNSET:
-            field_dict["examples"] = examples
+        if score_run_examples is not UNSET:
+            field_dict["score_run_examples"] = score_run_examples
+        if pass_rate is not UNSET:
+            field_dict["pass_rate"] = pass_rate
 
         return field_dict
 
@@ -169,7 +179,7 @@ class ScoreRunOutSchema:
 
         created_by = _parse_created_by(d.pop("created_by", UNSET))
 
-        def _parse_examples(data: object) -> Union[List["ScoringExampleOutSchema"], None, Unset]:
+        def _parse_score_run_examples(data: object) -> Union[List["ScoringExampleOutSchema"], None, Unset]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -177,19 +187,30 @@ class ScoreRunOutSchema:
             try:
                 if not isinstance(data, list):
                     raise TypeError()
-                examples_type_0 = []
-                _examples_type_0 = data
-                for examples_type_0_item_data in _examples_type_0:
-                    examples_type_0_item = ScoringExampleOutSchema.from_dict(examples_type_0_item_data)
+                score_run_examples_type_0 = []
+                _score_run_examples_type_0 = data
+                for score_run_examples_type_0_item_data in _score_run_examples_type_0:
+                    score_run_examples_type_0_item = ScoringExampleOutSchema.from_dict(
+                        score_run_examples_type_0_item_data
+                    )
 
-                    examples_type_0.append(examples_type_0_item)
+                    score_run_examples_type_0.append(score_run_examples_type_0_item)
 
-                return examples_type_0
+                return score_run_examples_type_0
             except:  # noqa: E722
                 pass
             return cast(Union[List["ScoringExampleOutSchema"], None, Unset], data)
 
-        examples = _parse_examples(d.pop("examples", UNSET))
+        score_run_examples = _parse_score_run_examples(d.pop("score_run_examples", UNSET))
+
+        def _parse_pass_rate(data: object) -> Union[None, Unset, float]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, float], data)
+
+        pass_rate = _parse_pass_rate(d.pop("pass_rate", UNSET))
 
         score_run_out_schema = cls(
             score_run_uuid=score_run_uuid,
@@ -201,7 +222,8 @@ class ScoreRunOutSchema:
             remaining_score_runs=remaining_score_runs,
             price_adjustment_note=price_adjustment_note,
             created_by=created_by,
-            examples=examples,
+            score_run_examples=score_run_examples,
+            pass_rate=pass_rate,
         )
 
         score_run_out_schema.additional_properties = d

@@ -523,7 +523,7 @@ class TestMixin(AymaraAIProtocol):
             num_test_questions=num_test_questions,
             test_type=test_type,
             additional_instructions=additional_instructions,
-            examples=examples if examples else None,
+            test_examples=examples if examples else None,
         )
 
         if is_async:
@@ -577,7 +577,11 @@ class TestMixin(AymaraAIProtocol):
         if num_test_questions is not None:
             if test_type == TestType.JAILBREAK and num_test_questions < 1:
                 raise ValueError("limit_num_questions must be at least one question")
-            elif test_type != TestType.JAILBREAK and not (DEFAULT_NUM_QUESTIONS_MIN <= num_test_questions <= DEFAULT_NUM_QUESTIONS_MAX):
+            elif test_type != TestType.JAILBREAK and not (
+                DEFAULT_NUM_QUESTIONS_MIN
+                <= num_test_questions
+                <= DEFAULT_NUM_QUESTIONS_MAX
+            ):
                 raise ValueError(
                     f"num_test_questions must be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions"
                 )

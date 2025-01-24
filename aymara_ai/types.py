@@ -8,7 +8,7 @@ from itertools import zip_longest
 from typing import Annotated, Iterator, List, Optional, Union
 
 import pandas as pd
-from pydantic import BaseModel, Field, RootModel
+from pydantic import BaseModel, Field, RootModel, model_validator
 
 from aymara_ai.generated.aymara_api_client.models import ScoreRunSuiteSummaryOutSchema
 from aymara_ai.generated.aymara_api_client.models.answer_in_schema import (
@@ -94,32 +94,93 @@ class Status(str, Enum):
         return status_mapping.get(api_status)
 
 
-class StudentAnswerInput(BaseModel):
+class BaseStudentAnswerInput(BaseModel):
     """
-    Student answer for a question
+    Base class for student answers
     """
 
     question_uuid: Annotated[str, Field(..., description="UUID of the question")]
-    answer_text: Annotated[
-        Optional[str], Field(None, description="Answer text provided by the student")
+    is_refusal: Annotated[
+        bool, Field(default=False, description="Whether the student refused to answer")
     ]
-    answer_image_path: Annotated[
-        Optional[str], Field(None, description="Path to the image")
+    exclude_from_scoring: Annotated[
+        bool,
+        Field(
+            default=False,
+            description="Whether the answer should be excluded from scoring",
+        ),
     ]
-
-    @classmethod
-    def from_answer_in_schema(cls, answer: AnswerInSchema) -> "StudentAnswerInput":
-        return cls(
-            question_uuid=answer.question_uuid,
-            answer_text=answer.answer_text,
-            answer_image_path=answer.answer_image_path,
-        )
 
     def to_answer_in_schema(self) -> AnswerInSchema:
         return AnswerInSchema(
             question_uuid=self.question_uuid,
-            answer_text=self.answer_text,
-            answer_image_path=self.answer_image_path,
+            answer_text=getattr(self, "answer_text", None),
+            answer_image_path=getattr(self, "answer_image_path", None),
+            student_refused=self.is_refusal,
+            exclude_from_scoring=self.exclude_from_scoring,
+        )
+
+    @model_validator(mode="after")
+    def validate_answer_provided(self) -> "BaseStudentAnswerInput":
+        """Validate that an answer is provided unless exclude_from_scoring is True."""
+        if not self.exclude_from_scoring:
+            answer_text = getattr(self, "answer_text", None)
+            answer_image_path = getattr(self, "answer_image_path", None)
+            if (
+                answer_text is None
+                and answer_image_path is None
+                and not self.is_refusal
+            ):
+                raise ValueError(
+                    "Either answer_text or answer_image_path must be provided "
+                    "unless exclude_from_scoring or is_refusal is True"
+                )
+        return self
+
+
+class TextStudentAnswerInput(BaseStudentAnswerInput):
+    """
+    Student text answer for a question
+    """
+
+    answer_text: Annotated[
+        Optional[str], Field(..., description="Answer text provided by the student")
+    ]
+
+    @classmethod
+    def from_answer_in_schema(cls, answer: AnswerInSchema) -> "TextStudentAnswerInput":
+        if answer.answer_text is None:
+            raise ValueError(
+                "Cannot create TextStudentAnswerInput from answer without text"
+            )
+        return cls(
+            question_uuid=answer.question_uuid,
+            answer_text=answer.answer_text,
+            is_refusal=answer.student_refused,
+            exclude_from_scoring=answer.exclude_from_scoring,
+        )
+
+
+class ImageStudentAnswerInput(BaseStudentAnswerInput):
+    """
+    Student image answer for a question
+    """
+
+    answer_image_path: Annotated[
+        Optional[str], Field(..., description="Path to the image")
+    ]
+
+    @classmethod
+    def from_answer_in_schema(cls, answer: AnswerInSchema) -> "ImageStudentAnswerInput":
+        if answer.answer_image_path is None:
+            raise ValueError(
+                "Cannot create ImageStudentAnswerInput from answer without image path"
+            )
+        return cls(
+            question_uuid=answer.question_uuid,
+            answer_image_path=answer.answer_image_path,
+            is_refusal=answer.student_refused,
+            exclude_from_scoring=answer.exclude_from_scoring,
         )
 
 
@@ -184,7 +245,7 @@ class CreateScoreRunInput(BaseModel):
 
     test_uuid: Annotated[str, Field(..., description="UUID of the test")]
     student_responses: Annotated[
-        List[StudentAnswerInput], Field(..., description="Student responses")
+        List[TextStudentAnswerInput], Field(..., description="Student responses")
     ]
     scoring_examples: Annotated[
         Optional[List[ScoringExample]],
@@ -326,7 +387,11 @@ class BaseTestResponse(BaseModel):
                 "test_name": self.test_name,
                 "question_uuid": question.question_uuid,
                 "question_text": question.question_text,
-                **({"accuracy_question_type": question.accuracy_question_type} if self.test_type == TestType.ACCURACY else {}),
+                **(
+                    {"accuracy_question_type": question.accuracy_question_type}
+                    if self.test_type == TestType.ACCURACY
+                    else {}
+                ),
             }
             for question in self.questions
         ]
@@ -350,17 +415,17 @@ class BaseTestResponse(BaseModel):
             "failure_reason": failure_reason,
             "good_examples": [
                 GoodExample(question_text=e.example_text, explanation=e.explanation)
-                for e in test.examples
+                for e in test.test_examples
                 if e.example_type == ExampleType.GOOD
             ]
-            if test.examples
+            if test.test_examples
             else None,
             "bad_examples": [
                 BadExample(question_text=e.example_text, explanation=e.explanation)
-                for e in test.examples
+                for e in test.test_examples
                 if e.example_type == ExampleType.BAD
             ]
-            if test.examples
+            if test.test_examples
             else None,
         }
         if test.test_type == TestType.SAFETY or test.test_type == TestType.IMAGE_SAFETY:
@@ -479,27 +544,62 @@ class ScoredAnswerResponse(BaseModel):
     answer_uuid: Annotated[str, Field(..., description="UUID of the answer")]
     question_uuid: Annotated[str, Field(..., description="UUID of the question")]
     answer_text: Annotated[
-        Optional[str], Field(None, description="Answer to the question")
+        Optional[str], Field(default=None, description="Answer to the question")
+    ]
+    answer_image_path: Annotated[
+        Optional[str], Field(default=None, description="Path to the answer image")
     ]
     question_text: Annotated[str, Field(..., description="Question in the test")]
     explanation: Annotated[
-        Optional[str], Field(None, description="Explanation for the score")
+        Optional[str], Field(default=None, description="Explanation for the score")
     ]
-    confidence: Annotated[Optional[float], Field(None, description="Confidence score")]
+    confidence: Annotated[
+        Optional[float], Field(default=None, description="Confidence score")
+    ]
     is_passed: Annotated[
-        Optional[bool], Field(None, description="Whether the answer is passed")
+        Optional[bool], Field(default=None, description="Whether the answer is passed")
+    ]
+    exclude_from_scoring: Annotated[
+        bool,
+        Field(
+            default=False,
+            description="Whether the answer is excluded from scoring",
+        ),
+    ]
+    student_refused: Annotated[
+        bool,
+        Field(
+            default=False,
+            description="Whether the student refused to answer",
+        ),
     ]
 
     @classmethod
     def from_answer_out_schema(cls, answer: AnswerOutSchema) -> "ScoredAnswerResponse":
+        # Handle potential Unset values for answer_text and answer_image_path
+        answer_text = (
+            None
+            if not hasattr(answer, "answer_text") or answer.answer_text is None
+            else str(answer.answer_text)
+        )
+        answer_image_path = (
+            None
+            if not hasattr(answer, "answer_image_path")
+            or answer.answer_image_path is None
+            else str(answer.answer_image_path)
+        )
+
         return cls(
             answer_uuid=answer.answer_uuid,
             question_uuid=answer.question.question_uuid,
-            answer_text=answer.answer_text,
+            answer_text=answer_text,
+            answer_image_path=answer_image_path,
             question_text=answer.question.question_text,
             explanation=answer.explanation,
             confidence=answer.confidence,
             is_passed=answer.is_passed,
+            exclude_from_scoring=answer.exclude_from_scoring,
+            student_refused=answer.student_refused,
         )
 
 
@@ -516,15 +616,24 @@ class AccuracyScoredAnswerResponse(ScoredAnswerResponse):
     def from_answer_out_schema(
         cls, answer: AnswerOutSchema
     ) -> "AccuracyScoredAnswerResponse":
+        # Handle potential Unset values for answer_text
+        answer_text = (
+            None
+            if not hasattr(answer, "answer_text") or answer.answer_text is None
+            else str(answer.answer_text)
+        )
+
         return cls(
             answer_uuid=answer.answer_uuid,
             question_uuid=answer.question.question_uuid,
-            answer_text=answer.answer_text,
+            answer_text=answer_text,
             question_text=answer.question.question_text,
             accuracy_question_type=answer.question.accuracy_question_type,
             explanation=answer.explanation,
             confidence=answer.confidence,
             is_passed=answer.is_passed,
+            excluded_from_scoring=answer.exclude_from_scoring,
+            is_refusal=answer.student_refused,
         )
 
 
@@ -552,17 +661,9 @@ class ScoreRunResponse(BaseModel):
         Optional[str], Field(None, description="Reason for the score run failure")
     ]
 
-    def pass_rate(self) -> float:
-        if self.answers is None:
-            raise ValueError("Answers are not available")
-        failed_answers = len(
-            [answer for answer in self.answers if answer.is_passed is False]
-        )
-
-        answered_questions = len(
-            [answer for answer in self.answers if answer.is_passed is not None]
-        )
-        return (answered_questions - failed_answers) / answered_questions
+    pass_rate: Annotated[
+        Optional[float], Field(None, description="Pass rate of the score run")
+    ]
 
     def to_scores_df(self) -> pd.DataFrame:
         """Create a scores DataFrame."""
@@ -577,6 +678,7 @@ class ScoreRunResponse(BaseModel):
                     "is_passed": answer.is_passed,
                     "question_text": answer.question_text,
                     "answer_text": answer.answer_text,
+                    "answer_image_path": answer.answer_image_path,
                     "explanation": answer.explanation,
                     "confidence": answer.confidence,
                 }
@@ -700,7 +802,7 @@ class ListScoreRunResponse(RootModel):
                 "created_at": score_run.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                 "failure_reason": score_run.failure_reason,
                 "num_test_questions": score_run.test.num_test_questions,
-                "pass_rate": score_run.pass_rate() if score_run.answers else None,
+                "pass_rate": score_run.pass_rate,
             }
             rows.append(row)
         return pd.DataFrame(rows)

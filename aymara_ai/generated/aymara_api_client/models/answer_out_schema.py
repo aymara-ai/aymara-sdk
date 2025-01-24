@@ -23,6 +23,8 @@ class AnswerOutSchema:
         explanation (Union[None, Unset, str]):
         confidence (Union[None, Unset, float]):
         is_passed (Union[None, Unset, bool]):
+        student_refused (Union[Unset, bool]):  Default: False.
+        exclude_from_scoring (Union[Unset, bool]):  Default: False.
     """
 
     answer_uuid: str
@@ -32,6 +34,8 @@ class AnswerOutSchema:
     explanation: Union[None, Unset, str] = UNSET
     confidence: Union[None, Unset, float] = UNSET
     is_passed: Union[None, Unset, bool] = UNSET
+    student_refused: Union[Unset, bool] = False
+    exclude_from_scoring: Union[Unset, bool] = False
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -69,6 +73,10 @@ class AnswerOutSchema:
         else:
             is_passed = self.is_passed
 
+        student_refused = self.student_refused
+
+        exclude_from_scoring = self.exclude_from_scoring
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -87,6 +95,10 @@ class AnswerOutSchema:
             field_dict["confidence"] = confidence
         if is_passed is not UNSET:
             field_dict["is_passed"] = is_passed
+        if student_refused is not UNSET:
+            field_dict["student_refused"] = student_refused
+        if exclude_from_scoring is not UNSET:
+            field_dict["exclude_from_scoring"] = exclude_from_scoring
 
         return field_dict
 
@@ -144,6 +156,10 @@ class AnswerOutSchema:
 
         is_passed = _parse_is_passed(d.pop("is_passed", UNSET))
 
+        student_refused = d.pop("student_refused", UNSET)
+
+        exclude_from_scoring = d.pop("exclude_from_scoring", UNSET)
+
         answer_out_schema = cls(
             answer_uuid=answer_uuid,
             question=question,
@@ -152,6 +168,8 @@ class AnswerOutSchema:
             explanation=explanation,
             confidence=confidence,
             is_passed=is_passed,
+            student_refused=student_refused,
+            exclude_from_scoring=exclude_from_scoring,
         )
 
         answer_out_schema.additional_properties = d
