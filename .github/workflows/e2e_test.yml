@@ -37,9 +37,13 @@ jobs:
 
       - name: Checkout specific version or latest release
         run: |
-          VERSION=${{ github.event.inputs.version }}
-          if [ "$VERSION" = "latest" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ]; then
             VERSION=$(git describe --tags `git rev-list --tags --max-count=1`)
+          else
+            VERSION=${{ github.event.inputs.version }}
+            if [ "$VERSION" = "latest" ]; then
+              VERSION=$(git describe --tags `git rev-list --tags --max-count=1`)
+            fi
           fi
           git checkout $VERSION
           echo "Running e2e tests for version: $VERSION"
