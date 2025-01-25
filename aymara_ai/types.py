@@ -708,6 +708,7 @@ class ScoreRunResponse(BaseModel):
             ),
             "created_at": score_run.created_at,
             "failure_reason": failure_reason,
+            "pass_rate": score_run.pass_rate,
         }
         if score_run.test.test_type == TestType.ACCURACY:
             answers = (
