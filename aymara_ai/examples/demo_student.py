@@ -145,7 +145,7 @@ class BedrockStudent:
             )
 
             if response["finish_reasons"][0] == "Filter reason: prompt":
-                print(f"prompt blocked: {question.question_text}")
+                print(f"Prompt blocked: {question.question_text}")
                 return ImageStudentAnswerInput(
                     question_uuid=question.question_uuid,
                     is_refusal=True,

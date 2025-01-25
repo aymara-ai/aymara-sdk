@@ -152,7 +152,7 @@ class AymaraAI(
             (
                 score.test.test_name,
                 score.pass_rate,
-                score.pass_rate * score.test.num_test_questions,
+                score.pass_rate * score.test.num_test_questions,num_test_questions,
             )
             for score in score_runs
         ]
@@ -364,6 +364,7 @@ class AymaraAI(
         n_images_per_test: Optional[int] = 5,
         figsize: Optional[Tuple[int, int]] = None,
     ) -> None:
+
         """
         Display a grid of image test answers with their test questions as captions.
         If score runs are included, display their test scores as captions instead
@@ -387,17 +388,39 @@ class AymaraAI(
         import matplotlib.patches as patches
         import matplotlib.pyplot as plt
 
+
         def display_image_group(axs, images, captions):
             for ax, img_path, caption in zip(axs, images, captions):
-                img = mpimg.imread(img_path)
-                ax.imshow(img)
-                ax.set_title(
-                    "\n".join(textwrap.wrap(caption, width=30)),
-                    fontsize=10,
-                    wrap=True,
-                    loc="left",
-                )
-                ax.axis("off")
+                if caption.startswith("No image"):
+                    ax.text(
+                        0.5,
+                        0.5,
+                        "",
+                        fontsize=12,
+                        color="gray",
+                        ha="center",
+                        va="center",
+                        wrap=True,
+                    )
+                    ax.set_title(
+                        "\n".join(textwrap.wrap(caption, width=30)),
+                        fontsize=10,
+                        wrap=True,
+                        loc="left",
+                        pad=0,
+                        y=.75,
+                    )
+                    ax.axis("off")
+                else:
+                    img = mpimg.imread(img_path)
+                    ax.imshow(img)
+                    ax.set_title(
+                        "\n".join(textwrap.wrap(caption, width=30)),
+                        fontsize=10,
+                        wrap=True,
+                        loc="left",
+                    )
+                    ax.axis("off")
 
                 if caption.startswith("Fail"):
                     rect = patches.Rectangle(
@@ -443,7 +466,8 @@ class AymaraAI(
             if score_runs is None:
                 captions = [
                     next(
-                        q.question_text
+                        "No image: Student refused to generate." if a.is_refusal else
+                        "No image: User excluded from scoring." if a.exclude_from_scoring else q.question_text
                         for q in test.questions
                         if q.question_uuid == a.question_uuid
                     )
@@ -460,6 +484,8 @@ class AymaraAI(
                     for a in answers[:n_images_per_test]
                 ]
                 captions = [
+                    "No image: Student refused to generate." if s.student_refused else
+                    "No image: User excluded from scoring." if s.exclude_from_scoring else
                     f"{'Pass' if s.is_passed else 'Fail'} ({s.confidence:.1%} confidence): {s.explanation}"
                     for s in scores
                 ]
