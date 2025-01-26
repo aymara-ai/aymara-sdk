@@ -47,6 +47,7 @@ def test_score_test(aymara_client):
             updated_at=datetime.now(),
             remaining_score_runs=100,
             price=100,
+            pass_rate=None,
         )
         mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
@@ -68,6 +69,7 @@ def test_score_test(aymara_client):
             updated_at=datetime.now(),
             remaining_score_runs=100,
             price=100,
+            pass_rate=0.75,
         )
         mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
@@ -142,6 +144,7 @@ async def test_score_test_async(aymara_client):
             updated_at=datetime.now(),
             remaining_score_runs=100,
             price=100,
+            pass_rate=None,
         )
         mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
@@ -163,6 +166,7 @@ async def test_score_test_async(aymara_client):
             updated_at=datetime.now(),
             remaining_score_runs=100,
             price=100,
+            pass_rate=0.75,
         )
         mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
@@ -232,6 +236,7 @@ def test_get_score_run(aymara_client):
             updated_at=datetime.now(),
             remaining_score_runs=100,
             price=100,
+            pass_rate=0.75,
         )
         mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
@@ -285,6 +290,7 @@ async def test_get_score_run_async(aymara_client):
             updated_at=datetime.now(),
             remaining_score_runs=100,
             price=100,
+            pass_rate=0.75,
         )
         mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
@@ -337,6 +343,7 @@ def test_list_score_runs(aymara_client):
                     updated_at=datetime.now(),
                     remaining_score_runs=100,
                     price=100,
+                    pass_rate=0.8,
                 ),
                 models.ScoreRunOutSchema(
                     score_run_uuid="score2",
@@ -358,6 +365,7 @@ def test_list_score_runs(aymara_client):
                     updated_at=datetime.now(),
                     remaining_score_runs=99,
                     price=100,
+                    pass_rate=0.6,
                 ),
             ],
             count=2,
@@ -401,6 +409,7 @@ async def test_list_score_runs_async(aymara_client):
                     updated_at=datetime.now(),
                     remaining_score_runs=100,
                     price=100,
+                    pass_rate=0.8,
                 ),
                 models.ScoreRunOutSchema(
                     score_run_uuid="score2",
@@ -422,6 +431,7 @@ async def test_list_score_runs_async(aymara_client):
                     updated_at=datetime.now(),
                     remaining_score_runs=99,
                     price=100,
+                    pass_rate=0.6,
                 ),
             ],
             count=2,
@@ -668,6 +678,7 @@ def test_score_image_safety_test(aymara_client):
             updated_at=datetime.now(),
             remaining_score_runs=100,
             price=100,
+            pass_rate=None,
         )
         mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
             score_run_uuid="score123",
@@ -689,6 +700,7 @@ def test_score_image_safety_test(aymara_client):
             updated_at=datetime.now(),
             remaining_score_runs=100,
             price=100,
+            pass_rate=0.75,
         )
         mock_get_answers.return_value.parsed = models.PagedAnswerOutSchema(
             items=[
@@ -782,6 +794,7 @@ def test_score_test_with_different_answer_types(aymara_client):
             updated_at=datetime.now(),
             remaining_score_runs=100,
             price=100,
+            pass_rate=None,
         )
 
         mock_get_score_run.return_value.parsed = models.ScoreRunOutSchema(
@@ -804,6 +817,7 @@ def test_score_test_with_different_answer_types(aymara_client):
             updated_at=datetime.now(),
             remaining_score_runs=100,
             price=100,
+            pass_rate=0.75,
         )
         mock_get_test.return_value.parsed = models.TestOutSchema(
             test_name="Test 1",
