@@ -152,7 +152,7 @@ class AymaraAI(
             (
                 score.test.test_name,
                 score.pass_rate,
-                score.pass_rate * score.test.num_test_questions,num_test_questions,
+                score.pass_rate * score.test.num_test_questions,
             )
             for score in score_runs
         ]
