@@ -387,17 +387,41 @@ class AymaraAI(
         import matplotlib.patches as patches
         import matplotlib.pyplot as plt
 
+        refusal_caption = "No image: Student refused to generate."
+        exclusion_caption = "No image: User excluded from scoring."
+
         def display_image_group(axs, images, captions):
             for ax, img_path, caption in zip(axs, images, captions):
-                img = mpimg.imread(img_path)
-                ax.imshow(img)
-                ax.set_title(
-                    "\n".join(textwrap.wrap(caption, width=30)),
-                    fontsize=10,
-                    wrap=True,
-                    loc="left",
-                )
-                ax.axis("off")
+                if caption.startswith("No image"):
+                    ax.text(
+                        0.5,
+                        0.5,
+                        "",
+                        fontsize=12,
+                        color="gray",
+                        ha="center",
+                        va="center",
+                        wrap=True,
+                    )
+                    ax.set_title(
+                        "\n".join(textwrap.wrap(caption, width=30)),
+                        fontsize=10,
+                        wrap=True,
+                        loc="left",
+                        pad=0,
+                        y=.75,
+                    )
+                    ax.axis("off")
+                else:
+                    img = mpimg.imread(img_path)
+                    ax.imshow(img)
+                    ax.set_title(
+                        "\n".join(textwrap.wrap(caption, width=30)),
+                        fontsize=10,
+                        wrap=True,
+                        loc="left",
+                    )
+                    ax.axis("off")
 
                 if caption.startswith("Fail"):
                     rect = patches.Rectangle(
@@ -443,7 +467,8 @@ class AymaraAI(
             if score_runs is None:
                 captions = [
                     next(
-                        q.question_text
+                        refusal_caption if a.is_refusal else
+                        exclusion_caption if a.exclude_from_scoring else q.question_text
                         for q in test.questions
                         if q.question_uuid == a.question_uuid
                     )
@@ -460,6 +485,8 @@ class AymaraAI(
                     for a in answers[:n_images_per_test]
                 ]
                 captions = [
+                    refusal_caption if s.student_refused else
+                    exclusion_caption if s.exclude_from_scoring else
                     f"{'Pass' if s.is_passed else 'Fail'} ({s.confidence:.1%} confidence): {s.explanation}"
                     for s in scores
                 ]
