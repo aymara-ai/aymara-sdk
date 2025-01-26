@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "aymara-ai"
-version = "0.7.1"
+version = "0.7.2"
 description = "A Python SDK for using Aymara to test your AI alignment."
 authors = [
-    {name = "Aymara AI", email = "contact@aymara.ai"},
+    {name = "Aymara AI", email = "support@aymara.ai"},
 ]
 readme = "README.md"
 requires-python = ">=3.9"
