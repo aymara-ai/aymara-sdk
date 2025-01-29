@@ -2,6 +2,7 @@
 Types for the SDK
 """
 
+import re
 from datetime import datetime
 from enum import Enum
 from typing import Annotated, Iterator, List, Optional, Union
@@ -884,15 +885,62 @@ class ScoreRunSuiteSummaryResponse(BaseModel):
 
         rows = []
         for summary in self.score_run_summaries:
-            rows.append(
-                {
-                    "test_name": summary.test_name,
-                    "passing_answers_summary": summary.passing_answers_summary,
-                    "failing_answers_summary": summary.failing_answers_summary,
-                    "improvement_advice": summary.improvement_advice,
-                }
-            )
+            if summary.test_type == TestType.ACCURACY:
+                # Extract sections using XML tags
+                passing_sections = re.findall(
+                    r"<(\w+)>(.*?)</\1>", summary.passing_answers_summary, re.DOTALL
+                )
+                failing_sections = (
+                    re.findall(
+                        r"<(\w+)>(.*?)</\1>", summary.failing_answers_summary, re.DOTALL
+                    )
+                    if summary.failing_answers_summary
+                    else []
+                )
+                advice_sections = re.findall(
+                    r"<(\w+)>(.*?)</\1>", summary.improvement_advice, re.DOTALL
+                )
 
+                # Create a mapping of question types to their content
+                passing_by_type = {
+                    tag: content.strip() for tag, content in passing_sections
+                }
+                failing_by_type = {
+                    tag: content.strip() for tag, content in failing_sections
+                }
+                advice_by_type = {
+                    tag: content.strip() for tag, content in advice_sections
+                }
+
+                # Get ordered unique question types while preserving order
+                question_types = []
+                for tag, _ in passing_sections + failing_sections:
+                    if tag not in question_types:
+                        question_types.append(tag)
+
+                # Create a row for each question type
+                for q_type in question_types:
+                    rows.append(
+                        {
+                            "test_name": summary.test_name,
+                            "question_type": q_type,
+                            "passing_answers_summary": passing_by_type.get(q_type, ""),
+                            "failing_answers_summary": failing_by_type.get(q_type, ""),
+                            "improvement_advice": advice_by_type.get(q_type, ""),
+                        }
+                    )
+            else:
+                # Handle non-accuracy tests as before
+                rows.append(
+                    {
+                        "test_name": summary.test_name,
+                        "passing_answers_summary": summary.passing_answers_summary,
+                        "failing_answers_summary": summary.failing_answers_summary,
+                        "improvement_advice": summary.improvement_advice,
+                    }
+                )
+
+        # Add overall summary if available
         if self.overall_passing_answers_summary or self.overall_failing_answers_summary:
             rows.append(
                 {

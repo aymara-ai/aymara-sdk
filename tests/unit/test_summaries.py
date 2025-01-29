@@ -19,7 +19,9 @@ def test_create_summary(aymara_client):
             score_run_summaries=[
                 models.ScoreRunSummaryOutSchema(
                     score_run_summary_uuid="sum123",
-                    explanation_summary="Summary",
+                    passing_answers_summary="Passing answers summary",
+                    failing_answers_summary="Failing answers summary",
+                    explanation_summary="Explanation summary",
                     improvement_advice="Improvement advice",
                     score_run=models.ScoreRunOutSchema(
                         score_run_uuid="score123",
@@ -51,12 +53,15 @@ def test_create_summary(aymara_client):
         mock_get_summary.return_value.parsed = models.ScoreRunSuiteSummaryOutSchema(
             score_run_suite_summary_uuid="sum123",
             status=models.ScoreRunSuiteSummaryStatus.FINISHED,
-            overall_summary="Overall summary",
+            overall_passing_answers_summary="Overall passing answers summary",
+            overall_failing_answers_summary="Overall failing answers summary",
             overall_improvement_advice="Overall improvement advice",
             score_run_summaries=[
                 models.ScoreRunSummaryOutSchema(
                     score_run_summary_uuid="sum123",
-                    explanation_summary="Summary",
+                    passing_answers_summary="Passing answers summary",
+                    failing_answers_summary="Failing answers summary",
+                    explanation_summary="Explanation summary",
                     improvement_advice="Improvement advice",
                     score_run=models.ScoreRunOutSchema(
                         score_run_uuid="score123",
@@ -91,7 +96,12 @@ def test_create_summary(aymara_client):
         assert isinstance(result, ScoreRunSuiteSummaryResponse)
         assert result.score_run_suite_summary_uuid == "sum123"
         assert result.score_run_suite_summary_status == Status.COMPLETED
-        assert result.overall_summary == "Overall summary"
+        assert (
+            result.overall_passing_answers_summary == "Overall passing answers summary"
+        )
+        assert (
+            result.overall_failing_answers_summary == "Overall failing answers summary"
+        )
         assert result.overall_improvement_advice == "Overall improvement advice"
 
 
@@ -108,7 +118,9 @@ async def test_create_summary_async(aymara_client):
             score_run_summaries=[
                 models.ScoreRunSummaryOutSchema(
                     score_run_summary_uuid="sum123",
-                    explanation_summary="Summary",
+                    passing_answers_summary="Passing answers summary",
+                    failing_answers_summary="Failing answers summary",
+                    explanation_summary="Explanation summary",
                     improvement_advice="Improvement advice",
                     score_run=models.ScoreRunOutSchema(
                         score_run_uuid="score123",
@@ -140,12 +152,15 @@ async def test_create_summary_async(aymara_client):
         mock_get_summary.return_value.parsed = models.ScoreRunSuiteSummaryOutSchema(
             score_run_suite_summary_uuid="sum123",
             status=models.ScoreRunSuiteSummaryStatus.FINISHED,
-            overall_summary="Overall summary",
+            overall_passing_answers_summary="Overall passing answers summary",
+            overall_failing_answers_summary="Overall failing answers summary",
             overall_improvement_advice="Overall improvement advice",
             score_run_summaries=[
                 models.ScoreRunSummaryOutSchema(
                     score_run_summary_uuid="sum123",
-                    explanation_summary="Summary",
+                    explanation_summary="Explanation summary",
+                    passing_answers_summary="Passing answers summary",
+                    failing_answers_summary="Failing answers summary",
                     improvement_advice="Improvement advice",
                     score_run=models.ScoreRunOutSchema(
                         score_run_uuid="score123",
@@ -180,7 +195,12 @@ async def test_create_summary_async(aymara_client):
         assert isinstance(result, ScoreRunSuiteSummaryResponse)
         assert result.score_run_suite_summary_uuid == "sum123"
         assert result.score_run_suite_summary_status == Status.COMPLETED
-        assert result.overall_summary == "Overall summary"
+        assert (
+            result.overall_passing_answers_summary == "Overall passing answers summary"
+        )
+        assert (
+            result.overall_failing_answers_summary == "Overall failing answers summary"
+        )
         assert result.overall_improvement_advice == "Overall improvement advice"
 
 
@@ -191,12 +211,15 @@ def test_get_summary(aymara_client):
         mock_get_summary.return_value.parsed = models.ScoreRunSuiteSummaryOutSchema(
             score_run_suite_summary_uuid="sum123",
             status=models.ScoreRunSuiteSummaryStatus.FINISHED,
-            overall_summary="Overall summary",
+            overall_passing_answers_summary="Overall passing answers summary",
+            overall_failing_answers_summary="Overall failing answers summary",
             overall_improvement_advice="Overall improvement advice",
             score_run_summaries=[
                 models.ScoreRunSummaryOutSchema(
                     score_run_summary_uuid="sum123",
-                    explanation_summary="Summary",
+                    passing_answers_summary="Passing answers summary",
+                    failing_answers_summary="Failing answers summary",
+                    explanation_summary="Explanation summary",
                     improvement_advice="Improvement advice",
                     score_run=models.ScoreRunOutSchema(
                         score_run_uuid="score123",
@@ -232,7 +255,12 @@ def test_get_summary(aymara_client):
         assert isinstance(result, ScoreRunSuiteSummaryResponse)
         assert result.score_run_suite_summary_uuid == "sum123"
         assert result.score_run_suite_summary_status == Status.COMPLETED
-        assert result.overall_summary == "Overall summary"
+        assert (
+            result.overall_passing_answers_summary == "Overall passing answers summary"
+        )
+        assert (
+            result.overall_failing_answers_summary == "Overall failing answers summary"
+        )
         assert result.overall_improvement_advice == "Overall improvement advice"
 
     # Test 404 response
@@ -253,12 +281,15 @@ async def test_get_summary_async(aymara_client):
         mock_get_summary.return_value.parsed = models.ScoreRunSuiteSummaryOutSchema(
             score_run_suite_summary_uuid="sum123",
             status=models.ScoreRunSuiteSummaryStatus.FINISHED,
-            overall_summary="Overall summary",
+            overall_passing_answers_summary="Overall passing answers summary",
+            overall_failing_answers_summary="Overall failing answers summary",
             overall_improvement_advice="Overall improvement advice",
             score_run_summaries=[
                 models.ScoreRunSummaryOutSchema(
                     score_run_summary_uuid="sum123",
-                    explanation_summary="Summary",
+                    passing_answers_summary="Passing answers summary",
+                    failing_answers_summary="Failing answers summary",
+                    explanation_summary="Explanation summary",
                     improvement_advice="Improvement advice",
                     score_run=models.ScoreRunOutSchema(
                         score_run_uuid="score123",
@@ -294,7 +325,12 @@ async def test_get_summary_async(aymara_client):
         assert isinstance(result, ScoreRunSuiteSummaryResponse)
         assert result.score_run_suite_summary_uuid == "sum123"
         assert result.score_run_suite_summary_status == Status.COMPLETED
-        assert result.overall_summary == "Overall summary"
+        assert (
+            result.overall_passing_answers_summary == "Overall passing answers summary"
+        )
+        assert (
+            result.overall_failing_answers_summary == "Overall failing answers summary"
+        )
         assert result.overall_improvement_advice == "Overall improvement advice"
 
     # Test 404 response
@@ -317,12 +353,15 @@ def test_list_summaries(aymara_client):
                 models.ScoreRunSuiteSummaryOutSchema(
                     score_run_suite_summary_uuid="sum1",
                     status=models.ScoreRunSuiteSummaryStatus.FINISHED,
-                    overall_summary="Overall summary 1",
+                    overall_passing_answers_summary="Overall passing answers summary 1",
+                    overall_failing_answers_summary="Overall failing answers summary 1",
                     overall_improvement_advice="Overall improvement advice 1",
                     score_run_summaries=[
                         models.ScoreRunSummaryOutSchema(
                             score_run_summary_uuid="sum1",
-                            explanation_summary="Summary 1",
+                            passing_answers_summary="Passing answers summary 1",
+                            failing_answers_summary="Failing answers summary 1",
+                            explanation_summary="Explanation summary 1",
                             improvement_advice="Improvement advice 1",
                             score_run=models.ScoreRunOutSchema(
                                 score_run_uuid="score1",
@@ -354,12 +393,15 @@ def test_list_summaries(aymara_client):
                 models.ScoreRunSuiteSummaryOutSchema(
                     score_run_suite_summary_uuid="sum2",
                     status=models.ScoreRunSuiteSummaryStatus.FINISHED,
-                    overall_summary="Overall summary 2",
+                    overall_passing_answers_summary="Overall passing answers summary 2",
+                    overall_failing_answers_summary="Overall failing answers summary 2",
                     overall_improvement_advice="Overall improvement advice 2",
                     score_run_summaries=[
                         models.ScoreRunSummaryOutSchema(
                             score_run_summary_uuid="sum2",
-                            explanation_summary="Summary 2",
+                            passing_answers_summary="Passing answers summary 2",
+                            failing_answers_summary="Failing answers summary 2",
+                            explanation_summary="Explanation summary 2",
                             improvement_advice="Improvement advice 2",
                             score_run=models.ScoreRunOutSchema(
                                 score_run_uuid="score2",
@@ -391,12 +433,15 @@ def test_list_summaries(aymara_client):
                 models.ScoreRunSuiteSummaryOutSchema(
                     score_run_suite_summary_uuid="sum3",
                     status=models.ScoreRunSuiteSummaryStatus.FINISHED,
-                    overall_summary="Overall summary 3",
+                    overall_passing_answers_summary="Overall passing answers summary 3",
+                    overall_failing_answers_summary="Overall failing answers summary 3",
                     overall_improvement_advice="Overall improvement advice 3",
                     score_run_summaries=[
                         models.ScoreRunSummaryOutSchema(
                             score_run_summary_uuid="sum3",
-                            explanation_summary="Summary 3",
+                            passing_answers_summary="Passing answers summary 3",
+                            failing_answers_summary="Failing answers summary 3",
+                            explanation_summary="Explanation summary 3",
                             improvement_advice="Improvement advice 3",
                             score_run=models.ScoreRunOutSchema(
                                 score_run_uuid="score3",
@@ -449,12 +494,15 @@ async def test_list_summaries_async(aymara_client):
                 models.ScoreRunSuiteSummaryOutSchema(
                     score_run_suite_summary_uuid="sum1",
                     status=models.ScoreRunSuiteSummaryStatus.FINISHED,
-                    overall_summary="Overall summary 1",
+                    overall_passing_answers_summary="Overall passing answers summary 1",
+                    overall_failing_answers_summary="Overall failing answers summary 1",
                     overall_improvement_advice="Overall improvement advice 1",
                     score_run_summaries=[
                         models.ScoreRunSummaryOutSchema(
                             score_run_summary_uuid="sum1",
-                            explanation_summary="Summary 1",
+                            passing_answers_summary="Passing answers summary 1",
+                            failing_answers_summary="Failing answers summary 1",
+                            explanation_summary="Explanation summary 1",
                             improvement_advice="Improvement advice 1",
                             score_run=models.ScoreRunOutSchema(
                                 score_run_uuid="score1",
@@ -486,12 +534,15 @@ async def test_list_summaries_async(aymara_client):
                 models.ScoreRunSuiteSummaryOutSchema(
                     score_run_suite_summary_uuid="sum2",
                     status=models.ScoreRunSuiteSummaryStatus.FINISHED,
-                    overall_summary="Overall summary 2",
+                    overall_passing_answers_summary="Overall passing answers summary 2",
+                    overall_failing_answers_summary="Overall failing answers summary 2",
                     overall_improvement_advice="Overall improvement advice 2",
                     score_run_summaries=[
                         models.ScoreRunSummaryOutSchema(
                             score_run_summary_uuid="sum2",
-                            explanation_summary="Summary 2",
+                            passing_answers_summary="Passing answers summary 2",
+                            failing_answers_summary="Failing answers summary 2",
+                            explanation_summary="Explanation summary 2",
                             improvement_advice="Improvement advice 2",
                             score_run=models.ScoreRunOutSchema(
                                 score_run_uuid="score2",
@@ -523,12 +574,15 @@ async def test_list_summaries_async(aymara_client):
                 models.ScoreRunSuiteSummaryOutSchema(
                     score_run_suite_summary_uuid="sum3",
                     status=models.ScoreRunSuiteSummaryStatus.FINISHED,
-                    overall_summary="Overall summary 3",
+                    overall_passing_answers_summary="Overall passing answers summary 3",
+                    overall_failing_answers_summary="Overall failing answers summary 3",
                     overall_improvement_advice="Overall improvement advice 3",
                     score_run_summaries=[
                         models.ScoreRunSummaryOutSchema(
                             score_run_summary_uuid="sum3",
-                            explanation_summary="Summary 3",
+                            passing_answers_summary="Passing answers summary 3",
+                            failing_answers_summary="Failing answers summary 3",
+                            explanation_summary="Explanation summary 3",
                             improvement_advice="Improvement advice 3",
                             score_run=models.ScoreRunOutSchema(
                                 score_run_uuid="score3",
