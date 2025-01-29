@@ -16,14 +16,18 @@ class ScoreRunSummaryOutSchema:
     Attributes:
         score_run_summary_uuid (str):
         score_run (ScoreRunOutSchema):
-        explanation_summary (str):
+        passing_answers_summary (str):
+        failing_answers_summary (str):
         improvement_advice (str):
+        explanation_summary (str):
     """
 
     score_run_summary_uuid: str
     score_run: "ScoreRunOutSchema"
-    explanation_summary: str
+    passing_answers_summary: str
+    failing_answers_summary: str
     improvement_advice: str
+    explanation_summary: str
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -31,9 +35,13 @@ class ScoreRunSummaryOutSchema:
 
         score_run = self.score_run.to_dict()
 
-        explanation_summary = self.explanation_summary
+        passing_answers_summary = self.passing_answers_summary
+
+        failing_answers_summary = self.failing_answers_summary
 
         improvement_advice = self.improvement_advice
+
+        explanation_summary = self.explanation_summary
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -41,8 +49,10 @@ class ScoreRunSummaryOutSchema:
             {
                 "score_run_summary_uuid": score_run_summary_uuid,
                 "score_run": score_run,
-                "explanation_summary": explanation_summary,
+                "passing_answers_summary": passing_answers_summary,
+                "failing_answers_summary": failing_answers_summary,
                 "improvement_advice": improvement_advice,
+                "explanation_summary": explanation_summary,
             }
         )
 
@@ -57,15 +67,21 @@ class ScoreRunSummaryOutSchema:
 
         score_run = ScoreRunOutSchema.from_dict(d.pop("score_run"))
 
-        explanation_summary = d.pop("explanation_summary")
+        passing_answers_summary = d.pop("passing_answers_summary")
+
+        failing_answers_summary = d.pop("failing_answers_summary")
 
         improvement_advice = d.pop("improvement_advice")
+
+        explanation_summary = d.pop("explanation_summary")
 
         score_run_summary_out_schema = cls(
             score_run_summary_uuid=score_run_summary_uuid,
             score_run=score_run,
-            explanation_summary=explanation_summary,
+            passing_answers_summary=passing_answers_summary,
+            failing_answers_summary=failing_answers_summary,
             improvement_advice=improvement_advice,
+            explanation_summary=explanation_summary,
         )
 
         score_run_summary_out_schema.additional_properties = d

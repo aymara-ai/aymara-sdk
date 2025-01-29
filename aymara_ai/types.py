@@ -4,7 +4,6 @@ Types for the SDK
 
 from datetime import datetime
 from enum import Enum
-from itertools import zip_longest
 from typing import Annotated, Iterator, List, Optional, Union
 
 import pandas as pd
@@ -167,7 +166,7 @@ class ImageStudentAnswerInput(BaseStudentAnswerInput):
     """
 
     answer_image_path: Annotated[
-        Optional[str], Field(..., description="Path to the image")
+        Optional[str], Field(default=None, description="Path to the image")
     ]
 
     @classmethod
@@ -817,8 +816,11 @@ class ScoreRunSummaryResponse(BaseModel):
     score_run_summary_uuid: Annotated[
         str, Field(..., description="UUID of the score run summary")
     ]
-    explanation_summary: Annotated[
-        str, Field(..., description="Summary of the explanations")
+    passing_answers_summary: Annotated[
+        str, Field(..., description="Summary of the passing answers")
+    ]
+    failing_answers_summary: Annotated[
+        str, Field(..., description="Summary of the failing answers")
     ]
     improvement_advice: Annotated[str, Field(..., description="Advice for improvement")]
     test_name: Annotated[str, Field(..., description="Name of the test")]
@@ -831,7 +833,8 @@ class ScoreRunSummaryResponse(BaseModel):
     ) -> "ScoreRunSummaryResponse":
         return cls(
             score_run_summary_uuid=summary.score_run_summary_uuid,
-            explanation_summary=summary.explanation_summary,
+            passing_answers_summary=summary.passing_answers_summary,
+            failing_answers_summary=summary.failing_answers_summary,
             improvement_advice=summary.improvement_advice,
             test_name=summary.score_run.test.test_name,
             test_type=summary.score_run.test.test_type,
@@ -852,8 +855,11 @@ class ScoreRunSuiteSummaryResponse(BaseModel):
         Status, Field(..., description="Status of the score run suite summary")
     ]
 
-    overall_summary: Annotated[
-        Optional[str], Field(None, description="Summary of the overall explanation")
+    overall_passing_answers_summary: Annotated[
+        Optional[str], Field(None, description="Summary of the passing answers")
+    ]
+    overall_failing_answers_summary: Annotated[
+        Optional[str], Field(None, description="Summary of the failing answers")
     ]
     overall_improvement_advice: Annotated[
         Optional[str], Field(None, description="Advice for improvement")
@@ -878,66 +884,21 @@ class ScoreRunSuiteSummaryResponse(BaseModel):
 
         rows = []
         for summary in self.score_run_summaries:
-            if summary.test_type == TestType.ACCURACY:
-                # Split summary and advice by question type sections
-                summary_sections = (
-                    summary.explanation_summary.split("\n\n")
-                    if summary.explanation_summary
-                    else []
-                )
-                advice_sections = (
-                    summary.improvement_advice.split("\n\n")
-                    if summary.improvement_advice
-                    else []
-                )
+            rows.append(
+                {
+                    "test_name": summary.test_name,
+                    "passing_answers_summary": summary.passing_answers_summary,
+                    "failing_answers_summary": summary.failing_answers_summary,
+                    "improvement_advice": summary.improvement_advice,
+                }
+            )
 
-                # Process each question type section
-                for summary_section, advice_section in zip_longest(
-                    summary_sections, advice_sections, fillvalue=""
-                ):
-                    # Extract question type from summary section if available, otherwise from advice
-                    section = summary_section if summary_section else advice_section
-                    if not section:
-                        continue
-
-                    # Get question type from first line
-                    question_type = section.split("\n")[0].strip()
-
-                    # Get content after first line for summary/advice
-                    summary_content = (
-                        "\n".join(summary_section.split("\n")[1:]).strip()
-                        if summary_section
-                        else ""
-                    )
-                    advice_content = (
-                        "\n".join(advice_section.split("\n")[1:]).strip()
-                        if advice_section
-                        else ""
-                    )
-
-                    rows.append(
-                        {
-                            "test_name": summary.test_name,
-                            "question_type": question_type,
-                            "explanation_summary": summary_content,
-                            "improvement_advice": advice_content,
-                        }
-                    )
-
-            else:
-                rows.append(
-                    {
-                        "test_name": summary.test_name,
-                        "explanation_summary": summary.explanation_summary,
-                        "improvement_advice": summary.improvement_advice,
-                    }
-                )
-
-        if self.overall_summary:
+        if self.overall_passing_answers_summary or self.overall_failing_answers_summary:
             rows.append(
                 {
                     "test_name": "Overall",
-                    "explanation_summary": self.overall_summary,
+                    "passing_answers_summary": self.overall_passing_answers_summary,
+                    "failing_answers_summary": self.overall_failing_answers_summary,
                     "improvement_advice": self.overall_improvement_advice,
                 }
             )
@@ -953,7 +914,8 @@ class ScoreRunSuiteSummaryResponse(BaseModel):
         return cls(
             score_run_suite_summary_uuid=summary.score_run_suite_summary_uuid,
             score_run_suite_summary_status=Status.from_api_status(summary.status),
-            overall_summary=summary.overall_summary,
+            overall_passing_answers_summary=summary.overall_passing_answers_summary,
+            overall_failing_answers_summary=summary.overall_failing_answers_summary,
             overall_improvement_advice=summary.overall_improvement_advice,
             score_run_summaries=[
                 ScoreRunSummaryResponse.from_score_run_summary_out_schema(summary)

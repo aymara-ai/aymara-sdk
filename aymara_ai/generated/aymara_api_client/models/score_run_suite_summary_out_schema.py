@@ -25,6 +25,8 @@ class ScoreRunSuiteSummaryOutSchema:
         created_at (datetime.datetime):
         updated_at (datetime.datetime):
         overall_improvement_advice (Union[None, Unset, str]):
+        overall_failing_answers_summary (Union[None, Unset, str]):
+        overall_passing_answers_summary (Union[None, Unset, str]):
         overall_summary (Union[None, Unset, str]):
         remaining_summaries (Union[None, Unset, int]):
     """
@@ -35,6 +37,8 @@ class ScoreRunSuiteSummaryOutSchema:
     created_at: datetime.datetime
     updated_at: datetime.datetime
     overall_improvement_advice: Union[None, Unset, str] = UNSET
+    overall_failing_answers_summary: Union[None, Unset, str] = UNSET
+    overall_passing_answers_summary: Union[None, Unset, str] = UNSET
     overall_summary: Union[None, Unset, str] = UNSET
     remaining_summaries: Union[None, Unset, int] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -58,6 +62,18 @@ class ScoreRunSuiteSummaryOutSchema:
             overall_improvement_advice = UNSET
         else:
             overall_improvement_advice = self.overall_improvement_advice
+
+        overall_failing_answers_summary: Union[None, Unset, str]
+        if isinstance(self.overall_failing_answers_summary, Unset):
+            overall_failing_answers_summary = UNSET
+        else:
+            overall_failing_answers_summary = self.overall_failing_answers_summary
+
+        overall_passing_answers_summary: Union[None, Unset, str]
+        if isinstance(self.overall_passing_answers_summary, Unset):
+            overall_passing_answers_summary = UNSET
+        else:
+            overall_passing_answers_summary = self.overall_passing_answers_summary
 
         overall_summary: Union[None, Unset, str]
         if isinstance(self.overall_summary, Unset):
@@ -84,6 +100,10 @@ class ScoreRunSuiteSummaryOutSchema:
         )
         if overall_improvement_advice is not UNSET:
             field_dict["overall_improvement_advice"] = overall_improvement_advice
+        if overall_failing_answers_summary is not UNSET:
+            field_dict["overall_failing_answers_summary"] = overall_failing_answers_summary
+        if overall_passing_answers_summary is not UNSET:
+            field_dict["overall_passing_answers_summary"] = overall_passing_answers_summary
         if overall_summary is not UNSET:
             field_dict["overall_summary"] = overall_summary
         if remaining_summaries is not UNSET:
@@ -120,6 +140,28 @@ class ScoreRunSuiteSummaryOutSchema:
 
         overall_improvement_advice = _parse_overall_improvement_advice(d.pop("overall_improvement_advice", UNSET))
 
+        def _parse_overall_failing_answers_summary(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        overall_failing_answers_summary = _parse_overall_failing_answers_summary(
+            d.pop("overall_failing_answers_summary", UNSET)
+        )
+
+        def _parse_overall_passing_answers_summary(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        overall_passing_answers_summary = _parse_overall_passing_answers_summary(
+            d.pop("overall_passing_answers_summary", UNSET)
+        )
+
         def _parse_overall_summary(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -145,6 +187,8 @@ class ScoreRunSuiteSummaryOutSchema:
             created_at=created_at,
             updated_at=updated_at,
             overall_improvement_advice=overall_improvement_advice,
+            overall_failing_answers_summary=overall_failing_answers_summary,
+            overall_passing_answers_summary=overall_passing_answers_summary,
             overall_summary=overall_summary,
             remaining_summaries=remaining_summaries,
         )
