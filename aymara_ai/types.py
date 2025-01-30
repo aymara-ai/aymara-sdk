@@ -549,6 +549,9 @@ class ScoredAnswerResponse(BaseModel):
     answer_image_path: Annotated[
         Optional[str], Field(default=None, description="Path to the answer image")
     ]
+    answer_image_url: Annotated[
+        Optional[str], Field(default=None, description="URL to the answer image")
+    ]
     question_text: Annotated[str, Field(..., description="Question in the test")]
     explanation: Annotated[
         Optional[str], Field(default=None, description="Explanation for the score")
@@ -588,12 +591,19 @@ class ScoredAnswerResponse(BaseModel):
             or answer.answer_image_path is None
             else str(answer.answer_image_path)
         )
+        answer_image_url = (
+            None
+            if not hasattr(answer, "answer_image_url")
+            or answer.answer_image_url is None
+            else str(answer.answer_image_url)
+        )
 
         return cls(
             answer_uuid=answer.answer_uuid,
             question_uuid=answer.question.question_uuid,
             answer_text=answer_text,
             answer_image_path=answer_image_path,
+            answer_image_url=answer_image_url,
             question_text=answer.question.question_text,
             explanation=answer.explanation,
             confidence=answer.confidence,

@@ -25,6 +25,7 @@ class AnswerOutSchema:
         is_passed (Union[None, Unset, bool]):
         student_refused (Union[Unset, bool]):  Default: False.
         exclude_from_scoring (Union[Unset, bool]):  Default: False.
+        answer_image_url (Union[None, Unset, str]):
     """
 
     answer_uuid: str
@@ -36,6 +37,7 @@ class AnswerOutSchema:
     is_passed: Union[None, Unset, bool] = UNSET
     student_refused: Union[Unset, bool] = False
     exclude_from_scoring: Union[Unset, bool] = False
+    answer_image_url: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -77,6 +79,12 @@ class AnswerOutSchema:
 
         exclude_from_scoring = self.exclude_from_scoring
 
+        answer_image_url: Union[None, Unset, str]
+        if isinstance(self.answer_image_url, Unset):
+            answer_image_url = UNSET
+        else:
+            answer_image_url = self.answer_image_url
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -99,6 +107,8 @@ class AnswerOutSchema:
             field_dict["student_refused"] = student_refused
         if exclude_from_scoring is not UNSET:
             field_dict["exclude_from_scoring"] = exclude_from_scoring
+        if answer_image_url is not UNSET:
+            field_dict["answer_image_url"] = answer_image_url
 
         return field_dict
 
@@ -160,6 +170,15 @@ class AnswerOutSchema:
 
         exclude_from_scoring = d.pop("exclude_from_scoring", UNSET)
 
+        def _parse_answer_image_url(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        answer_image_url = _parse_answer_image_url(d.pop("answer_image_url", UNSET))
+
         answer_out_schema = cls(
             answer_uuid=answer_uuid,
             question=question,
@@ -170,6 +189,7 @@ class AnswerOutSchema:
             is_passed=is_passed,
             student_refused=student_refused,
             exclude_from_scoring=exclude_from_scoring,
+            answer_image_url=answer_image_url,
         )
 
         answer_out_schema.additional_properties = d
