@@ -630,7 +630,7 @@ class TestMixin(AymaraAIProtocol):
             for example in good_examples or bad_examples:
                 if not isinstance(example, (GoodExample, BadExample)):
                     raise ValueError(
-                        "examples must be instances of PositiveExample or NegativeExample"
+                        "examples must be instances of GoodExample or BadExample"
                     )
 
             if len(good_examples or bad_examples) > MAX_EXAMPLES_LENGTH:
