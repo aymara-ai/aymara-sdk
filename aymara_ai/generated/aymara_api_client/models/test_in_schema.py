@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.test_source import TestSource
 from ..models.test_type import TestType
 from ..types import UNSET, Unset
 
@@ -21,6 +22,7 @@ class TestInSchema:
         student_description (str):
         test_type (Union[Unset, TestType]): Test type. Default: TestType.SAFETY.
         test_language (Union[Unset, str]):  Default: 'en'.
+        test_source (Union[Unset, TestSource]): Test source. Default: TestSource.AYMARA.
         test_policy (Union[None, Unset, str]):
         num_test_questions (Union[None, Unset, int]):
         test_system_prompt (Union[None, Unset, str]):
@@ -33,6 +35,7 @@ class TestInSchema:
     student_description: str
     test_type: Union[Unset, TestType] = TestType.SAFETY
     test_language: Union[Unset, str] = "en"
+    test_source: Union[Unset, TestSource] = TestSource.AYMARA
     test_policy: Union[None, Unset, str] = UNSET
     num_test_questions: Union[None, Unset, int] = UNSET
     test_system_prompt: Union[None, Unset, str] = UNSET
@@ -51,6 +54,10 @@ class TestInSchema:
             test_type = self.test_type.value
 
         test_language = self.test_language
+
+        test_source: Union[Unset, str] = UNSET
+        if not isinstance(self.test_source, Unset):
+            test_source = self.test_source.value
 
         test_policy: Union[None, Unset, str]
         if isinstance(self.test_policy, Unset):
@@ -106,6 +113,8 @@ class TestInSchema:
             field_dict["test_type"] = test_type
         if test_language is not UNSET:
             field_dict["test_language"] = test_language
+        if test_source is not UNSET:
+            field_dict["test_source"] = test_source
         if test_policy is not UNSET:
             field_dict["test_policy"] = test_policy
         if num_test_questions is not UNSET:
@@ -138,6 +147,13 @@ class TestInSchema:
             test_type = TestType(_test_type)
 
         test_language = d.pop("test_language", UNSET)
+
+        _test_source = d.pop("test_source", UNSET)
+        test_source: Union[Unset, TestSource]
+        if isinstance(_test_source, Unset):
+            test_source = UNSET
+        else:
+            test_source = TestSource(_test_source)
 
         def _parse_test_policy(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -211,6 +227,7 @@ class TestInSchema:
             student_description=student_description,
             test_type=test_type,
             test_language=test_language,
+            test_source=test_source,
             test_policy=test_policy,
             num_test_questions=num_test_questions,
             test_system_prompt=test_system_prompt,

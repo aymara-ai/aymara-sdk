@@ -19,6 +19,7 @@ from .paged_score_run_out_schema import PagedScoreRunOutSchema
 from .paged_score_run_suite_summary_out_schema import PagedScoreRunSuiteSummaryOutSchema
 from .paged_test_out_schema import PagedTestOutSchema
 from .policy_schema import PolicySchema
+from .question_in_schema import QuestionInSchema
 from .question_schema import QuestionSchema
 from .score_run_in_schema import ScoreRunInSchema
 from .score_run_out_schema import ScoreRunOutSchema
@@ -33,8 +34,10 @@ from .scoring_example_out_schema import ScoringExampleOutSchema
 from .scoring_example_out_schema_example_type import ScoringExampleOutSchemaExampleType
 from .test_in_schema import TestInSchema
 from .test_out_schema import TestOutSchema
+from .test_source import TestSource
 from .test_status import TestStatus
 from .test_type import TestType
+from .test_with_questions_in_schema import TestWithQuestionsInSchema
 from .usage_response_schema import UsageResponseSchema
 from .usage_response_schema_test_type_displays import UsageResponseSchemaTestTypeDisplays
 from .user_out_schema import UserOutSchema
@@ -61,6 +64,7 @@ __all__ = (
     "PagedScoreRunSuiteSummaryOutSchema",
     "PagedTestOutSchema",
     "PolicySchema",
+    "QuestionInSchema",
     "QuestionSchema",
     "ScoreRunInSchema",
     "ScoreRunOutSchema",
@@ -75,8 +79,10 @@ __all__ = (
     "ScoringExampleOutSchemaExampleType",
     "TestInSchema",
     "TestOutSchema",
+    "TestSource",
     "TestStatus",
     "TestType",
+    "TestWithQuestionsInSchema",
     "UsageResponseSchema",
     "UsageResponseSchemaTestTypeDisplays",
     "UserOutSchema",
