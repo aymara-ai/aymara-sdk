@@ -21,6 +21,7 @@ from aymara_ai.core.score_runs import ScoreRunMixin
 from aymara_ai.core.summaries import SummaryMixin
 from aymara_ai.core.tests import TestMixin
 from aymara_ai.core.uploads import UploadMixin
+from aymara_ai.core.upload_user_test import UploadUserTestMixin
 from aymara_ai.generated.aymara_api_client import (
     client,
 )
@@ -40,6 +41,7 @@ class AymaraAI(
     SummaryMixin,
     UploadMixin,
     PolicyMixin,
+    UploadUserTestMixin,
     AymaraAIProtocol,
 ):
     """
@@ -84,6 +86,7 @@ class AymaraAI(
         SummaryMixin.__init__(self)
         UploadMixin.__init__(self)
         PolicyMixin.__init__(self)
+        UploadUserTestMixin.__init__(self)
 
         self.logger.debug(f"AymaraAI client initialized with base URL: {base_url}")
 
@@ -409,7 +412,7 @@ class AymaraAI(
                         wrap=True,
                         loc="left",
                         pad=0,
-                        y=.75,
+                        y=0.75,
                     )
                     ax.axis("off")
                 else:
@@ -467,8 +470,11 @@ class AymaraAI(
             if score_runs is None:
                 captions = [
                     next(
-                        refusal_caption if a.is_refusal else
-                        exclusion_caption if a.exclude_from_scoring else q.question_text
+                        refusal_caption
+                        if a.is_refusal
+                        else exclusion_caption
+                        if a.exclude_from_scoring
+                        else q.question_text
                         for q in test.questions
                         if q.question_uuid == a.question_uuid
                     )
@@ -485,9 +491,11 @@ class AymaraAI(
                     for a in answers[:n_images_per_test]
                 ]
                 captions = [
-                    refusal_caption if s.student_refused else
-                    exclusion_caption if s.exclude_from_scoring else
-                    f"{'Pass' if s.is_passed else 'Fail'} ({s.confidence:.1%} confidence): {s.explanation}"
+                    refusal_caption
+                    if s.student_refused
+                    else exclusion_caption
+                    if s.exclude_from_scoring
+                    else f"{'Pass' if s.is_passed else 'Fail'} ({s.confidence:.1%} confidence): {s.explanation}"
                     for s in scores
                 ]
 
