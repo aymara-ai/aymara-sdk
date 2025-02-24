@@ -25,9 +25,9 @@ Our Python SDK provides convenient access to our REST API from Python 3.9+. The 
 
 ## Documentation
 
-[docs.aymara.ai](https://docs.aymara.ai) has the full [SDK reference](https://docs.aymara.ai/sdk_reference.html) & guides to walk you through:
-* [text-to-text safety tests](https://docs.aymara.ai/safety_notebook.html) (including the [free trial version](https://docs.aymara.ai/free_trial_notebook.html))
-* [text-to-image safety tests](https://docs.aymara.ai/image_safety_notebook.html)
+[docs.aymara.ai](https://docs.aymara.ai) has the full [SDK reference](https://docs.aymara.ai/sdk_reference.html), [FAQ](https://docs.aymara.ai/faq.html), and guides to walk you through:
+* [text-to-text safety tests](https://docs.aymara.ai/text-to-text_safety_notebook.html) (including the [free trial version](https://docs.aymara.ai/free_trial_notebook.html))
+* [text-to-image safety tests](https://docs.aymara.ai/text-to-image_safety_notebook.html)
 * [jailbreak tests](https://docs.aymara.ai/jailbreak_notebook.html)
 * [accuracy tests](https://docs.aymara.ai/accuracy_notebook.html)
 
