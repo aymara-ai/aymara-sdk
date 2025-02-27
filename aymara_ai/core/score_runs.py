@@ -46,6 +46,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         student_answers: List[BaseStudentAnswerInput],
         scoring_examples: Optional[List[ScoringExample]] = None,
         max_wait_time_secs: Optional[int] = None,
+        is_sandbox: Optional[bool] = False,
     ) -> ScoreRunResponse:
         return self._score_test(
             test_uuid=test_uuid,
@@ -53,6 +54,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             is_async=False,
             max_wait_time_secs=max_wait_time_secs,
             scoring_examples=scoring_examples,
+            is_sandbox=is_sandbox,
         )
 
     score_test.__doc__ = f"""
@@ -107,6 +109,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         is_async: bool,
         max_wait_time_secs: Optional[int] = None,
         scoring_examples: Optional[List[ScoringExample]] = None,
+        is_sandbox: Optional[bool] = False,
     ) -> Union[ScoreRunResponse, Coroutine[ScoreRunResponse, None, None]]:
         self._validate_student_answers(student_answers)
 
@@ -128,11 +131,11 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
 
         if is_async:
             return self._create_and_wait_for_score_impl_async(
-                score_data, max_wait_time_secs
+                score_data, max_wait_time_secs, is_sandbox
             )
         else:
             return self._create_and_wait_for_score_impl_sync(
-                score_data, max_wait_time_secs
+                score_data, max_wait_time_secs, is_sandbox
             )
 
     # Get Score Run Methods
@@ -287,6 +290,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         self,
         score_data: models.ScoreRunInSchema,
         max_wait_time_secs: Optional[int] = None,
+        is_sandbox: Optional[bool] = False,
     ) -> ScoreRunResponse:
         start_time = time.time()
 
@@ -329,7 +333,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
                         answer.answer_image_path = uploaded_keys[answer.question_uuid]
 
             response = create_score_run.sync_detailed(
-                client=self.client, body=score_data
+                client=self.client, body=score_data, is_sandbox=is_sandbox
             )
 
             if response.status_code == 404:
@@ -392,6 +396,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         self,
         score_data: models.ScoreRunInSchema,
         max_wait_time_secs: Optional[int] = None,
+        is_sandbox: Optional[bool] = False,
     ) -> ScoreRunResponse:
         start_time = time.time()
 
@@ -438,7 +443,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
                         answer.answer_image_path = uploaded_keys[answer.question_uuid]
 
             response = await create_score_run.asyncio_detailed(
-                client=self.client, body=score_data
+                client=self.client, body=score_data, is_sandbox=is_sandbox
             )
 
             if response.status_code == 404:

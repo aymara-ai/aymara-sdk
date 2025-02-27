@@ -55,6 +55,7 @@ class TestMixin(AymaraAIProtocol):
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
+        is_sandbox: Optional[bool] = False,
     ) -> SafetyTestResponse:
         return self._create_test(
             test_name=test_name,
@@ -70,6 +71,7 @@ class TestMixin(AymaraAIProtocol):
             additional_instructions=additional_instructions,
             good_examples=good_examples,
             bad_examples=bad_examples,
+            is_sandbox=is_sandbox,
         )
 
     create_safety_test.__doc__ = f"""
@@ -112,6 +114,7 @@ class TestMixin(AymaraAIProtocol):
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
+        is_sandbox: Optional[bool] = False,
     ) -> SafetyTestResponse:
         return await self._create_test(
             test_name=test_name,
@@ -127,6 +130,7 @@ class TestMixin(AymaraAIProtocol):
             additional_instructions=additional_instructions,
             good_examples=good_examples,
             bad_examples=bad_examples,
+            is_sandbox=is_sandbox,
         )
 
     create_safety_test_async.__doc__ = f"""
@@ -492,6 +496,7 @@ class TestMixin(AymaraAIProtocol):
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
+        is_sandbox: Optional[bool] = False,
     ) -> Union[BaseTestResponse, Coroutine[BaseTestResponse, None, None]]:
         self._validate_test_inputs(
             test_name=test_name,
@@ -528,11 +533,11 @@ class TestMixin(AymaraAIProtocol):
 
         if is_async:
             return self._create_and_wait_for_test_impl_async(
-                test_data, max_wait_time_secs
+                test_data, max_wait_time_secs, is_sandbox
             )
         else:
             return self._create_and_wait_for_test_impl_sync(
-                test_data, max_wait_time_secs
+                test_data, max_wait_time_secs, is_sandbox
             )
 
     def _validate_test_inputs(
@@ -651,10 +656,15 @@ class TestMixin(AymaraAIProtocol):
                 )
 
     def _create_and_wait_for_test_impl_sync(
-        self, test_data: models.TestInSchema, max_wait_time_secs: Optional[int]
+        self,
+        test_data: models.TestInSchema,
+        max_wait_time_secs: Optional[int],
+        is_sandbox: Optional[bool] = None,
     ) -> BaseTestResponse:
         start_time = time.time()
-        response = create_test.sync_detailed(client=self.client, body=test_data)
+        response = create_test.sync_detailed(
+            client=self.client, body=test_data, is_sandbox=is_sandbox
+        )
 
         create_response = response.parsed
 
@@ -708,11 +718,14 @@ class TestMixin(AymaraAIProtocol):
                 time.sleep(POLLING_INTERVAL)
 
     async def _create_and_wait_for_test_impl_async(
-        self, test_data: models.TestInSchema, max_wait_time_secs: Optional[int]
+        self,
+        test_data: models.TestInSchema,
+        max_wait_time_secs: Optional[int],
+        is_sandbox: Optional[bool] = None,
     ) -> BaseTestResponse:
         start_time = time.time()
         response = await create_test.asyncio_detailed(
-            client=self.client, body=test_data
+            client=self.client, body=test_data, is_sandbox=is_sandbox
         )
 
         create_response = response.parsed

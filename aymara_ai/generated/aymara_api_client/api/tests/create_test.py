@@ -15,12 +15,20 @@ def _get_kwargs(
     *,
     body: TestInSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
+    is_sandbox: Union[None, Unset, bool] = UNSET,
 ) -> Dict[str, Any]:
     headers: Dict[str, Any] = {}
 
     params: Dict[str, Any] = {}
 
     params["workspace_uuid"] = workspace_uuid
+
+    json_is_sandbox: Union[None, Unset, bool]
+    if isinstance(is_sandbox, Unset):
+        json_is_sandbox = UNSET
+    else:
+        json_is_sandbox = is_sandbox
+    params["is_sandbox"] = json_is_sandbox
 
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
@@ -80,11 +88,13 @@ def sync_detailed(
     client: AuthenticatedClient,
     body: TestInSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
+    is_sandbox: Union[None, Unset, bool] = UNSET,
 ) -> Response[Union[ErrorSchema, TestOutSchema]]:
     """Create Test
 
     Args:
         workspace_uuid (Union[Unset, str]):
+        is_sandbox (Union[None, Unset, bool]):
         body (TestInSchema):
 
     Raises:
@@ -98,6 +108,7 @@ def sync_detailed(
     kwargs = _get_kwargs(
         body=body,
         workspace_uuid=workspace_uuid,
+        is_sandbox=is_sandbox,
     )
 
     response = client.get_httpx_client().request(
@@ -112,11 +123,13 @@ def sync(
     client: AuthenticatedClient,
     body: TestInSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
+    is_sandbox: Union[None, Unset, bool] = UNSET,
 ) -> Optional[Union[ErrorSchema, TestOutSchema]]:
     """Create Test
 
     Args:
         workspace_uuid (Union[Unset, str]):
+        is_sandbox (Union[None, Unset, bool]):
         body (TestInSchema):
 
     Raises:
@@ -131,6 +144,7 @@ def sync(
         client=client,
         body=body,
         workspace_uuid=workspace_uuid,
+        is_sandbox=is_sandbox,
     ).parsed
 
 
@@ -139,11 +153,13 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     body: TestInSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
+    is_sandbox: Union[None, Unset, bool] = UNSET,
 ) -> Response[Union[ErrorSchema, TestOutSchema]]:
     """Create Test
 
     Args:
         workspace_uuid (Union[Unset, str]):
+        is_sandbox (Union[None, Unset, bool]):
         body (TestInSchema):
 
     Raises:
@@ -157,6 +173,7 @@ async def asyncio_detailed(
     kwargs = _get_kwargs(
         body=body,
         workspace_uuid=workspace_uuid,
+        is_sandbox=is_sandbox,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -169,11 +186,13 @@ async def asyncio(
     client: AuthenticatedClient,
     body: TestInSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
+    is_sandbox: Union[None, Unset, bool] = UNSET,
 ) -> Optional[Union[ErrorSchema, TestOutSchema]]:
     """Create Test
 
     Args:
         workspace_uuid (Union[Unset, str]):
+        is_sandbox (Union[None, Unset, bool]):
         body (TestInSchema):
 
     Raises:
@@ -189,5 +208,6 @@ async def asyncio(
             client=client,
             body=body,
             workspace_uuid=workspace_uuid,
+            is_sandbox=is_sandbox,
         )
     ).parsed
