@@ -12,4 +12,5 @@ text-to-image_safety_notebook
 jailbreak_notebook
 accuracy_notebook
 sdk_reference
+faq.md
 ```
