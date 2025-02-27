@@ -46,7 +46,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         student_answers: List[BaseStudentAnswerInput],
         scoring_examples: Optional[List[ScoringExample]] = None,
         max_wait_time_secs: Optional[int] = None,
-        is_sandbox: bool = False,
+        is_sandbox: Optional[bool] = False,
     ) -> ScoreRunResponse:
         return self._score_test(
             test_uuid=test_uuid,
@@ -109,7 +109,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         is_async: bool,
         max_wait_time_secs: Optional[int] = None,
         scoring_examples: Optional[List[ScoringExample]] = None,
-        is_sandbox: bool = False,
+        is_sandbox: Optional[bool] = False,
     ) -> Union[ScoreRunResponse, Coroutine[ScoreRunResponse, None, None]]:
         self._validate_student_answers(student_answers)
 
@@ -290,7 +290,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         self,
         score_data: models.ScoreRunInSchema,
         max_wait_time_secs: Optional[int] = None,
-        is_sandbox: bool = False,
+        is_sandbox: Optional[bool] = False,
     ) -> ScoreRunResponse:
         start_time = time.time()
 
@@ -396,7 +396,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         self,
         score_data: models.ScoreRunInSchema,
         max_wait_time_secs: Optional[int] = None,
-        is_sandbox: bool = False,
+        is_sandbox: Optional[bool] = False,
     ) -> ScoreRunResponse:
         start_time = time.time()
 

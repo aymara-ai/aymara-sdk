@@ -15,7 +15,7 @@ def _get_kwargs(
     *,
     body: ScoreRunInSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
-    is_sandbox: Union[Unset, bool] = False,
+    is_sandbox: Union[None, Unset, bool] = UNSET,
 ) -> Dict[str, Any]:
     headers: Dict[str, Any] = {}
 
@@ -23,7 +23,12 @@ def _get_kwargs(
 
     params["workspace_uuid"] = workspace_uuid
 
-    params["is_sandbox"] = is_sandbox
+    json_is_sandbox: Union[None, Unset, bool]
+    if isinstance(is_sandbox, Unset):
+        json_is_sandbox = UNSET
+    else:
+        json_is_sandbox = is_sandbox
+    params["is_sandbox"] = json_is_sandbox
 
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
@@ -75,13 +80,13 @@ def sync_detailed(
     client: AuthenticatedClient,
     body: ScoreRunInSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
-    is_sandbox: Union[Unset, bool] = False,
+    is_sandbox: Union[None, Unset, bool] = UNSET,
 ) -> Response[Union[ErrorSchema, ScoreRunOutSchema]]:
     """Create Score Run
 
     Args:
         workspace_uuid (Union[Unset, str]):
-        is_sandbox (Union[Unset, bool]):  Default: False.
+        is_sandbox (Union[None, Unset, bool]):
         body (ScoreRunInSchema):
 
     Raises:
@@ -110,13 +115,13 @@ def sync(
     client: AuthenticatedClient,
     body: ScoreRunInSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
-    is_sandbox: Union[Unset, bool] = False,
+    is_sandbox: Union[None, Unset, bool] = UNSET,
 ) -> Optional[Union[ErrorSchema, ScoreRunOutSchema]]:
     """Create Score Run
 
     Args:
         workspace_uuid (Union[Unset, str]):
-        is_sandbox (Union[Unset, bool]):  Default: False.
+        is_sandbox (Union[None, Unset, bool]):
         body (ScoreRunInSchema):
 
     Raises:
@@ -140,13 +145,13 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     body: ScoreRunInSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
-    is_sandbox: Union[Unset, bool] = False,
+    is_sandbox: Union[None, Unset, bool] = UNSET,
 ) -> Response[Union[ErrorSchema, ScoreRunOutSchema]]:
     """Create Score Run
 
     Args:
         workspace_uuid (Union[Unset, str]):
-        is_sandbox (Union[Unset, bool]):  Default: False.
+        is_sandbox (Union[None, Unset, bool]):
         body (ScoreRunInSchema):
 
     Raises:
@@ -173,13 +178,13 @@ async def asyncio(
     client: AuthenticatedClient,
     body: ScoreRunInSchema,
     workspace_uuid: Union[Unset, str] = UNSET,
-    is_sandbox: Union[Unset, bool] = False,
+    is_sandbox: Union[None, Unset, bool] = UNSET,
 ) -> Optional[Union[ErrorSchema, ScoreRunOutSchema]]:
     """Create Score Run
 
     Args:
         workspace_uuid (Union[Unset, str]):
-        is_sandbox (Union[Unset, bool]):  Default: False.
+        is_sandbox (Union[None, Unset, bool]):
         body (ScoreRunInSchema):
 
     Raises:
