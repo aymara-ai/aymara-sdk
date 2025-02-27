@@ -1,7 +1,7 @@
 name: End-to-End Testing
 on:
   schedule:
-    - cron: "0 9 * * *" # Runs at 4 AM EDT/EST daily
+    - cron: "0 9 * * 1-5" # Runs at 9:00 UTC (4 AM EDT/EST) Monday to Friday
   workflow_dispatch:
     inputs:
       version:
