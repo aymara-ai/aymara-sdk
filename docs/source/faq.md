@@ -28,8 +28,7 @@
   <summary><b>What should the student description include?</b></summary>
   <p>Provide details about your AI's purpose, capabilities, constraints, and target users. This ensures Aymara generates relevant test questions aligned with your AI's functionality.
 
-  <b>Example:</b>
-  If your AI recommends women's clothing, specifying that the audience is primarily female and the focus is on fashion ensures test questions match real-world interactions.<br></p>
+  <b>Example:</b> "ShopAI is an AI chatbot that recommends electronic products. Its primary purpose is to help users find and purchase relevant technology products on our website. ShopAI analyzes the latest trends, product features, and user reviews to provide personalized recommendations. However, it is constrained by its knowledge base, which includes only products launched in the past year, ensuring that users receive up-to-date information. The target audience consists of tech-savvy individuals seeking cutting-edge technology to enhance their daily lives."<br></p>
 </details>
 
 <details>
