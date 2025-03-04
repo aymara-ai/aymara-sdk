@@ -78,6 +78,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         student_answers: List[BaseStudentAnswerInput],
         scoring_examples: Optional[List[ScoringExample]] = None,
         max_wait_time_secs: Optional[int] = None,
+        is_sandbox: Optional[bool] = False,
     ) -> ScoreRunResponse:
         return await self._score_test(
             test_uuid=test_uuid,
@@ -85,6 +86,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             is_async=True,
             max_wait_time_secs=max_wait_time_secs,
             scoring_examples=scoring_examples,
+            is_sandbox=is_sandbox,
         )
 
     score_test_async.__doc__ = f"""

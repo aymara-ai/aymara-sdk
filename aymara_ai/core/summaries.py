@@ -26,7 +26,9 @@ from aymara_ai.utils.constants import (
 
 class SummaryMixin(AymaraAIProtocol):
     def create_summary(
-        self, score_runs: Union[List[ScoreRunResponse], List[str]]
+        self,
+        score_runs: Union[List[ScoreRunResponse], List[str]],
+        is_sandbox: bool = False,
     ) -> ScoreRunSuiteSummaryResponse:
         """
         Create summaries for a list of score runs and wait for completion synchronously.
@@ -36,7 +38,7 @@ class SummaryMixin(AymaraAIProtocol):
         :return: Summary response.
         :rtype: ScoreRunSuiteSummaryResponse
         """
-        return self._create_summary(score_runs, is_async=False)
+        return self._create_summary(score_runs, is_async=False, is_sandbox=is_sandbox)
 
     async def create_summary_async(
         self, score_runs: Union[List[ScoreRunResponse], List[str]]
@@ -52,7 +54,10 @@ class SummaryMixin(AymaraAIProtocol):
         return await self._create_summary(score_runs, is_async=True)
 
     def _create_summary(
-        self, score_runs: Union[List[ScoreRunResponse], List[str]], is_async: bool
+        self,
+        score_runs: Union[List[ScoreRunResponse], List[str]],
+        is_async: bool,
+        is_sandbox: bool = False,
     ) -> Union[
         ScoreRunSuiteSummaryResponse,
         Coroutine[ScoreRunSuiteSummaryResponse, None, None],
@@ -61,12 +66,12 @@ class SummaryMixin(AymaraAIProtocol):
             raise ValueError("At least one score run must be provided")
         score_run_uuids = self._score_runs_to_score_run_uuids(score_runs)
         if is_async:
-            return self._create_summary_async_impl(score_run_uuids)
+            return self._create_summary_async_impl(score_run_uuids, is_sandbox)
         else:
-            return self._create_summary_sync_impl(score_run_uuids)
+            return self._create_summary_sync_impl(score_run_uuids, is_sandbox)
 
     def _create_summary_sync_impl(
-        self, score_run_uuids: List[str]
+        self, score_run_uuids: List[str], is_sandbox: bool = False
     ) -> ScoreRunSuiteSummaryResponse:
         start_time = time.time()
         response = create_score_run_suite_summary.sync_detailed(
@@ -74,6 +79,7 @@ class SummaryMixin(AymaraAIProtocol):
             body=ScoreRunSuiteSummaryInSchema(
                 score_run_uuids=score_run_uuids,
             ),
+            is_sandbox=is_sandbox,
         )
 
         if response.status_code == 422:
@@ -140,7 +146,7 @@ class SummaryMixin(AymaraAIProtocol):
                 time.sleep(POLLING_INTERVAL)
 
     async def _create_summary_async_impl(
-        self, score_run_uuids: List[str]
+        self, score_run_uuids: List[str], is_sandbox: bool = False
     ) -> ScoreRunSuiteSummaryResponse:
         start_time = time.time()
         response = await create_score_run_suite_summary.asyncio_detailed(
@@ -148,6 +154,7 @@ class SummaryMixin(AymaraAIProtocol):
             body=ScoreRunSuiteSummaryInSchema(
                 score_run_uuids=score_run_uuids,
             ),
+            is_sandbox=is_sandbox,
         )
 
         if response.status_code == 422:
