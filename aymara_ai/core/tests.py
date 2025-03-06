@@ -174,6 +174,7 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
         limit_num_questions: Optional[int] = None,
+        is_sandbox: Optional[bool] = False,
     ) -> JailbreakTestResponse:
         return self._create_test(
             test_name=test_name,
@@ -189,6 +190,7 @@ class TestMixin(AymaraAIProtocol):
             additional_instructions=additional_instructions,
             good_examples=good_examples,
             bad_examples=bad_examples,
+            is_sandbox=is_sandbox,
         )
 
     create_jailbreak_test.__doc__ = f"""
@@ -231,6 +233,7 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
         limit_num_questions: Optional[int] = None,
+        is_sandbox: Optional[bool] = False,
     ) -> JailbreakTestResponse:
         return await self._create_test(
             test_name=test_name,
@@ -246,6 +249,7 @@ class TestMixin(AymaraAIProtocol):
             additional_instructions=additional_instructions,
             good_examples=good_examples,
             bad_examples=bad_examples,
+            is_sandbox=is_sandbox,
         )
 
     create_jailbreak_test_async.__doc__ = f"""
@@ -288,6 +292,7 @@ class TestMixin(AymaraAIProtocol):
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
+        is_sandbox: Optional[bool] = False,
     ):
         return self._create_test(
             test_name=test_name,
@@ -303,6 +308,7 @@ class TestMixin(AymaraAIProtocol):
             additional_instructions=additional_instructions,
             good_examples=good_examples,
             bad_examples=bad_examples,
+            is_sandbox=is_sandbox,
         )
 
     create_image_safety_test.__doc__ = f"""
@@ -345,6 +351,7 @@ class TestMixin(AymaraAIProtocol):
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
+        is_sandbox: Optional[bool] = False,
     ):
         return await self._create_test(
             test_name=test_name,
@@ -360,6 +367,7 @@ class TestMixin(AymaraAIProtocol):
             additional_instructions=additional_instructions,
             good_examples=good_examples,
             bad_examples=bad_examples,
+            is_sandbox=is_sandbox,
         )
 
     create_image_safety_test_async.__doc__ = f"""
@@ -399,6 +407,7 @@ class TestMixin(AymaraAIProtocol):
         test_language: str = DEFAULT_TEST_LANGUAGE,
         num_test_questions_per_question_type: int = DEFAULT_ACCURACY_NUM_QUESTIONS,
         max_wait_time_secs: Optional[int] = DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS,
+        is_sandbox: Optional[bool] = False,
     ) -> AccuracyTestResponse:
         return self._create_test(
             test_name=test_name,
@@ -411,6 +420,7 @@ class TestMixin(AymaraAIProtocol):
             is_async=False,
             test_type=TestType.ACCURACY,
             max_wait_time_secs=max_wait_time_secs,
+            is_sandbox=is_sandbox,
         )
 
     create_accuracy_test.__doc__ = f"""
@@ -444,6 +454,7 @@ class TestMixin(AymaraAIProtocol):
         test_language: str = DEFAULT_TEST_LANGUAGE,
         num_test_questions_per_question_type: int = DEFAULT_ACCURACY_NUM_QUESTIONS,
         max_wait_time_secs: Optional[int] = DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS,
+        is_sandbox: Optional[bool] = False,
     ) -> AccuracyTestResponse:
         return await self._create_test(
             test_name=test_name,
@@ -456,6 +467,7 @@ class TestMixin(AymaraAIProtocol):
             is_async=True,
             test_type=TestType.ACCURACY,
             max_wait_time_secs=max_wait_time_secs,
+            is_sandbox=is_sandbox,
         )
 
     create_accuracy_test_async.__doc__ = f"""
