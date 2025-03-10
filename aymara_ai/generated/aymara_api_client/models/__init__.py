@@ -5,7 +5,10 @@ from .answer_out_schema import AnswerOutSchema
 from .billing_cycle_usage_schema import BillingCycleUsageSchema
 from .continue_multiturn_response import ContinueMultiturnResponse
 from .create_multiturn_test_response import CreateMultiturnTestResponse
-from .error_schema import ErrorSchema
+from .error_code import ErrorCode
+from .error_data_schema import ErrorDataSchema
+from .error_data_schema_details import ErrorDataSchemaDetails
+from .error_response_schema import ErrorResponseSchema
 from .example_in_schema import ExampleInSchema
 from .example_out_schema import ExampleOutSchema
 from .example_type import ExampleType
@@ -50,7 +53,10 @@ __all__ = (
     "BillingCycleUsageSchema",
     "ContinueMultiturnResponse",
     "CreateMultiturnTestResponse",
-    "ErrorSchema",
+    "ErrorCode",
+    "ErrorDataSchema",
+    "ErrorDataSchemaDetails",
+    "ErrorResponseSchema",
     "ExampleInSchema",
     "ExampleOutSchema",
     "ExampleType",

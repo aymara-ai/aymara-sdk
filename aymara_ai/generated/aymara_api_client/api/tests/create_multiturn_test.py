@@ -6,7 +6,7 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.create_multiturn_test_response import CreateMultiturnTestResponse
-from ...models.error_schema import ErrorSchema
+from ...models.error_response_schema import ErrorResponseSchema
 from ...models.test_in_schema import TestInSchema
 from ...types import Response
 
@@ -33,19 +33,43 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[CreateMultiturnTestResponse, ErrorSchema]]:
-    if response.status_code == HTTPStatus.CREATED:
-        response_201 = CreateMultiturnTestResponse.from_dict(response.json())
+) -> Optional[Union[CreateMultiturnTestResponse, ErrorResponseSchema]]:
+    if response.status_code == HTTPStatus.OK:
+        response_200 = CreateMultiturnTestResponse.from_dict(response.json())
 
-        return response_201
-    if response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY:
-        response_422 = ErrorSchema.from_dict(response.json())
+        return response_200
+    if response.status_code == HTTPStatus.BAD_REQUEST:
+        response_400 = ErrorResponseSchema.from_dict(response.json())
 
-        return response_422
+        return response_400
+    if response.status_code == HTTPStatus.UNAUTHORIZED:
+        response_401 = ErrorResponseSchema.from_dict(response.json())
+
+        return response_401
+    if response.status_code == HTTPStatus.FORBIDDEN:
+        response_403 = ErrorResponseSchema.from_dict(response.json())
+
+        return response_403
+    if response.status_code == HTTPStatus.NOT_FOUND:
+        response_404 = ErrorResponseSchema.from_dict(response.json())
+
+        return response_404
+    if response.status_code == HTTPStatus.CONFLICT:
+        response_409 = ErrorResponseSchema.from_dict(response.json())
+
+        return response_409
+    if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
+        response_429 = ErrorResponseSchema.from_dict(response.json())
+
+        return response_429
     if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
-        response_500 = ErrorSchema.from_dict(response.json())
+        response_500 = ErrorResponseSchema.from_dict(response.json())
 
         return response_500
+    if response.status_code == HTTPStatus.SERVICE_UNAVAILABLE:
+        response_503 = ErrorResponseSchema.from_dict(response.json())
+
+        return response_503
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
     else:
@@ -54,7 +78,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[CreateMultiturnTestResponse, ErrorSchema]]:
+) -> Response[Union[CreateMultiturnTestResponse, ErrorResponseSchema]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -67,7 +91,7 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
     body: TestInSchema,
-) -> Response[Union[CreateMultiturnTestResponse, ErrorSchema]]:
+) -> Response[Union[CreateMultiturnTestResponse, ErrorResponseSchema]]:
     """Create Multiturn Test
 
      Create a multiturn test
@@ -80,7 +104,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[CreateMultiturnTestResponse, ErrorSchema]]
+        Response[Union[CreateMultiturnTestResponse, ErrorResponseSchema]]
     """
 
     kwargs = _get_kwargs(
@@ -98,7 +122,7 @@ def sync(
     *,
     client: AuthenticatedClient,
     body: TestInSchema,
-) -> Optional[Union[CreateMultiturnTestResponse, ErrorSchema]]:
+) -> Optional[Union[CreateMultiturnTestResponse, ErrorResponseSchema]]:
     """Create Multiturn Test
 
      Create a multiturn test
@@ -111,7 +135,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[CreateMultiturnTestResponse, ErrorSchema]
+        Union[CreateMultiturnTestResponse, ErrorResponseSchema]
     """
 
     return sync_detailed(
@@ -124,7 +148,7 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
     body: TestInSchema,
-) -> Response[Union[CreateMultiturnTestResponse, ErrorSchema]]:
+) -> Response[Union[CreateMultiturnTestResponse, ErrorResponseSchema]]:
     """Create Multiturn Test
 
      Create a multiturn test
@@ -137,7 +161,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[CreateMultiturnTestResponse, ErrorSchema]]
+        Response[Union[CreateMultiturnTestResponse, ErrorResponseSchema]]
     """
 
     kwargs = _get_kwargs(
@@ -153,7 +177,7 @@ async def asyncio(
     *,
     client: AuthenticatedClient,
     body: TestInSchema,
-) -> Optional[Union[CreateMultiturnTestResponse, ErrorSchema]]:
+) -> Optional[Union[CreateMultiturnTestResponse, ErrorResponseSchema]]:
     """Create Multiturn Test
 
      Create a multiturn test
@@ -166,7 +190,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[CreateMultiturnTestResponse, ErrorSchema]
+        Union[CreateMultiturnTestResponse, ErrorResponseSchema]
     """
 
     return (
