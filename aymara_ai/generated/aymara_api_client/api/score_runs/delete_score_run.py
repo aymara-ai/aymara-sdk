@@ -5,7 +5,7 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.error_schema import ErrorSchema
+from ...models.error_response_schema import ErrorResponseSchema
 from ...types import UNSET, Response, Unset
 
 
@@ -31,18 +31,42 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[Any, ErrorSchema]]:
+) -> Optional[Union[Any, ErrorResponseSchema]]:
+    if response.status_code == HTTPStatus.BAD_REQUEST:
+        response_400 = ErrorResponseSchema.from_dict(response.json())
+
+        return response_400
+    if response.status_code == HTTPStatus.UNAUTHORIZED:
+        response_401 = ErrorResponseSchema.from_dict(response.json())
+
+        return response_401
+    if response.status_code == HTTPStatus.FORBIDDEN:
+        response_403 = ErrorResponseSchema.from_dict(response.json())
+
+        return response_403
+    if response.status_code == HTTPStatus.NOT_FOUND:
+        response_404 = ErrorResponseSchema.from_dict(response.json())
+
+        return response_404
+    if response.status_code == HTTPStatus.CONFLICT:
+        response_409 = ErrorResponseSchema.from_dict(response.json())
+
+        return response_409
+    if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
+        response_429 = ErrorResponseSchema.from_dict(response.json())
+
+        return response_429
+    if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
+        response_500 = ErrorResponseSchema.from_dict(response.json())
+
+        return response_500
+    if response.status_code == HTTPStatus.SERVICE_UNAVAILABLE:
+        response_503 = ErrorResponseSchema.from_dict(response.json())
+
+        return response_503
     if response.status_code == HTTPStatus.NO_CONTENT:
         response_204 = cast(Any, None)
         return response_204
-    if response.status_code == HTTPStatus.NOT_FOUND:
-        response_404 = ErrorSchema.from_dict(response.json())
-
-        return response_404
-    if response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY:
-        response_422 = ErrorSchema.from_dict(response.json())
-
-        return response_422
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
     else:
@@ -51,7 +75,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[Any, ErrorSchema]]:
+) -> Response[Union[Any, ErrorResponseSchema]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -65,7 +89,7 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Response[Union[Any, ErrorSchema]]:
+) -> Response[Union[Any, ErrorResponseSchema]]:
     """Delete Score Run
 
     Args:
@@ -77,7 +101,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[Any, ErrorSchema]]
+        Response[Union[Any, ErrorResponseSchema]]
     """
 
     kwargs = _get_kwargs(
@@ -97,7 +121,7 @@ def sync(
     *,
     client: AuthenticatedClient,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Optional[Union[Any, ErrorSchema]]:
+) -> Optional[Union[Any, ErrorResponseSchema]]:
     """Delete Score Run
 
     Args:
@@ -109,7 +133,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[Any, ErrorSchema]
+        Union[Any, ErrorResponseSchema]
     """
 
     return sync_detailed(
@@ -124,7 +148,7 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Response[Union[Any, ErrorSchema]]:
+) -> Response[Union[Any, ErrorResponseSchema]]:
     """Delete Score Run
 
     Args:
@@ -136,7 +160,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[Any, ErrorSchema]]
+        Response[Union[Any, ErrorResponseSchema]]
     """
 
     kwargs = _get_kwargs(
@@ -154,7 +178,7 @@ async def asyncio(
     *,
     client: AuthenticatedClient,
     workspace_uuid: Union[Unset, str] = UNSET,
-) -> Optional[Union[Any, ErrorSchema]]:
+) -> Optional[Union[Any, ErrorResponseSchema]]:
     """Delete Score Run
 
     Args:
@@ -166,7 +190,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[Any, ErrorSchema]
+        Union[Any, ErrorResponseSchema]
     """
 
     return (
