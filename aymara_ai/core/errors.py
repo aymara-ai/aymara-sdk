@@ -6,10 +6,11 @@ It includes exception classes and utilities for converting API error responses
 into appropriate exceptions.
 """
 
-from typing import Dict, Optional, Type, Any, TypeVar, Union
+from typing import Dict, Optional, Type, Any, TypeVar, Union, cast
 
 from aymara_ai.generated.aymara_api_client.models.error_code import ErrorCode
 from aymara_ai.generated.aymara_api_client.models.error_response_schema import ErrorResponseSchema
+from aymara_ai.generated.aymara_api_client.models.error_schema import ErrorSchema
 from aymara_ai.generated.aymara_api_client.types import Response
 
 T = TypeVar('T')
@@ -87,7 +88,6 @@ ERROR_MESSAGE_TEMPLATES: Dict[ErrorCode, str] = {
     
     ErrorCode.VALIDATION_INVALID_FORMAT: "Invalid format: {details}",
     ErrorCode.VALIDATION_INVALID_REQUEST: "Invalid request: {details}",
-    ErrorCode.VALIDATION_MISSING_FIELD: "Missing required field: {field}",
     
     ErrorCode.SERVER_INTERNAL_ERROR: "Internal server error. Please contact support with the request ID."
 }
@@ -126,7 +126,39 @@ def get_exception_class_from_code(code: ErrorCode) -> Type[AymaraError]:
     return ERROR_PREFIX_TO_EXCEPTION.get(prefix, AymaraError)
 
 
-def raise_from_error_response(response_or_error: Any) -> None:
+def raise_from_legacy_error(error_response: Response[ErrorSchema]) -> None:
+    # If it's not an ErrorResponseSchema, create a generic AymaraError
+    if not isinstance(error_response.parsed, ErrorSchema):
+        raise AymaraError(
+            message="An unexpected error occurred",
+        )
+    
+    message = error_response.parsed.detail
+    details = {"detail": message}
+    code = ErrorCode.SERVER_INTERNAL_ERROR
+    if error_response.status_code == 400:
+        code = ErrorCode.VALIDATION_INVALID_REQUEST
+    elif error_response.status_code == 401:
+        code = ErrorCode.AUTH_INVALID_KEY
+    elif error_response.status_code == 403:
+        code = ErrorCode.AUTH_INSUFFICIENT_PERMISSIONS
+    elif error_response.status_code == 404:
+        code = ErrorCode.RESOURCE_NOT_FOUND
+    elif error_response.status_code == 409:
+        code = ErrorCode.RESOURCE_CONFLICT
+    elif error_response.status_code == 422:
+        code = ErrorCode.VALIDATION_INVALID_FORMAT
+    elif error_response.status_code == 429:
+        code = ErrorCode.QUOTA_LIMIT_EXCEEDED
+    elif error_response.status_code > 499:
+        code = ErrorCode.SERVER_INTERNAL_ERROR
+    
+    formatted_message = format_error_message(code, details) or message
+    
+    raise ValueError(formatted_message)
+
+
+def raise_from_error_response(response_or_error: ErrorResponseSchema) -> None:
     """Raise an appropriate exception from an API response or error.
     
     :param response_or_error: Error response from the API or any other error
@@ -139,10 +171,10 @@ def raise_from_error_response(response_or_error: Any) -> None:
         )
     
     # Process ErrorResponseSchema objects
+    request_id = response_or_error.request_id
     error_data = response_or_error.error
     code = error_data.code
     message = error_data.message
-    request_id = error_data.request_id
     
     # Convert the details to a dictionary if present
     details = {}
@@ -162,7 +194,7 @@ def raise_from_error_response(response_or_error: Any) -> None:
     )
 
 
-def get_parsed_response(response: Response[Union[ErrorResponseSchema, T]]) -> T:
+def get_parsed_response(response: Response[Union[ErrorSchema, ErrorResponseSchema, T]]) -> T:
     """Process an API response, returning its parsed content or raising an appropriate exception.
     
     :param response: Response object from an API call
@@ -170,6 +202,9 @@ def get_parsed_response(response: Response[Union[ErrorResponseSchema, T]]) -> T:
     :raises AymaraError: An appropriate exception if the response indicates an error
     """
 
+    if isinstance(response.parsed, ErrorSchema):
+        raise_from_legacy_error(cast(Response[ErrorSchema], response))
+    
     if isinstance(response.parsed, ErrorResponseSchema):
         raise_from_error_response(response.parsed)
         
