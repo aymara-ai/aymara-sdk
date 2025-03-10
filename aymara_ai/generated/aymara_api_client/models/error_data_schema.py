@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.error_code import ErrorCode
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
@@ -20,20 +21,20 @@ class ErrorDataSchema:
     of an API error response.
 
         Attributes:
-            code (str):
+            code (ErrorCode): Enumeration of all error codes used in the API.
             message (str):
             request_id (str):
             details (Union[Unset, ErrorDataSchemaDetails]):
     """
 
-    code: str
+    code: ErrorCode
     message: str
     request_id: str
     details: Union[Unset, "ErrorDataSchemaDetails"] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        code = self.code
+        code = self.code.value
 
         message = self.message
 
@@ -62,7 +63,7 @@ class ErrorDataSchema:
         from ..models.error_data_schema_details import ErrorDataSchemaDetails
 
         d = src_dict.copy()
-        code = d.pop("code")
+        code = ErrorCode(d.pop("code"))
 
         message = d.pop("message")
 
