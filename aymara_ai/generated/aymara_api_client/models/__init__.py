@@ -5,6 +5,10 @@ from .answer_out_schema import AnswerOutSchema
 from .billing_cycle_usage_schema import BillingCycleUsageSchema
 from .continue_multiturn_response import ContinueMultiturnResponse
 from .create_multiturn_test_response import CreateMultiturnTestResponse
+from .error_code import ErrorCode
+from .error_data_schema import ErrorDataSchema
+from .error_data_schema_details import ErrorDataSchemaDetails
+from .error_response_schema import ErrorResponseSchema
 from .error_schema import ErrorSchema
 from .example_in_schema import ExampleInSchema
 from .example_out_schema import ExampleOutSchema
@@ -13,6 +17,7 @@ from .feature_flags import FeatureFlags
 from .get_image_presigned_urls_response import GetImagePresignedUrlsResponse
 from .image_upload_request_in_schema import ImageUploadRequestInSchema
 from .input_ import Input
+from .integration_test_response import IntegrationTestResponse
 from .multiturn_user_response_schema import MultiturnUserResponseSchema
 from .organization_out_schema import OrganizationOutSchema
 from .paged_answer_out_schema import PagedAnswerOutSchema
@@ -50,6 +55,10 @@ __all__ = (
     "BillingCycleUsageSchema",
     "ContinueMultiturnResponse",
     "CreateMultiturnTestResponse",
+    "ErrorCode",
+    "ErrorDataSchema",
+    "ErrorDataSchemaDetails",
+    "ErrorResponseSchema",
     "ErrorSchema",
     "ExampleInSchema",
     "ExampleOutSchema",
@@ -58,6 +67,7 @@ __all__ = (
     "GetImagePresignedUrlsResponse",
     "ImageUploadRequestInSchema",
     "Input",
+    "IntegrationTestResponse",
     "MultiturnUserResponseSchema",
     "OrganizationOutSchema",
     "PagedAnswerOutSchema",
