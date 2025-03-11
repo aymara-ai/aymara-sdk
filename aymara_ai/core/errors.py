@@ -127,13 +127,9 @@ def get_exception_class_from_code(code: ErrorCode) -> Type[AymaraError]:
 
 
 def raise_from_legacy_error(error_response: Response[ErrorSchema]) -> None:
-    # If it's not an ErrorResponseSchema, create a generic AymaraError
-    if not isinstance(error_response.parsed, ErrorSchema):
-        raise AymaraError(
-            message="An unexpected error occurred",
-        )
     
-    message = error_response.parsed.detail
+    message = getattr(error_response.parsed, 'detail', "An unexpected error occurred")
+    
     details = {"detail": message}
     code = ErrorCode.SERVER_INTERNAL_ERROR
     if error_response.status_code == 400:
@@ -201,15 +197,16 @@ def get_parsed_response(response: Response[Union[Any, T]]) -> T:
     :returns: The parsed content of the response on success
     :raises AymaraError: An appropriate exception if the response indicates an error
     """
-
-    if isinstance(response.parsed, ErrorSchema):
-        raise_from_legacy_error(cast(Response[ErrorSchema], response))
     
-    if isinstance(response.parsed, ErrorResponseSchema):
-        raise_from_error_response(response.parsed)
-        
     if int(response.status_code) > 299 or (hasattr(response.status_code, "value")
                                            and int(response.status_code.value) > 299):
+        
+        if isinstance(response.parsed, ErrorSchema) or hasattr(response.parsed, "detail"):
+            raise_from_legacy_error(cast(Response[ErrorSchema], response))
+        
+        if isinstance(response.parsed, ErrorResponseSchema):
+            raise_from_error_response(response.parsed)
+        
         raise AymaraError(
             message=f"Request failed with status code {response.status_code}"
         )
