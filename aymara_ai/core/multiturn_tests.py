@@ -45,7 +45,7 @@ class MultiturnTestMixin(AymaraAIProtocol):
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
-    ) -> BaseTestResponse:
+    ):
         print(f"Creating multiturn test with {num_test_questions} questions")
         """
         Create a multiturn test synchronously and wait for completion.
@@ -95,7 +95,7 @@ class MultiturnTestMixin(AymaraAIProtocol):
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
-    ) -> BaseTestResponse:
+    ):
         """
         Create a multiturn test asynchronously and wait for completion.
 
@@ -126,7 +126,7 @@ class MultiturnTestMixin(AymaraAIProtocol):
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
-    ) -> Union[BaseTestResponse, Coroutine[BaseTestResponse, None, None]]:
+    ):
         print(
             f"I am inside create multiturn test, {test_name}, {student_description}, {test_policy}, {test_language}, {num_test_questions}, {additional_instructions}, {good_examples}, {bad_examples}"
         )
@@ -244,7 +244,7 @@ class MultiturnTestMixin(AymaraAIProtocol):
         self,
         test_data: models.TestInSchema,
         max_wait_time_secs: Optional[int],
-    ) -> BaseTestResponse:
+    ):
         start_time = time.time()
         response = create_multiturn_test.sync_detailed(
             client=self.client, body=test_data
