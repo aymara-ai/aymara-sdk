@@ -164,3 +164,4 @@ aymara_ai/examples/check_langfuse.ipynb
 aymara_ai/examples/jai_notebooks/
 aymara_ai/examples/safety/generated_images
 tests/end_to_end/test_generated_images
+.env.local
