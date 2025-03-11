@@ -83,8 +83,6 @@ Validation Errors
      - Input is in an invalid format
    * - ``validation.invalid_request``
      - Request is invalid
-   * - ``validation.missing_field``
-     - Required field is missing
 
 Server Errors
 ^^^^^^^^^^^^^

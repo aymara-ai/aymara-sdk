@@ -194,7 +194,7 @@ def raise_from_error_response(response_or_error: ErrorResponseSchema) -> None:
     )
 
 
-def get_parsed_response(response: Response[Union[ErrorSchema, ErrorResponseSchema, T]]) -> T:
+def get_parsed_response(response: Response[Union[Any, T]]) -> T:
     """Process an API response, returning its parsed content or raising an appropriate exception.
     
     :param response: Response object from an API call

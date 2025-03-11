@@ -5,6 +5,7 @@ from typing import Callable, Coroutine, Dict, List, Optional, Union
 
 import httpx
 
+from aymara_ai.core.errors import get_parsed_response
 from aymara_ai.core.protocols import AymaraAIProtocol
 from aymara_ai.generated.aymara_api_client.api.score_runs import (
     get_image_presigned_urls,
@@ -97,10 +98,9 @@ class UploadMixin(AymaraAIProtocol):
             ),
         )
 
-        if response.status_code == 422:
-            raise ValueError(f"{response.parsed.detail}")
+        parsed = get_parsed_response(response)
 
-        presigned_urls = response.parsed.to_dict()
+        presigned_urls = parsed.to_dict()
         uploaded_keys = {
             answer.question_uuid: None
             for answer in student_answers
