@@ -1,9 +1,9 @@
 name: Test
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
   repository_dispatch:
     types: [run-tests]
   workflow_dispatch:
