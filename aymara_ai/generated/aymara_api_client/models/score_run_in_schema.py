@@ -20,11 +20,13 @@ class ScoreRunInSchema:
         test_uuid (str):
         answers (List['AnswerInSchema']):
         score_run_examples (Union[List['ScoringExampleInSchema'], None, Unset]):
+        student_description (Union[None, Unset, str]):
     """
 
     test_uuid: str
     answers: List["AnswerInSchema"]
     score_run_examples: Union[List["ScoringExampleInSchema"], None, Unset] = UNSET
+    student_description: Union[None, Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -47,6 +49,12 @@ class ScoreRunInSchema:
         else:
             score_run_examples = self.score_run_examples
 
+        student_description: Union[None, Unset, str]
+        if isinstance(self.student_description, Unset):
+            student_description = UNSET
+        else:
+            student_description = self.student_description
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -57,6 +65,8 @@ class ScoreRunInSchema:
         )
         if score_run_examples is not UNSET:
             field_dict["score_run_examples"] = score_run_examples
+        if student_description is not UNSET:
+            field_dict["student_description"] = student_description
 
         return field_dict
 
@@ -99,10 +109,20 @@ class ScoreRunInSchema:
 
         score_run_examples = _parse_score_run_examples(d.pop("score_run_examples", UNSET))
 
+        def _parse_student_description(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        student_description = _parse_student_description(d.pop("student_description", UNSET))
+
         score_run_in_schema = cls(
             test_uuid=test_uuid,
             answers=answers,
             score_run_examples=score_run_examples,
+            student_description=student_description,
         )
 
         score_run_in_schema.additional_properties = d

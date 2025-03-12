@@ -44,6 +44,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         self,
         test_uuid: str,
         student_answers: List[BaseStudentAnswerInput],
+        student_description: Optional[str] = None,
         scoring_examples: Optional[List[ScoringExample]] = None,
         max_wait_time_secs: Optional[int] = None,
         is_sandbox: Optional[bool] = False,
@@ -51,6 +52,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         return self._score_test(
             test_uuid=test_uuid,
             student_answers=student_answers,
+            student_description=student_description,
             is_async=False,
             max_wait_time_secs=max_wait_time_secs,
             scoring_examples=scoring_examples,
@@ -77,12 +79,14 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         test_uuid: str,
         student_answers: List[BaseStudentAnswerInput],
         scoring_examples: Optional[List[ScoringExample]] = None,
+        student_description: Optional[str] = None,
         max_wait_time_secs: Optional[int] = None,
         is_sandbox: Optional[bool] = False,
     ) -> ScoreRunResponse:
         return await self._score_test(
             test_uuid=test_uuid,
             student_answers=student_answers,
+            student_description=student_description,
             is_async=True,
             max_wait_time_secs=max_wait_time_secs,
             scoring_examples=scoring_examples,
@@ -112,6 +116,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         max_wait_time_secs: Optional[int] = None,
         scoring_examples: Optional[List[ScoringExample]] = None,
         is_sandbox: Optional[bool] = False,
+        student_description: Optional[str] = None,
     ) -> Union[ScoreRunResponse, Coroutine[ScoreRunResponse, None, None]]:
         self._validate_student_answers(student_answers)
 
@@ -129,6 +134,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             ]
             if scoring_examples
             else None,
+            student_description=student_description,
         )
 
         if is_async:
