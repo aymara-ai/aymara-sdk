@@ -7,8 +7,6 @@ into appropriate exceptions.
 """
 
 from typing import Dict, Optional, Type, Any, TypeVar, Union, cast
-
-from aymara_ai.core.messages import ERROR_MESSAGE_TEMPLATES
 from aymara_ai.generated.aymara_api_client.models.error_code import ErrorCode
 from aymara_ai.generated.aymara_api_client.models.error_response_schema import ErrorResponseSchema
 from aymara_ai.generated.aymara_api_client.models.error_schema import ErrorSchema
@@ -76,65 +74,27 @@ ERROR_PREFIX_TO_EXCEPTION: Dict[str, Type[AymaraError]] = {
 }
 
 
-def format_error_message(code: ErrorCode, details: Optional[Dict[str, Any]] = None) -> str:
-    """Format an error message using the template for the given error code.
-    
-    :param code: Error code
-    :param details: Error details for message formatting
-    :return: Formatted error message
-    """
-    template = ERROR_MESSAGE_TEMPLATES.get(code, "Unknown error: {code}")
-    
-    # If no details are provided, or the template doesn't contain format placeholders
-    if not details or "{" not in template:
-        return template
-    
-    try:
-        # Try to format with the details provided
-        return template.format(**details)
-    except KeyError:
-        return template.replace("{details}", str(details))
-
-
 def get_exception_class_from_code(code: ErrorCode) -> Type[AymaraError]:
     """Get the appropriate exception class for an error code.
-    
+
     :param code: Error code
     :return: Exception class
     """
     # Extract the prefix from the error code (e.g., "auth" from "auth.expired_key")
     prefix = code.split(".", 1)[0] if "." in code else code
-    
+
     # Get the exception class for the prefix, or default to AymaraError
     return ERROR_PREFIX_TO_EXCEPTION.get(prefix, AymaraError)
 
 
 def raise_from_legacy_error(error_response: Response[ErrorSchema]) -> None:
-    
+    """
+    Legacy method to handle older API error responses.
+
+    Now simply extracts and raises the error message directly.
+    """
     message = getattr(error_response.parsed, 'detail', "An unexpected error occurred")
-    
-    details = {"detail": message}
-    code = ErrorCode.SERVER_INTERNAL_ERROR
-    if error_response.status_code == 400:
-        code = ErrorCode.VALIDATION_INVALID_REQUEST
-    elif error_response.status_code == 401:
-        code = ErrorCode.AUTH_INVALID_KEY
-    elif error_response.status_code == 403:
-        code = ErrorCode.AUTH_INSUFFICIENT_PERMISSIONS
-    elif error_response.status_code == 404:
-        code = ErrorCode.RESOURCE_NOT_FOUND
-    elif error_response.status_code == 409:
-        code = ErrorCode.RESOURCE_CONFLICT
-    elif error_response.status_code == 422:
-        code = ErrorCode.VALIDATION_INVALID_FORMAT
-    elif error_response.status_code == 429:
-        code = ErrorCode.QUOTA_LIMIT_EXCEEDED
-    elif error_response.status_code > 499:
-        code = ErrorCode.SERVER_INTERNAL_ERROR
-    
-    formatted_message = format_error_message(code, details) or message
-    
-    raise ValueError(formatted_message)
+    raise ValueError(message)
 
 
 def raise_from_error_response(response_or_error: ErrorResponseSchema) -> None:
@@ -159,18 +119,10 @@ def raise_from_error_response(response_or_error: ErrorResponseSchema) -> None:
     details = {}
     if error_data.details:
         details = error_data.details.to_dict()
-    
-    # Get the appropriate exception class and formatted message
+
     exception_class = get_exception_class_from_code(code)
-    formatted_message = format_error_message(code, details) or message
-    
-    # Raise the exception
-    raise exception_class(
-        message=formatted_message,
-        code=code,
-        request_id=request_id,
-        details=details
-    )
+
+    raise exception_class(message=message, code=code, request_id=request_id, details=details)
 
 
 def get_parsed_response(response: Response[Union[Any, T]]) -> T:
