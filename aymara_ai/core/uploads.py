@@ -112,7 +112,7 @@ class UploadMixin(AymaraAIProtocol):
         for i in range(0, len(student_answers), batch_size):
             batch = {
                 answer.question_uuid: answer.answer_image_path
-                for answer in student_answers[i : i + batch_size]
+                for answer in student_answers[i:i + batch_size]
                 if answer.answer_image_path  # Only include non-None paths
             }
             for uuid, path in batch.items():
@@ -156,10 +156,8 @@ class UploadMixin(AymaraAIProtocol):
             ),
         )
 
-        if response.status_code == 422:
-            raise ValueError(f"{response.parsed.detail}")
-
-        presigned_urls = response.parsed.to_dict()
+        parsed = get_parsed_response(response)
+        presigned_urls = parsed.to_dict()
         uploaded_keys = {
             answer.question_uuid: None
             for answer in student_answers
@@ -178,7 +176,7 @@ class UploadMixin(AymaraAIProtocol):
             for i in range(0, len(student_answers), batch_size):
                 batch = {
                     answer.question_uuid: answer.answer_image_path
-                    for answer in student_answers[i : i + batch_size]
+                    for answer in student_answers[i:i + batch_size]
                     if answer.answer_image_path  # Only include non-None paths
                 }
                 tasks = []
