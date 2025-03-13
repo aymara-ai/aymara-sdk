@@ -1,5 +1,6 @@
 from typing import Coroutine, List, Optional, Union
 
+from aymara_ai.core.errors import get_parsed_response
 from aymara_ai.core.protocols import AymaraAIProtocol
 from aymara_ai.generated.aymara_api_client.api.policies import list_policies
 from aymara_ai.generated.aymara_api_client.models.policy_schema import PolicySchema
@@ -56,7 +57,7 @@ class PolicyMixin(AymaraAIProtocol):
                 test_type=test_type,
                 offset=offset,
             )
-            paged_response = response.parsed
+            paged_response = get_parsed_response(response)
             all_policies.extend(paged_response.items)
             if len(all_policies) >= paged_response.count:
                 break
@@ -76,7 +77,7 @@ class PolicyMixin(AymaraAIProtocol):
                 test_type=test_type,
                 offset=offset,
             )
-            paged_response = response.parsed
+            paged_response = get_parsed_response(response)
             all_policies.extend(paged_response.items)
             if len(all_policies) >= paged_response.count:
                 break

@@ -82,6 +82,7 @@ def test_list_policies_pagination(aymara_client):
                 "Response",
                 (),
                 {
+                    "status_code": 200,
                     "parsed": PagedPolicySchema(
                         items=[
                             PolicySchema(
@@ -101,6 +102,7 @@ def test_list_policies_pagination(aymara_client):
                 "Response",
                 (),
                 {
+                    "status_code": 200,
                     "parsed": PagedPolicySchema(
                         items=[
                             PolicySchema(
@@ -172,6 +174,7 @@ async def test_list_policies_async_pagination(aymara_client):
                 "Response",
                 (),
                 {
+                    "status_code": 200,
                     "parsed": PagedPolicySchema(
                         items=[
                             PolicySchema(
@@ -191,6 +194,7 @@ async def test_list_policies_async_pagination(aymara_client):
                 "Response",
                 (),
                 {
+                    "status_code": 200,
                     "parsed": PagedPolicySchema(
                         items=[
                             PolicySchema(

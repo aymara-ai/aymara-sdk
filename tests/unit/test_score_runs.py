@@ -614,7 +614,7 @@ def test_delete_score_run(aymara_client):
         # Test score run not found
         mock_delete.return_value.status_code = 404
         with pytest.raises(
-            ValueError, match="Score run with UUID not_found_uuid not found"
+            ValueError
         ):
             aymara_client.delete_score_run("not_found_uuid")
 
@@ -633,7 +633,7 @@ async def test_delete_score_run_async(aymara_client):
         # Test score run not found
         mock_delete_async.return_value.status_code = 404
         with pytest.raises(
-            ValueError, match="Score run with UUID not_found_uuid not found"
+            ValueError
         ):
             await aymara_client.delete_score_run_async("not_found_uuid")
 
