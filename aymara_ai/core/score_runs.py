@@ -3,6 +3,7 @@ import os
 import time
 from typing import Coroutine, List, Optional, Union
 
+from aymara_ai.core.errors import get_parsed_response
 from aymara_ai.core.protocols import AymaraAIProtocol
 from aymara_ai.core.uploads import UploadMixin
 from aymara_ai.generated.aymara_api_client import models
@@ -182,10 +183,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             client=self.client, score_run_uuid=score_run_uuid
         )
 
-        if response.status_code == 404:
-            raise ValueError(f"Score run with UUID {score_run_uuid} not found")
-
-        score_response = response.parsed
+        score_response = get_parsed_response(response)
         answers = None
         if score_response.score_run_status == models.ScoreRunStatus.FINISHED:
             answers = self._get_all_score_run_answers_sync(score_run_uuid)
@@ -199,10 +197,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             client=self.client, score_run_uuid=score_run_uuid
         )
 
-        if response.status_code == 404:
-            raise ValueError(f"Score run with UUID {score_run_uuid} not found")
-
-        score_response = response.parsed
+        score_response = get_parsed_response(response)
         answers = None
         if score_response.score_run_status == models.ScoreRunStatus.FINISHED:
             answers = await self._get_all_score_run_answers_async(score_run_uuid)
@@ -258,7 +253,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             response = list_score_runs.sync_detailed(
                 client=self.client, test_uuid=test_uuid, offset=offset
             )
-            paged_response = response.parsed
+            paged_response = get_parsed_response(response)
             all_score_runs.extend(paged_response.items)
             if len(all_score_runs) >= paged_response.count:
                 break
@@ -280,7 +275,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             response = await list_score_runs.asyncio_detailed(
                 client=self.client, test_uuid=test_uuid, offset=offset
             )
-            paged_response = response.parsed
+            paged_response = get_parsed_response(response)
             all_score_runs.extend(paged_response.items)
             if len(all_score_runs) >= paged_response.count:
                 break
@@ -302,31 +297,32 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
     ) -> ScoreRunResponse:
         start_time = time.time()
 
-        test = get_test.sync_detailed(
+        response = get_test.sync_detailed(
             client=self.client, test_uuid=score_data.test_uuid
         )
+        test = get_parsed_response(response)
 
         if max_wait_time_secs is None:
             if (
-                test.parsed.test_type == TestType.SAFETY
-                or test.parsed.test_type == TestType.IMAGE_SAFETY
+                test.test_type == TestType.SAFETY
+                or test.test_type == TestType.IMAGE_SAFETY
             ):
                 max_wait_time_secs = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS
-            elif test.parsed.test_type == TestType.JAILBREAK:
+            elif test.test_type == TestType.JAILBREAK:
                 max_wait_time_secs = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS
-            elif test.parsed.test_type == TestType.ACCURACY:
+            elif test.test_type == TestType.ACCURACY:
                 max_wait_time_secs = DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS
 
         # Create progress bar once at the start
         with self.logger.progress_bar(
-            test.parsed.test_name,
+            test.test_name,
             "pending",  # Will be updated with real UUID after creation
             Status.UPLOADING
             if any(a.answer_image_path for a in score_data.answers)
             else Status.PENDING,
             upload_total=len([a for a in score_data.answers if a.answer_image_path]),
         ) as pbar:
-            if test.parsed.test_type == TestType.IMAGE_SAFETY:
+            if test.test_type == TestType.IMAGE_SAFETY:
                 uploaded_keys = self.upload_images(
                     score_data.test_uuid,
                     score_data.answers,
@@ -344,14 +340,8 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
                 client=self.client, body=score_data, is_sandbox=is_sandbox
             )
 
-            if response.status_code == 404:
-                raise ValueError("Failed to create score run")
-            elif response.status_code == 422:
-                message = response.parsed.detail
-                raise ValueError(message)
-
-            score_response = response.parsed
-            score_run_uuid = response.parsed.score_run_uuid
+            score_response = get_parsed_response(response)
+            score_run_uuid = score_response.score_run_uuid
             pbar.update_uuid(score_run_uuid)
 
             remaining_score_runs = score_response.remaining_score_runs
@@ -369,10 +359,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
                     client=self.client, score_run_uuid=score_run_uuid
                 )
 
-                if response.status_code == 404:
-                    raise ValueError(f"Score run with UUID {score_run_uuid} not found")
-
-                score_response = response.parsed
+                score_response = get_parsed_response(response)
 
                 self.logger.update_progress_bar(
                     score_run_uuid,
@@ -412,31 +399,32 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         temp_uuid = f"pending_{id(score_data)}"  # Use object id to make unique
 
         # Get test info first
-        test = await get_test.asyncio_detailed(
+        response = await get_test.asyncio_detailed(
             client=self.client, test_uuid=score_data.test_uuid
         )
+        test = get_parsed_response(response)
 
         if max_wait_time_secs is None:
             if (
-                test.parsed.test_type == TestType.SAFETY
-                or test.parsed.test_type == TestType.IMAGE_SAFETY
+                test.test_type == TestType.SAFETY
+                or test.test_type == TestType.IMAGE_SAFETY
             ):
                 max_wait_time_secs = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS
-            elif test.parsed.test_type == TestType.JAILBREAK:
+            elif test.test_type == TestType.JAILBREAK:
                 max_wait_time_secs = DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS
-            elif test.parsed.test_type == TestType.ACCURACY:
+            elif test.test_type == TestType.ACCURACY:
                 max_wait_time_secs = DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS
 
         # Create progress bar once at the start
         with self.logger.progress_bar(
-            test.parsed.test_name,
+            test.test_name,
             temp_uuid,  # Will be updated with real UUID after creation
             Status.UPLOADING
             if any(a.answer_image_path for a in score_data.answers)
             else Status.PENDING,
             upload_total=len([a for a in score_data.answers]),
         ) as pbar:
-            if test.parsed.test_type == TestType.IMAGE_SAFETY:
+            if test.test_type == TestType.IMAGE_SAFETY:
                 uploaded_keys = await self.upload_images_async(
                     score_data.test_uuid,
                     score_data.answers,
@@ -454,14 +442,8 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
                 client=self.client, body=score_data, is_sandbox=is_sandbox
             )
 
-            if response.status_code == 404:
-                raise ValueError("Failed to create score run")
-            elif response.status_code == 422:
-                message = response.parsed.detail
-                raise ValueError(message)
-
-            score_response = response.parsed
-            score_run_uuid = response.parsed.score_run_uuid
+            score_response = get_parsed_response(response)
+            score_run_uuid = score_response.score_run_uuid
             pbar.update_uuid(score_run_uuid)
 
             remaining_score_runs = score_response.remaining_score_runs
@@ -479,10 +461,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
                     client=self.client, score_run_uuid=score_run_uuid
                 )
 
-                if response.status_code == 404:
-                    raise ValueError(f"Score run with UUID {score_run_uuid} not found")
-
-                score_response = response.parsed
+                score_response = get_parsed_response(response)
 
                 self.logger.update_progress_bar(
                     score_run_uuid,
@@ -522,9 +501,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
                 client=self.client, score_run_uuid=score_run_uuid, offset=offset
             )
 
-            if response.status_code == 404:
-                raise ValueError(f"Score run with UUID {score_run_uuid} not found")
-            paged_response = response.parsed
+            paged_response = get_parsed_response(response)
             answers.extend(paged_response.items)
             if len(answers) >= paged_response.count:
                 break
@@ -540,10 +517,8 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             response = await get_score_run_answers.asyncio_detailed(
                 client=self.client, score_run_uuid=score_run_uuid, offset=offset
             )
-            if response.status_code == 404:
-                raise ValueError(f"Score run with UUID {score_run_uuid} not found")
-
-            paged_response = response.parsed
+            
+            paged_response = get_parsed_response(response)
             answers.extend(paged_response.items)
             if len(answers) >= paged_response.count:
                 break
@@ -610,11 +585,8 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         response = delete_score_run.sync_detailed(
             client=self.client, score_run_uuid=score_run_uuid
         )
-
-        if response.status_code == 404:
-            raise ValueError(f"Score run with UUID {score_run_uuid} not found")
-        if response.status_code == 422:
-            raise ValueError(f"{response.parsed.detail}")
+        
+        get_parsed_response(response)
 
     async def delete_score_run_async(self, score_run_uuid: str) -> None:
         """
@@ -626,8 +598,5 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         response = await delete_score_run.asyncio_detailed(
             client=self.client, score_run_uuid=score_run_uuid
         )
-
-        if response.status_code == 404:
-            raise ValueError(f"Score run with UUID {score_run_uuid} not found")
-        if response.status_code == 422:
-            raise ValueError(f"{response.parsed.detail}")
+        
+        get_parsed_response(response)

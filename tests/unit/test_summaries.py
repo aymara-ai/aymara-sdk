@@ -269,7 +269,7 @@ def test_get_summary(aymara_client):
     ) as mock_get_summary:
         mock_get_summary.return_value.status_code = 404
 
-        with pytest.raises(ValueError, match="Summary with UUID sum123 not found"):
+        with pytest.raises(ValueError):
             aymara_client.get_summary("sum123")
 
 
@@ -339,7 +339,7 @@ async def test_get_summary_async(aymara_client):
     ) as mock_get_summary:
         mock_get_summary.return_value.status_code = 404
 
-        with pytest.raises(ValueError, match="Summary with UUID sum123 not found"):
+        with pytest.raises(ValueError):
             await aymara_client.get_summary_async("sum123")
 
 

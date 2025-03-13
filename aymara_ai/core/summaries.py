@@ -2,6 +2,7 @@ import asyncio
 import time
 from typing import Coroutine, List, Union
 
+from aymara_ai.core.errors import get_parsed_response
 from aymara_ai.core.protocols import AymaraAIProtocol
 from aymara_ai.generated.aymara_api_client import models
 from aymara_ai.generated.aymara_api_client.api.score_runs import (
@@ -82,10 +83,7 @@ class SummaryMixin(AymaraAIProtocol):
             is_sandbox=is_sandbox,
         )
 
-        if response.status_code == 422:
-            raise ValueError(f"{response.parsed.detail}")
-
-        summary_response = response.parsed
+        summary_response = get_parsed_response(response)
         summary_uuid = summary_response.score_run_suite_summary_uuid
 
         remaining_summaries = summary_response.remaining_summaries
@@ -106,13 +104,7 @@ class SummaryMixin(AymaraAIProtocol):
                     client=self.client, summary_uuid=summary_uuid
                 )
 
-                if response.status_code == 404:
-                    raise ValueError(f"Summary with UUID {summary_uuid} not found")
-
-                if response.status_code == 422:
-                    raise ValueError(f"{response.parsed.detail}")
-
-                summary_response = response.parsed
+                summary_response = get_parsed_response(response)
 
                 self.logger.update_progress_bar(
                     summary_uuid,
@@ -157,10 +149,7 @@ class SummaryMixin(AymaraAIProtocol):
             is_sandbox=is_sandbox,
         )
 
-        if response.status_code == 422:
-            raise ValueError(f"{response.parsed.detail}")
-
-        summary_response = response.parsed
+        summary_response = get_parsed_response(response)
         summary_uuid = summary_response.score_run_suite_summary_uuid
 
         remaining_summaries = summary_response.remaining_summaries
@@ -181,13 +170,7 @@ class SummaryMixin(AymaraAIProtocol):
                     client=self.client, summary_uuid=summary_uuid
                 )
 
-                if response.status_code == 404:
-                    raise ValueError(f"Summary with UUID {summary_uuid} not found")
-
-                if response.status_code == 422:
-                    raise ValueError(f"{response.parsed.detail}")
-
-                summary_response = response.parsed
+                summary_response = get_parsed_response(response)
 
                 self.logger.update_progress_bar(
                     summary_uuid,
@@ -266,9 +249,7 @@ class SummaryMixin(AymaraAIProtocol):
         response = get_score_run_suite_summary.sync_detailed(
             client=self.client, summary_uuid=summary_uuid
         )
-        if response.status_code == 404:
-            raise ValueError(f"Summary with UUID {summary_uuid} not found")
-        summary_response = response.parsed
+        summary_response = get_parsed_response(response)
         return ScoreRunSuiteSummaryResponse.from_summary_out_schema_and_failure_reason(
             summary_response
         )
@@ -279,9 +260,7 @@ class SummaryMixin(AymaraAIProtocol):
         response = await get_score_run_suite_summary.asyncio_detailed(
             client=self.client, summary_uuid=summary_uuid
         )
-        if response.status_code == 404:
-            raise ValueError(f"Summary with UUID {summary_uuid} not found")
-        summary_response = response.parsed
+        summary_response = get_parsed_response(response)
         return ScoreRunSuiteSummaryResponse.from_summary_out_schema_and_failure_reason(
             summary_response
         )
@@ -306,7 +285,7 @@ class SummaryMixin(AymaraAIProtocol):
             response = list_score_run_suite_summaries.sync_detailed(
                 client=self.client, offset=offset
             )
-            paged_response = response.parsed
+            paged_response = get_parsed_response(response)
             all_summaries.extend(paged_response.items)
             if len(all_summaries) >= paged_response.count:
                 break
@@ -326,7 +305,7 @@ class SummaryMixin(AymaraAIProtocol):
             response = await list_score_run_suite_summaries.asyncio_detailed(
                 client=self.client, offset=offset
             )
-            paged_response = response.parsed
+            paged_response = get_parsed_response(response)
             all_summaries.extend(paged_response.items)
             if len(all_summaries) >= paged_response.count:
                 break
@@ -350,10 +329,7 @@ class SummaryMixin(AymaraAIProtocol):
             client=self.client, summary_uuid=summary_uuid
         )
 
-        if response.status_code == 404:
-            raise ValueError(f"Summary with UUID {summary_uuid} not found")
-        if response.status_code == 422:
-            raise ValueError(f"{response.parsed.detail}")
+        get_parsed_response(response)
 
     async def delete_summary_async(self, summary_uuid: str) -> None:
         """
@@ -366,7 +342,4 @@ class SummaryMixin(AymaraAIProtocol):
             client=self.client, summary_uuid=summary_uuid
         )
 
-        if response.status_code == 404:
-            raise ValueError(f"Summary with UUID {summary_uuid} not found")
-        if response.status_code == 422:
-            raise ValueError(f"{response.parsed.detail}")
+        get_parsed_response(response)
