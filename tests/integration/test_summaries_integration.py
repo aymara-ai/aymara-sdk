@@ -3,6 +3,7 @@ from typing import List
 
 import pytest
 
+from aymara_ai.core.errors import QuotaError, ResourceError
 from aymara_ai.core.sdk import AymaraAI
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
 from aymara_ai.types import (
@@ -107,7 +108,7 @@ class TestSummaryMixin:
         await aymara_client.delete_summary_async(
             summary_response.score_run_suite_summary_uuid
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(ResourceError):
             await aymara_client.get_summary_async(
                 summary_response.score_run_suite_summary_uuid
             )
@@ -115,7 +116,7 @@ class TestSummaryMixin:
     def test_delete_summary_sync(self, aymara_client: AymaraAI, score_runs):
         summary_response = aymara_client.create_summary(score_runs)
         aymara_client.delete_summary(summary_response.score_run_suite_summary_uuid)
-        with pytest.raises(ValueError):
+        with pytest.raises(ResourceError):
             aymara_client.get_summary(summary_response.score_run_suite_summary_uuid)
 
     def test_create_summary_with_empty_score_runs(self, aymara_client: AymaraAI):
@@ -146,21 +147,21 @@ class TestSummaryMixin:
         assert summary_response.failure_reason == "Summary creation timed out."
 
     def test_get_non_existent_summary(self, aymara_client: AymaraAI):
-        with pytest.raises(ValueError):
+        with pytest.raises(ResourceError):
             aymara_client.get_summary("non-existent-uuid")
 
     @pytest.mark.asyncio
     async def test_get_non_existent_summary_async(self, aymara_client: AymaraAI):
-        with pytest.raises(ValueError):
+        with pytest.raises(ResourceError):
             await aymara_client.get_summary_async("non-existent-uuid")
 
     def test_delete_non_existent_summary(self, aymara_client: AymaraAI):
-        with pytest.raises(ValueError):
+        with pytest.raises(ResourceError):
             aymara_client.delete_summary("non-existent-uuid")
 
     @pytest.mark.asyncio
     async def test_delete_non_existent_summary_async(self, aymara_client: AymaraAI):
-        with pytest.raises(ValueError):
+        with pytest.raises(ResourceError):
             await aymara_client.delete_summary_async("non-existent-uuid")
 
     @pytest.fixture(scope="class")
@@ -290,14 +291,14 @@ class TestSummaryMixin:
             )
 
             # Third summary should fail
-            with pytest.raises(ValueError):
+            with pytest.raises(QuotaError):
                 free_aymara_client.create_summary(free_score_runs)
 
         def test_free_user_cannot_delete_summary(self, free_aymara_client):
-            with pytest.raises(ValueError):
+            with pytest.raises(QuotaError):
                 free_aymara_client.delete_summary("some-summary-uuid")
 
         @pytest.mark.asyncio
         async def test_free_user_cannot_delete_summary_async(self, free_aymara_client):
-            with pytest.raises(ValueError):
+            with pytest.raises(QuotaError):
                 await free_aymara_client.delete_summary_async("some-summary-uuid")
