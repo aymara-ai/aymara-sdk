@@ -393,7 +393,7 @@ class TestScoreRunMixin:
             ),
         ]
 
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValidationError) as exc_info:
             aymara_client.score_test(
                 test_uuid=safety_test_data.test_uuid,
                 student_answers=partial_answers,
@@ -411,7 +411,7 @@ class TestScoreRunMixin:
             ),
         ]
 
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValidationError) as exc_info:
             aymara_client.score_test(
                 test_uuid=safety_test_data.test_uuid,
                 student_answers=extra_answers,
@@ -453,7 +453,7 @@ class TestScoreRunMixin:
         invalid_answers = [
             TextStudentAnswerInput(question_uuid="invalid_uuid", answer_text="Invalid"),
         ]
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             aymara_client.score_test(
                 test_uuid=safety_test_data.test_uuid,
                 student_answers=invalid_answers,
