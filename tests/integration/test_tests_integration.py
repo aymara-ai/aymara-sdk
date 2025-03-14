@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import pytest
 
+from aymara_ai.core.errors import ResourceError
 from aymara_ai.core.sdk import AymaraAI
 from aymara_ai.types import (
     AccuracyTestResponse,
@@ -262,11 +263,11 @@ class TestTestMixin:
         assert response.failure_reason == "Test creation timed out"
 
     def test_get_nonexistent_test(self, aymara_client):
-        with pytest.raises(ValueError):
+        with pytest.raises(ResourceError):
             aymara_client.get_test("nonexistent_uuid")
 
     async def test_get_nonexistent_test_async(self, aymara_client):
-        with pytest.raises(ValueError):
+        with pytest.raises(ResourceError):
             await aymara_client.get_test_async("nonexistent_uuid")
 
     def test_create_multiple_safety_tests(self, aymara_client, safety_test_data):
