@@ -2,6 +2,7 @@ from typing import List
 
 import pytest
 
+from aymara_ai.core.errors import ValidationError
 from aymara_ai.core.sdk import AymaraAI
 from aymara_ai.types import (
     ImageStudentAnswerInput,
@@ -158,7 +159,7 @@ class TestUploadMixin:
             ),
         ]
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             aymara_client.upload_images(
                 image_safety_test_data.test_uuid,
                 [answer.to_answer_in_schema() for answer in invalid_answers],

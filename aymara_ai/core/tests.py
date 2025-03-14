@@ -693,10 +693,6 @@ class TestMixin(AymaraAIProtocol):
                 response = get_test.sync_detailed(
                     client=self.client, test_uuid=test_uuid
                 )
-
-                if response.status_code == 404:
-                    raise ValueError(f"Test with UUID {test_uuid} not found")
-
                 test_response = get_parsed_response(response)
 
                 self.logger.update_progress_bar(
@@ -752,10 +748,6 @@ class TestMixin(AymaraAIProtocol):
                 response = await get_test.asyncio_detailed(
                     client=self.client, test_uuid=test_uuid
                 )
-
-                if response.status_code == 404:
-                    raise ValueError(f"Test with UUID {test_uuid} not found")
-
                 test_response = get_parsed_response(response)
 
                 self.logger.update_progress_bar(
@@ -820,9 +812,6 @@ class TestMixin(AymaraAIProtocol):
     def _get_test_sync_impl(self, test_uuid: str) -> BaseTestResponse:
         response = get_test.sync_detailed(client=self.client, test_uuid=test_uuid)
 
-        if response.status_code == 404:
-            raise ValueError(f"Test with UUID {test_uuid} not found")
-
         test_response = get_parsed_response(response)
         questions = None
         if test_response.test_status == models.TestStatus.FINISHED:
@@ -836,9 +825,6 @@ class TestMixin(AymaraAIProtocol):
         response = await get_test.asyncio_detailed(
             client=self.client, test_uuid=test_uuid
         )
-
-        if response.status_code == 404:
-            raise ValueError(f"Test with UUID {test_uuid} not found")
 
         test_response = get_parsed_response(response)
         questions = None
@@ -910,8 +896,6 @@ class TestMixin(AymaraAIProtocol):
             response = get_test_questions.sync_detailed(
                 client=self.client, test_uuid=test_uuid, offset=offset
             )
-            if response.status_code == 404:
-                raise ValueError(f"Test with UUID {test_uuid} not found")
 
             paged_response = get_parsed_response(response)
             questions.extend(paged_response.items)
@@ -929,8 +913,6 @@ class TestMixin(AymaraAIProtocol):
             response = await get_test_questions.asyncio_detailed(
                 client=self.client, test_uuid=test_uuid, offset=offset
             )
-            if response.status_code == 404:
-                raise ValueError(f"Test with UUID {test_uuid} not found")
 
             paged_response = get_parsed_response(response)
             questions.extend(paged_response.items)
@@ -944,9 +926,6 @@ class TestMixin(AymaraAIProtocol):
         Delete a test synchronously.
         """
         response = delete_test.sync_detailed(client=self.client, test_uuid=test_uuid)
-        if response.status_code == 404:
-            raise ValueError(f"Test with UUID {test_uuid} not found")
-
         parsed_response = get_parsed_response(response)
 
     async def delete_test_async(self, test_uuid: str) -> None:
@@ -956,7 +935,4 @@ class TestMixin(AymaraAIProtocol):
         response = await delete_test.asyncio_detailed(
             client=self.client, test_uuid=test_uuid
         )
-        if response.status_code == 404:
-            raise ValueError(f"Test with UUID {test_uuid} not found")
-
         parsed_response = get_parsed_response(response)

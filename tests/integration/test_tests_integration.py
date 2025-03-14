@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import pytest
 
+from aymara_ai.core.errors import ResourceError, ValidationError
 from aymara_ai.core.sdk import AymaraAI
 from aymara_ai.types import (
     AccuracyTestResponse,
@@ -262,11 +263,11 @@ class TestTestMixin:
         assert response.failure_reason == "Test creation timed out"
 
     def test_get_nonexistent_test(self, aymara_client):
-        with pytest.raises(ValueError):
+        with pytest.raises(ResourceError):
             aymara_client.get_test("nonexistent_uuid")
 
     async def test_get_nonexistent_test_async(self, aymara_client):
-        with pytest.raises(ValueError):
+        with pytest.raises(ResourceError):
             await aymara_client.get_test_async("nonexistent_uuid")
 
     def test_create_multiple_safety_tests(self, aymara_client, safety_test_data):
@@ -294,7 +295,7 @@ class TestTestMixin:
         created_test = aymara_client.create_safety_test(**safety_test_data)
         assert created_test.test_status == Status.COMPLETED
         aymara_client.delete_test(created_test.test_uuid)
-        with pytest.raises(ValueError):
+        with pytest.raises(ResourceError):
             aymara_client.get_test(created_test.test_uuid)
 
     async def test_delete_jailbreak_test_async(
@@ -305,7 +306,7 @@ class TestTestMixin:
         )
         assert created_test.test_status == Status.COMPLETED
         await aymara_client.delete_test_async(created_test.test_uuid)
-        with pytest.raises(ValueError):
+        with pytest.raises(ResourceError):
             await aymara_client.get_test_async(created_test.test_uuid)
 
     def test_delete_nonexistent_test(self, aymara_client: AymaraAI):
@@ -388,25 +389,25 @@ class TestTestMixin:
         def test_free_user_cannot_create_safety_test(
             self, free_aymara_client, safety_test_data
         ):
-            with pytest.raises(ValueError):
+            with pytest.raises(ValidationError):
                 free_aymara_client.create_safety_test(**safety_test_data)
 
         def test_free_user_cannot_create_jailbreak_test(
             self, free_aymara_client, jailbreak_test_data
         ):
-            with pytest.raises(ValueError):
+            with pytest.raises(ValidationError):
                 free_aymara_client.create_jailbreak_test(**jailbreak_test_data)
 
         async def test_free_user_cannot_create_safety_test_async(
             self, free_aymara_client, safety_test_data
         ):
-            with pytest.raises(ValueError):
+            with pytest.raises(ValidationError):
                 await free_aymara_client.create_safety_test_async(**safety_test_data)
 
         async def test_free_user_cannot_create_jailbreak_test_async(
             self, free_aymara_client, jailbreak_test_data
         ):
-            with pytest.raises(ValueError):
+            with pytest.raises(ValidationError):
                 await free_aymara_client.create_jailbreak_test_async(
                     **jailbreak_test_data
                 )
@@ -448,13 +449,13 @@ class TestTestMixin:
         def test_free_user_cannot_create_image_safety_test(
             self, free_aymara_client, image_safety_test_data
         ):
-            with pytest.raises(ValueError):
+            with pytest.raises(ValidationError):
                 free_aymara_client.create_image_safety_test(**image_safety_test_data)
 
         async def test_free_user_cannot_create_image_safety_test_async(
             self, free_aymara_client, image_safety_test_data
         ):
-            with pytest.raises(ValueError):
+            with pytest.raises(ValidationError):
                 await free_aymara_client.create_image_safety_test_async(
                     **image_safety_test_data
                 )
@@ -830,11 +831,11 @@ class TestTestMixin:
     def test_free_user_cannot_create_accuracy_test(
         self, free_aymara_client, accuracy_test_data
     ):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             free_aymara_client.create_accuracy_test(**accuracy_test_data)
 
     async def test_free_user_cannot_create_accuracy_test_async(
         self, free_aymara_client, accuracy_test_data
     ):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             await free_aymara_client.create_accuracy_test_async(**accuracy_test_data)

@@ -3,6 +3,7 @@ from typing import List
 import pandas as pd
 import pytest
 
+from aymara_ai.core.errors import QuotaError, ValidationError
 from aymara_ai.core.sdk import AymaraAI
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
 from aymara_ai.types import (
@@ -392,7 +393,7 @@ class TestScoreRunMixin:
             ),
         ]
 
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValidationError) as exc_info:
             aymara_client.score_test(
                 test_uuid=safety_test_data.test_uuid,
                 student_answers=partial_answers,
@@ -410,7 +411,7 @@ class TestScoreRunMixin:
             ),
         ]
 
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValidationError) as exc_info:
             aymara_client.score_test(
                 test_uuid=safety_test_data.test_uuid,
                 student_answers=extra_answers,
@@ -452,7 +453,7 @@ class TestScoreRunMixin:
         invalid_answers = [
             TextStudentAnswerInput(question_uuid="invalid_uuid", answer_text="Invalid"),
         ]
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             aymara_client.score_test(
                 test_uuid=safety_test_data.test_uuid,
                 student_answers=invalid_answers,
@@ -1027,16 +1028,16 @@ class TestFreeUserScoreRunRestrictions:
         )
 
         # Third score run should fail
-        with pytest.raises(ValueError):
+        with pytest.raises(QuotaError):
             free_aymara_client.score_test(
                 test_uuid=default_test.test_uuid,
                 student_answers=student_answers,
             )
 
     def test_free_user_cannot_delete_score_run(self, free_aymara_client):
-        with pytest.raises(ValueError):
+        with pytest.raises(QuotaError):
             free_aymara_client.delete_score_run("some-score-run-uuid")
 
     async def test_free_user_cannot_delete_score_run_async(self, free_aymara_client):
-        with pytest.raises(ValueError):
+        with pytest.raises(QuotaError):
             await free_aymara_client.delete_score_run_async("some-score-run-uuid")
