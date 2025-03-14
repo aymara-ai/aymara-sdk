@@ -683,7 +683,7 @@ class TestTestMixin:
         safety_test_data["test_policy"] = (
             f"{AYMARA_TEST_POLICY_PREFIX}invalid_policy_name"
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             aymara_client.create_safety_test(**safety_test_data)
 
     async def test_create_safety_test_async_with_invalid_policy_name(
@@ -692,7 +692,7 @@ class TestTestMixin:
         safety_test_data["test_policy"] = (
             f"{AYMARA_TEST_POLICY_PREFIX}invalid_policy_name"
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             await aymara_client.create_safety_test_async(**safety_test_data)
 
     def test_create_image_safety_test_with_invalid_policy_name(
@@ -701,7 +701,7 @@ class TestTestMixin:
         image_safety_test_data["test_policy"] = (
             f"{AYMARA_TEST_POLICY_PREFIX}invalid_policy_name"
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             aymara_client.create_image_safety_test(**image_safety_test_data)
 
     async def test_create_image_safety_test_async_with_invalid_policy_name(
@@ -710,7 +710,7 @@ class TestTestMixin:
         image_safety_test_data["test_policy"] = (
             f"{AYMARA_TEST_POLICY_PREFIX}invalid_policy_name"
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             await aymara_client.create_image_safety_test_async(**image_safety_test_data)
 
     def test_create_accuracy_test_sync(self, aymara_client, accuracy_test_data):
