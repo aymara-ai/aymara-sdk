@@ -18,8 +18,9 @@ from aymara_ai.types import (
     Status,
 )
 from aymara_ai.utils.constants import (
+    DEFAULT_NUM_CONVERSATIONS_MAX,
+    DEFAULT_NUM_CONVERSATIONS_MIN,
     DEFAULT_TEST_LANGUAGE,
-    DEFAULT_NUM_QUESTIONS,
     DEFAULT_NUM_QUESTIONS_MIN,
     DEFAULT_NUM_QUESTIONS_MAX,
     DEFAULT_TEST_NAME_LEN_MIN,
@@ -38,124 +39,139 @@ class MultiturnTestMixin(AymaraAIProtocol):
         self,
         test_name: str,
         student_description: str,
-        test_policy: str,
+        test_type: TestType = TestType.MULTITURN_SAFETY,
         test_language: str = DEFAULT_TEST_LANGUAGE,
-        num_test_questions: int = DEFAULT_NUM_QUESTIONS,
-        max_wait_time_secs: Optional[int] = None,
+        test_policy: Optional[str] = None,
+        num_test_questions: Optional[int] = None,
+        num_conversations: Optional[int] = None,
+        test_system_prompt: Optional[str] = None,
+        knowledge_base: Optional[str] = None,
         additional_instructions: Optional[str] = None,
-        good_examples: Optional[List[GoodExample]] = None,
-        bad_examples: Optional[List[BadExample]] = None,
+        test_examples: Optional[List[Union[GoodExample, BadExample]]] = None,
+        max_turns: int = 10,
+        max_wait_time_secs: Optional[int] = None,
     ):
-        print(f"Creating multiturn test with {num_test_questions} questions")
         """
         Create a multiturn test synchronously and wait for completion.
 
-        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
-        :type test_name: str
-        :param student_description: Description of the AI that will take the test.
-        :type student_description: str
-        :param test_policy: Policy of the test, which will measure compliance.
-        :type test_policy: str
-        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
-        :type test_language: str, optional
-        :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}.
-        :type num_test_questions: int, optional
-        :param max_wait_time_secs: Maximum wait time for test creation.
-        :type max_wait_time_secs: int, optional
-        :param additional_instructions: Optional additional instructions for test generation.
-        :type additional_instructions: str, optional
-        :param good_examples: Optional list of good examples to guide question generation.
-        :type good_examples: List[GoodExample], optional
-        :param bad_examples: Optional list of bad examples to guide question generation.
-        :type bad_examples: List[BadExample], optional
-        :return: Test response containing test details and generated questions.
-        :rtype: BaseTestResponse
+        :param test_name: Name of the test
+        :param student_description: Description of the AI that will take the test
+        :param test_type: Type of test, defaults to SAFETY
+        :param test_language: Language of the test, defaults to 'en'
+        :param test_policy: Policy for safety tests
+        :param num_test_questions: Number of test questions
+        :param num_conversations: Number of conversations
+        :param test_system_prompt: System prompt for the test
+        :param knowledge_base: Knowledge base for the test
+        :param additional_instructions: Additional test instructions
+        :param test_examples: List of example tests
+        :param max_turns: Maximum number of turns per conversation, defaults to 10
+        :param max_wait_time_secs: Maximum wait time for test creation
         """
+
         return self._create_multiturn_test(
             test_name=test_name,
             student_description=student_description,
-            test_policy=test_policy,
+            test_type=test_type,
             test_language=test_language,
+            test_policy=test_policy,
             num_test_questions=num_test_questions,
+            num_conversations=num_conversations,
+            test_system_prompt=test_system_prompt,
+            knowledge_base=knowledge_base,
+            additional_instructions=additional_instructions,
+            test_examples=test_examples,
+            max_turns=max_turns,
             is_async=False,
             max_wait_time_secs=max_wait_time_secs,
-            additional_instructions=additional_instructions,
-            good_examples=good_examples,
-            bad_examples=bad_examples,
         )
 
     async def create_multiturn_test_async(
         self,
         test_name: str,
         student_description: str,
-        test_policy: str,
+        test_type: TestType = TestType.SAFETY,
         test_language: str = DEFAULT_TEST_LANGUAGE,
-        num_test_questions: int = DEFAULT_NUM_QUESTIONS,
-        max_wait_time_secs: Optional[int] = None,
+        test_policy: Optional[str] = None,
+        num_test_questions: Optional[int] = None,
+        num_conversations: Optional[int] = None,
+        test_system_prompt: Optional[str] = None,
+        knowledge_base: Optional[str] = None,
         additional_instructions: Optional[str] = None,
-        good_examples: Optional[List[GoodExample]] = None,
-        bad_examples: Optional[List[BadExample]] = None,
+        test_examples: Optional[List[Union[GoodExample, BadExample]]] = None,
+        max_turns: int = 10,
+        max_wait_time_secs: Optional[int] = None,
     ):
         """
         Create a multiturn test asynchronously and wait for completion.
-
         Parameters are the same as create_multiturn_test.
         """
         return await self._create_multiturn_test(
             test_name=test_name,
             student_description=student_description,
-            test_policy=test_policy,
+            test_type=test_type,
             test_language=test_language,
+            test_policy=test_policy,
             num_test_questions=num_test_questions,
+            num_conversations=num_conversations,
+            test_system_prompt=test_system_prompt,
+            knowledge_base=knowledge_base,
+            additional_instructions=additional_instructions,
+            test_examples=test_examples,
+            max_turns=max_turns,
             is_async=True,
             max_wait_time_secs=max_wait_time_secs,
-            additional_instructions=additional_instructions,
-            good_examples=good_examples,
-            bad_examples=bad_examples,
         )
 
     def _create_multiturn_test(
         self,
         test_name: str,
         student_description: str,
-        test_policy: str,
+        test_type: TestType,
         test_language: str,
-        num_test_questions: int,
+        test_policy: Optional[str],
+        num_test_questions: Optional[int],
+        num_conversations: Optional[int],
+        test_system_prompt: Optional[str],
+        knowledge_base: Optional[str],
+        additional_instructions: Optional[str],
+        test_examples: Optional[List[Union[GoodExample, BadExample]]],
+        max_turns: int,
         is_async: bool,
         max_wait_time_secs: Optional[int] = None,
-        additional_instructions: Optional[str] = None,
-        good_examples: Optional[List[GoodExample]] = None,
-        bad_examples: Optional[List[BadExample]] = None,
     ):
-        print(
-            f"I am inside create multiturn test, {test_name}, {student_description}, {test_policy}, {test_language}, {num_test_questions}, {additional_instructions}, {good_examples}, {bad_examples}"
-        )
         self._validate_multiturn_test_inputs(
             test_name=test_name,
             student_description=student_description,
-            test_policy=test_policy,
+            test_type=test_type,
             test_language=test_language,
+            test_policy=test_policy,
             num_test_questions=num_test_questions,
+            num_conversations=num_conversations,
+            test_system_prompt=test_system_prompt,
+            knowledge_base=knowledge_base,
             additional_instructions=additional_instructions,
-            good_examples=good_examples,
-            bad_examples=bad_examples,
+            test_examples=test_examples,
+            max_turns=max_turns,
         )
 
         examples = []
-        if good_examples:
-            examples.extend([ex.to_example_in_schema() for ex in good_examples])
-        if bad_examples:
-            examples.extend([ex.to_example_in_schema() for ex in bad_examples])
+        if test_examples:
+            examples.extend([ex.to_example_in_schema() for ex in test_examples])
 
-        test_data = models.TestInSchema(
+        test_data = models.MultiturnTestInSchema(
             test_name=test_name,
             student_description=student_description,
-            test_policy=test_policy,
+            test_type=test_type,
             test_language=test_language,
+            test_policy=test_policy,
             num_test_questions=num_test_questions,
-            test_type=TestType.SAFETY,
+            num_conversations=num_conversations,
+            test_system_prompt=test_system_prompt,
+            knowledge_base=knowledge_base,
             additional_instructions=additional_instructions,
             test_examples=examples if examples else None,
+            max_turns=max_turns,
         )
 
         if is_async:
@@ -171,18 +187,28 @@ class MultiturnTestMixin(AymaraAIProtocol):
         self,
         test_name: str,
         student_description: str,
-        test_policy: str,
+        test_type: TestType,
         test_language: str,
-        num_test_questions: int,
-        additional_instructions: Optional[str] = None,
-        good_examples: Optional[List[GoodExample]] = None,
-        bad_examples: Optional[List[BadExample]] = None,
+        test_policy: Optional[str],
+        num_test_questions: Optional[int],
+        num_conversations: Optional[int],
+        test_system_prompt: Optional[str],
+        knowledge_base: Optional[str],
+        additional_instructions: Optional[str],
+        test_examples: Optional[List[Union[GoodExample, BadExample]]],
+        max_turns: int,
     ) -> None:
         if not student_description:
             raise ValueError("student_description is required")
 
-        if not test_policy:
-            raise ValueError("test_policy is required for multiturn tests")
+        if test_type == TestType.SAFETY and not test_policy:
+            raise ValueError("test_policy is required for safety tests")
+
+        if test_type == TestType.JAILBREAK and not test_system_prompt:
+            raise ValueError("test_system_prompt is required for jailbreak tests")
+
+        if test_type == TestType.ACCURACY and not knowledge_base:
+            raise ValueError("knowledge_base is required for accuracy tests")
 
         if test_language not in SUPPORTED_LANGUAGES:
             raise ValueError(f"test_language must be one of {SUPPORTED_LANGUAGES}")
@@ -195,82 +221,69 @@ class MultiturnTestMixin(AymaraAIProtocol):
                 f"test_name must be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters"
             )
 
-        if not (
-            DEFAULT_NUM_QUESTIONS_MIN <= num_test_questions <= DEFAULT_NUM_QUESTIONS_MAX
+        if num_conversations is not None and not (
+            DEFAULT_NUM_CONVERSATIONS_MIN
+            <= num_conversations
+            <= DEFAULT_NUM_CONVERSATIONS_MAX
         ):
             raise ValueError(
-                f"num_test_questions must be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions"
+                f"num_conversations must be between {DEFAULT_NUM_CONVERSATIONS_MIN} and {DEFAULT_NUM_CONVERSATIONS_MAX}"
             )
 
-        token1 = len(student_description) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
-        token2 = len(test_policy) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
-        total_tokens = token1 + token2
+        if max_turns < 1:
+            raise ValueError("max_turns must be at least 1")
 
-        if total_tokens > DEFAULT_MAX_TOKENS:
-            raise ValueError(
-                f"student_description is ~{token1:,} tokens and test_policy is ~{token2:,} tokens. "
-                f"They are ~{total_tokens:,} tokens in total but they should be less than {DEFAULT_MAX_TOKENS:,} tokens."
-            )
+        # Token validation
+        total_tokens = len(student_description) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
 
-        if additional_instructions is not None:
+        if test_policy:
+            total_tokens += len(test_policy) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
+        if test_system_prompt:
+            total_tokens += len(test_system_prompt) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
+        if knowledge_base:
+            total_tokens += len(knowledge_base) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
+        if additional_instructions:
             if len(additional_instructions) > MAX_ADDITIONAL_INSTRUCTIONS_LENGTH:
                 raise ValueError(
                     f"additional_instructions must be less than {MAX_ADDITIONAL_INSTRUCTIONS_LENGTH} characters"
                 )
+            total_tokens += (
+                len(additional_instructions) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
+            )
 
-            token3 = len(additional_instructions) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
-            total_tokens = token1 + token2 + token3
+        if total_tokens > DEFAULT_MAX_TOKENS:
+            raise ValueError(
+                f"Total tokens ({total_tokens:,}) exceeds maximum allowed ({DEFAULT_MAX_TOKENS:,})"
+            )
 
-            if total_tokens > DEFAULT_MAX_TOKENS:
-                raise ValueError(
-                    f"Total tokens ({total_tokens:,}) exceeds maximum allowed ({DEFAULT_MAX_TOKENS:,})"
-                )
-
-        if good_examples is not None or bad_examples is not None:
-            for example in good_examples or []:
-                if not isinstance(example, GoodExample):
-                    raise ValueError("good_examples must be instances of GoodExample")
-
-            for example in bad_examples or []:
-                if not isinstance(example, BadExample):
-                    raise ValueError("bad_examples must be instances of BadExample")
-
-            if len((good_examples or []) + (bad_examples or [])) > MAX_EXAMPLES_LENGTH:
-                raise ValueError(
-                    f"Total number of examples must be less than {MAX_EXAMPLES_LENGTH}"
-                )
+        if test_examples and len(test_examples) > MAX_EXAMPLES_LENGTH:
+            raise ValueError(
+                f"Total number of examples must be less than {MAX_EXAMPLES_LENGTH}"
+            )
 
     def _create_and_wait_for_multiturn_test_impl_sync(
         self,
-        test_data: models.TestInSchema,
+        test_data: models.MultiturnTestInSchema,
         max_wait_time_secs: Optional[int],
     ):
         start_time = time.time()
         response = create_multiturn_test.sync_detailed(
             client=self.client, body=test_data
         )
-        print(f"response: {response}")
-        create_response = response.content
+        create_response = response.parsed
         print(f"create_response: {create_response}")
 
         if response.status_code == 422:
             raise ValueError(f"{create_response.detail}")
 
         # Extract test_uuid and test_name from the first message
-        if not create_response.messages:
-            raise ValueError("No messages received in response")
-
-        first_message = create_response.messages[0]
-        test_uuid = first_message.test_uuid
-        test_name = first_message.test_name
-
-        print(f"test_uuid: {test_uuid}")
-        print(f"test_name: {test_name}")
+        test_uuid = create_response.test_uuid
+        test_name = create_response.test_name
 
         with self.logger.progress_bar(
             test_name,
             test_uuid,
-            Status.PENDING,  # Initial status since we don't get it in response
+            Status.from_api_status(create_response.test_status),
         ):
             while True:
                 response = get_test.sync_detailed(
@@ -290,26 +303,19 @@ class MultiturnTestMixin(AymaraAIProtocol):
                 if max_wait_time_secs and time.time() - start_time > max_wait_time_secs:
                     test_response.test_status = models.TestStatus.FAILED
                     self.logger.update_progress_bar(test_uuid, Status.FAILED)
-                    return BaseTestResponse.from_test_out_schema_and_questions(
-                        test_response, None, "Test creation timed out"
-                    )
+                    return test_response
 
                 if test_response.test_status == models.TestStatus.FAILED:
-                    return BaseTestResponse.from_test_out_schema_and_questions(
-                        test_response, None, "Internal server error, please try again."
-                    )
+                    return test_response
 
                 if test_response.test_status == models.TestStatus.FINISHED:
-                    messages = self._get_all_messages_sync(test_uuid)
-                    return BaseTestResponse.from_test_out_schema_and_messages(
-                        test_response, messages, None
-                    )
+                    return test_response
 
                 time.sleep(POLLING_INTERVAL)
 
     async def _create_and_wait_for_multiturn_test_impl_async(
         self,
-        test_data: models.TestInSchema,
+        test_data: models.MultiturnTestInSchema,
         max_wait_time_secs: Optional[int],
     ) -> BaseTestResponse:
         start_time = time.time()
@@ -413,7 +419,7 @@ class MultiturnTestMixin(AymaraAIProtocol):
         test_uuid: str,
         question_uuid: str,
         user_response: str,
-    ) -> models.ContinueMultiturnResponse:
+    ):
         """
         Continue a multiturn conversation by providing a user response.
 
@@ -446,7 +452,7 @@ class MultiturnTestMixin(AymaraAIProtocol):
         test_uuid: str,
         question_uuid: str,
         user_response: str,
-    ) -> models.ContinueMultiturnResponse:
+    ):
         """
         Continue a multiturn conversation asynchronously by providing a user response.
 

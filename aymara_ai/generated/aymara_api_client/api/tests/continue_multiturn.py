@@ -5,21 +5,21 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.continue_multiturn_response import ContinueMultiturnResponse
 from ...models.error_schema import ErrorSchema
-from ...models.multiturn_user_response_schema import MultiturnUserResponseSchema
+from ...models.multiturn_continue_in_schema import MultiturnContinueInSchema
+from ...models.multiturn_out_schema import MultiturnOutSchema
 from ...types import Response
 
 
 def _get_kwargs(
     *,
-    body: List["MultiturnUserResponseSchema"],
+    body: List["MultiturnContinueInSchema"],
 ) -> Dict[str, Any]:
     headers: Dict[str, Any] = {}
 
     _kwargs: Dict[str, Any] = {
         "method": "post",
-        "url": "/v1/tests/continue_multiturn",
+        "url": "/v1/tests/multiturn/continue",
     }
 
     _body = []
@@ -36,9 +36,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[ContinueMultiturnResponse, ErrorSchema]]:
+) -> Optional[Union[ErrorSchema, MultiturnOutSchema]]:
     if response.status_code == HTTPStatus.OK:
-        response_200 = ContinueMultiturnResponse.from_dict(response.json())
+        response_200 = MultiturnOutSchema.from_dict(response.json())
 
         return response_200
     if response.status_code == HTTPStatus.NOT_FOUND:
@@ -61,7 +61,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[ContinueMultiturnResponse, ErrorSchema]]:
+) -> Response[Union[ErrorSchema, MultiturnOutSchema]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -73,19 +73,21 @@ def _build_response(
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    body: List["MultiturnUserResponseSchema"],
-) -> Response[Union[ContinueMultiturnResponse, ErrorSchema]]:
+    body: List["MultiturnContinueInSchema"],
+) -> Response[Union[ErrorSchema, MultiturnOutSchema]]:
     """Continue Multiturn
 
+     Continue multiple conversations in a multiturn test with user messages.
+
     Args:
-        body (List['MultiturnUserResponseSchema']):
+        body (List['MultiturnContinueInSchema']):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[ContinueMultiturnResponse, ErrorSchema]]
+        Response[Union[ErrorSchema, MultiturnOutSchema]]
     """
 
     kwargs = _get_kwargs(
@@ -102,19 +104,21 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient,
-    body: List["MultiturnUserResponseSchema"],
-) -> Optional[Union[ContinueMultiturnResponse, ErrorSchema]]:
+    body: List["MultiturnContinueInSchema"],
+) -> Optional[Union[ErrorSchema, MultiturnOutSchema]]:
     """Continue Multiturn
 
+     Continue multiple conversations in a multiturn test with user messages.
+
     Args:
-        body (List['MultiturnUserResponseSchema']):
+        body (List['MultiturnContinueInSchema']):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[ContinueMultiturnResponse, ErrorSchema]
+        Union[ErrorSchema, MultiturnOutSchema]
     """
 
     return sync_detailed(
@@ -126,19 +130,21 @@ def sync(
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    body: List["MultiturnUserResponseSchema"],
-) -> Response[Union[ContinueMultiturnResponse, ErrorSchema]]:
+    body: List["MultiturnContinueInSchema"],
+) -> Response[Union[ErrorSchema, MultiturnOutSchema]]:
     """Continue Multiturn
 
+     Continue multiple conversations in a multiturn test with user messages.
+
     Args:
-        body (List['MultiturnUserResponseSchema']):
+        body (List['MultiturnContinueInSchema']):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[ContinueMultiturnResponse, ErrorSchema]]
+        Response[Union[ErrorSchema, MultiturnOutSchema]]
     """
 
     kwargs = _get_kwargs(
@@ -153,19 +159,21 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient,
-    body: List["MultiturnUserResponseSchema"],
-) -> Optional[Union[ContinueMultiturnResponse, ErrorSchema]]:
+    body: List["MultiturnContinueInSchema"],
+) -> Optional[Union[ErrorSchema, MultiturnOutSchema]]:
     """Continue Multiturn
 
+     Continue multiple conversations in a multiturn test with user messages.
+
     Args:
-        body (List['MultiturnUserResponseSchema']):
+        body (List['MultiturnContinueInSchema']):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[ContinueMultiturnResponse, ErrorSchema]
+        Union[ErrorSchema, MultiturnOutSchema]
     """
 
     return (

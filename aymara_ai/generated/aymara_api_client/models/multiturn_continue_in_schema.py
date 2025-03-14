@@ -3,12 +3,13 @@ from typing import Any, Dict, List, Type, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="MultiturnUserResponseSchema")
+T = TypeVar("T", bound="MultiturnContinueInSchema")
 
 
 @_attrs_define
-class MultiturnUserResponseSchema:
-    """
+class MultiturnContinueInSchema:
+    """Schema for continuing a specific conversation in a multiturn test.
+
     Attributes:
         test_uuid (str):
         conversation_uuid (str):
@@ -48,14 +49,14 @@ class MultiturnUserResponseSchema:
 
         message_text = d.pop("message_text")
 
-        multiturn_user_response_schema = cls(
+        multiturn_continue_in_schema = cls(
             test_uuid=test_uuid,
             conversation_uuid=conversation_uuid,
             message_text=message_text,
         )
 
-        multiturn_user_response_schema.additional_properties = d
-        return multiturn_user_response_schema
+        multiturn_continue_in_schema.additional_properties = d
+        return multiturn_continue_in_schema
 
     @property
     def additional_keys(self) -> List[str]:
