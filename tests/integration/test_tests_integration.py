@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import pytest
 
-from aymara_ai.core.errors import ResourceError, ValidationError
+from aymara_ai.core.errors import AuthError, ResourceError, ValidationError
 from aymara_ai.core.sdk import AymaraAI
 from aymara_ai.types import (
     AccuracyTestResponse,
@@ -310,11 +310,11 @@ class TestTestMixin:
             await aymara_client.get_test_async(created_test.test_uuid)
 
     def test_delete_nonexistent_test(self, aymara_client: AymaraAI):
-        with pytest.raises(ValueError):
+        with pytest.raises(ResourceError):
             aymara_client.delete_test("nonexistent_uuid")
 
     async def test_delete_nonexistent_test_async(self, aymara_client: AymaraAI):
-        with pytest.raises(ValueError):
+        with pytest.raises(ResourceError):
             await aymara_client.delete_test_async("nonexistent_uuid")
 
     def test_create_image_safety_test_sync(self, aymara_client, image_safety_test_data):
@@ -413,11 +413,11 @@ class TestTestMixin:
                 )
 
         def test_free_user_cannot_delete_test(self, free_aymara_client):
-            with pytest.raises(ValueError):
+            with pytest.raises(AuthError):
                 free_aymara_client.delete_test("some-test-uuid")
 
         async def test_free_user_cannot_delete_test_async(self, free_aymara_client):
-            with pytest.raises(ValueError):
+            with pytest.raises(AuthError):
                 await free_aymara_client.delete_test_async("some-test-uuid")
 
         def test_free_user_list_tests_shows_default_tests(self, free_aymara_client):
