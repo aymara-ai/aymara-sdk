@@ -416,27 +416,20 @@ class MultiturnTestMixin(AymaraAIProtocol):
 
     def continue_multiturn(
         self,
-        test_uuid: str,
-        question_uuid: str,
-        user_response: str,
+        continue_requests: List[models.MultiturnContinueInSchema],
     ):
         """
-        Continue a multiturn conversation by providing a user response.
+        Continue multiple multiturn conversations by providing user responses.
 
-        :param test_uuid: UUID of the test
-        :type test_uuid: str
-        :param question_uuid: UUID of the question
-        :type question_uuid: str
-        :param user_response: User's response to continue the conversation
-        :type user_response: str
-        :return: Response containing the next step in the conversation
-        :rtype: ContinueMultiturnResponse
+        :param continue_requests: List of continuation requests, each containing test_uuid, conversation_uuid, and message_text
+        :type continue_requests: List[MultiturnContinueInSchema]
+        :return: Response containing the next steps in the conversations
+        :rtype: MultiturnOutSchema
         """
+        print(f"continue_requests: {continue_requests}")
         response = continue_multiturn.sync_detailed(
             client=self.client,
-            test_uuid=test_uuid,
-            question_uuid=question_uuid,
-            json_body=models.MultiturnUserResponseSchema(user_response=user_response),
+            body=continue_requests,
         )
 
         if response.status_code == 404:
@@ -449,20 +442,19 @@ class MultiturnTestMixin(AymaraAIProtocol):
 
     async def continue_multiturn_async(
         self,
-        test_uuid: str,
-        question_uuid: str,
-        user_response: str,
+        continue_requests: List[models.MultiturnContinueInSchema],
     ):
         """
-        Continue a multiturn conversation asynchronously by providing a user response.
+        Continue multiple multiturn conversations asynchronously by providing user responses.
 
-        Parameters are the same as continue_multiturn.
+        :param continue_requests: List of continuation requests, each containing test_uuid, conversation_uuid, and message_text
+        :type continue_requests: List[MultiturnContinueInSchema]
+        :return: Response containing the next steps in the conversations
+        :rtype: MultiturnOutSchema
         """
         response = await continue_multiturn.asyncio_detailed(
             client=self.client,
-            test_uuid=test_uuid,
-            question_uuid=question_uuid,
-            json_body=models.MultiturnUserResponseSchema(user_response=user_response),
+            body=continue_requests,
         )
 
         if response.status_code == 404:
