@@ -10,6 +10,7 @@ from ..models.test_type import TestType
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.conversation_schema import ConversationSchema
     from ..models.example_out_schema import ExampleOutSchema
 
 
@@ -34,6 +35,7 @@ class TestOutSchema:
         knowledge_base (Union[None, Unset, str]):
         additional_instructions (Union[None, Unset, str]):
         test_examples (Union[List['ExampleOutSchema'], None, Unset]):
+        conversations (Union[List['ConversationSchema'], None, Unset]):
     """
 
     test_uuid: str
@@ -50,6 +52,7 @@ class TestOutSchema:
     knowledge_base: Union[None, Unset, str] = UNSET
     additional_instructions: Union[None, Unset, str] = UNSET
     test_examples: Union[List["ExampleOutSchema"], None, Unset] = UNSET
+    conversations: Union[List["ConversationSchema"], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -113,6 +116,18 @@ class TestOutSchema:
         else:
             test_examples = self.test_examples
 
+        conversations: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.conversations, Unset):
+            conversations = UNSET
+        elif isinstance(self.conversations, list):
+            conversations = []
+            for conversations_type_0_item_data in self.conversations:
+                conversations_type_0_item = conversations_type_0_item_data.to_dict()
+                conversations.append(conversations_type_0_item)
+
+        else:
+            conversations = self.conversations
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -139,11 +154,14 @@ class TestOutSchema:
             field_dict["additional_instructions"] = additional_instructions
         if test_examples is not UNSET:
             field_dict["test_examples"] = test_examples
+        if conversations is not UNSET:
+            field_dict["conversations"] = conversations
 
         return field_dict
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+        from ..models.conversation_schema import ConversationSchema
         from ..models.example_out_schema import ExampleOutSchema
 
         d = src_dict.copy()
@@ -240,6 +258,28 @@ class TestOutSchema:
 
         test_examples = _parse_test_examples(d.pop("test_examples", UNSET))
 
+        def _parse_conversations(data: object) -> Union[List["ConversationSchema"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                conversations_type_0 = []
+                _conversations_type_0 = data
+                for conversations_type_0_item_data in _conversations_type_0:
+                    conversations_type_0_item = ConversationSchema.from_dict(conversations_type_0_item_data)
+
+                    conversations_type_0.append(conversations_type_0_item)
+
+                return conversations_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["ConversationSchema"], None, Unset], data)
+
+        conversations = _parse_conversations(d.pop("conversations", UNSET))
+
         test_out_schema = cls(
             test_uuid=test_uuid,
             test_name=test_name,
@@ -255,6 +295,7 @@ class TestOutSchema:
             knowledge_base=knowledge_base,
             additional_instructions=additional_instructions,
             test_examples=test_examples,
+            conversations=conversations,
         )
 
         test_out_schema.additional_properties = d

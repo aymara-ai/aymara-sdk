@@ -7,7 +7,7 @@ from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.error_schema import ErrorSchema
 from ...models.multiturn_continue_in_schema import MultiturnContinueInSchema
-from ...models.multiturn_out_schema import MultiturnOutSchema
+from ...models.test_out_schema import TestOutSchema
 from ...types import Response
 
 
@@ -36,9 +36,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[ErrorSchema, MultiturnOutSchema]]:
+) -> Optional[Union[ErrorSchema, TestOutSchema]]:
     if response.status_code == HTTPStatus.OK:
-        response_200 = MultiturnOutSchema.from_dict(response.json())
+        response_200 = TestOutSchema.from_dict(response.json())
 
         return response_200
     if response.status_code == HTTPStatus.NOT_FOUND:
@@ -61,7 +61,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[ErrorSchema, MultiturnOutSchema]]:
+) -> Response[Union[ErrorSchema, TestOutSchema]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -74,7 +74,7 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
     body: List["MultiturnContinueInSchema"],
-) -> Response[Union[ErrorSchema, MultiturnOutSchema]]:
+) -> Response[Union[ErrorSchema, TestOutSchema]]:
     """Continue Multiturn
 
      Continue multiple conversations in a multiturn test with user messages.
@@ -87,7 +87,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[ErrorSchema, MultiturnOutSchema]]
+        Response[Union[ErrorSchema, TestOutSchema]]
     """
 
     kwargs = _get_kwargs(
@@ -105,7 +105,7 @@ def sync(
     *,
     client: AuthenticatedClient,
     body: List["MultiturnContinueInSchema"],
-) -> Optional[Union[ErrorSchema, MultiturnOutSchema]]:
+) -> Optional[Union[ErrorSchema, TestOutSchema]]:
     """Continue Multiturn
 
      Continue multiple conversations in a multiturn test with user messages.
@@ -118,7 +118,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[ErrorSchema, MultiturnOutSchema]
+        Union[ErrorSchema, TestOutSchema]
     """
 
     return sync_detailed(
@@ -131,7 +131,7 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
     body: List["MultiturnContinueInSchema"],
-) -> Response[Union[ErrorSchema, MultiturnOutSchema]]:
+) -> Response[Union[ErrorSchema, TestOutSchema]]:
     """Continue Multiturn
 
      Continue multiple conversations in a multiturn test with user messages.
@@ -144,7 +144,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[ErrorSchema, MultiturnOutSchema]]
+        Response[Union[ErrorSchema, TestOutSchema]]
     """
 
     kwargs = _get_kwargs(
@@ -160,7 +160,7 @@ async def asyncio(
     *,
     client: AuthenticatedClient,
     body: List["MultiturnContinueInSchema"],
-) -> Optional[Union[ErrorSchema, MultiturnOutSchema]]:
+) -> Optional[Union[ErrorSchema, TestOutSchema]]:
     """Continue Multiturn
 
      Continue multiple conversations in a multiturn test with user messages.
@@ -173,7 +173,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[ErrorSchema, MultiturnOutSchema]
+        Union[ErrorSchema, TestOutSchema]
     """
 
     return (

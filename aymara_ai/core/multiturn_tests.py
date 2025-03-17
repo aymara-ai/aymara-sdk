@@ -427,9 +427,24 @@ class MultiturnTestMixin(AymaraAIProtocol):
         :rtype: MultiturnOutSchema
         """
         print(f"continue_requests: {continue_requests}")
+
+        # Convert dictionaries to MultiturnContinueInSchema objects if needed
+        formatted_requests = []
+        for request in continue_requests:
+            if isinstance(request, dict):
+                formatted_requests.append(
+                    models.MultiturnContinueInSchema(
+                        test_uuid=request["test_uuid"],
+                        conversation_uuid=request["conversation_uuid"],
+                        message_text=request["message_text"],
+                    )
+                )
+            else:
+                formatted_requests.append(request)
+
         response = continue_multiturn.sync_detailed(
             client=self.client,
-            body=continue_requests,
+            body=formatted_requests,
         )
 
         if response.status_code == 404:

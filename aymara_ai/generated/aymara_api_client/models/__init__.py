@@ -23,7 +23,6 @@ from .integration_test_response import IntegrationTestResponse
 from .message_schema import MessageSchema
 from .message_sender import MessageSender
 from .multiturn_continue_in_schema import MultiturnContinueInSchema
-from .multiturn_out_schema import MultiturnOutSchema
 from .multiturn_test_in_schema import MultiturnTestInSchema
 from .organization_out_schema import OrganizationOutSchema
 from .paged_answer_out_schema import PagedAnswerOutSchema
@@ -79,7 +78,6 @@ __all__ = (
     "MessageSchema",
     "MessageSender",
     "MultiturnContinueInSchema",
-    "MultiturnOutSchema",
     "MultiturnTestInSchema",
     "OrganizationOutSchema",
     "PagedAnswerOutSchema",
