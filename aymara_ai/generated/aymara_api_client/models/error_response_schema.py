@@ -1,7 +1,9 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.error_data_schema import ErrorDataSchema
@@ -22,11 +24,11 @@ class ErrorResponseSchema:
 
                 This schema defines the structure of the error data inside the `error` field
                 of an API error response.
-            request_id (str):
+            request_id (Union[Unset, str]):  Default: ''.
     """
 
     error: "ErrorDataSchema"
-    request_id: str
+    request_id: Union[Unset, str] = ""
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -39,9 +41,10 @@ class ErrorResponseSchema:
         field_dict.update(
             {
                 "error": error,
-                "request_id": request_id,
             }
         )
+        if request_id is not UNSET:
+            field_dict["request_id"] = request_id
 
         return field_dict
 
@@ -52,7 +55,7 @@ class ErrorResponseSchema:
         d = src_dict.copy()
         error = ErrorDataSchema.from_dict(d.pop("error"))
 
-        request_id = d.pop("request_id")
+        request_id = d.pop("request_id", UNSET)
 
         error_response_schema = cls(
             error=error,
