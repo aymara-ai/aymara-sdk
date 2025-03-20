@@ -17,10 +17,10 @@ from .get_image_presigned_urls_response import GetImagePresignedUrlsResponse
 from .image_upload_request_in_schema import ImageUploadRequestInSchema
 from .input_ import Input
 from .integration_test_response import IntegrationTestResponse
+from .message_in_schema import MessageInSchema
 from .message_schema import MessageSchema
 from .message_sender import MessageSender
 from .multiturn_continue_in_schema import MultiturnContinueInSchema
-from .multiturn_test_in_schema import MultiturnTestInSchema
 from .organization_out_schema import OrganizationOutSchema
 from .paged_answer_out_schema import PagedAnswerOutSchema
 from .paged_policy_schema import PagedPolicySchema
@@ -69,10 +69,10 @@ __all__ = (
     "ImageUploadRequestInSchema",
     "Input",
     "IntegrationTestResponse",
+    "MessageInSchema",
     "MessageSchema",
     "MessageSender",
     "MultiturnContinueInSchema",
-    "MultiturnTestInSchema",
     "OrganizationOutSchema",
     "PagedAnswerOutSchema",
     "PagedPolicySchema",

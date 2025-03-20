@@ -20,11 +20,13 @@ from aymara_ai.types import (
     GoodExample,
     JailbreakTestResponse,
     ListTestResponse,
+    MultiturnSafetyTestResponse,
     SafetyTestResponse,
     Status,
 )
 from aymara_ai.utils.constants import (
     DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS,
+    DEFAULT_NUM_CONVERSATIONS,
     DEFAULT_ACCURACY_NUM_QUESTIONS,
     DEFAULT_CHAR_TO_TOKEN_MULTIPLIER,
     DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
@@ -40,6 +42,8 @@ from aymara_ai.utils.constants import (
     MAX_EXAMPLES_LENGTH,
     POLLING_INTERVAL,
     SUPPORTED_LANGUAGES,
+    DEFAULT_NUM_CONVERSATIONS_MIN,
+    DEFAULT_NUM_CONVERSATIONS_MAX,
 )
 
 
@@ -494,6 +498,129 @@ class TestMixin(AymaraAIProtocol):
         :raises ValueError: If knowledge_base is not provided for accuracy tests.
         """
 
+    # Create Multiturn Safety Test Methods
+    def create_multiturn_safety_test(
+        self,
+        test_name: str,
+        student_description: str,
+        test_policy: str,
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        num_conversations: int = DEFAULT_NUM_CONVERSATIONS,
+        max_wait_time_secs: int = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+        additional_instructions: Optional[str] = None,
+        good_examples: Optional[List[GoodExample]] = None,
+        bad_examples: Optional[List[BadExample]] = None,
+        is_sandbox: Optional[bool] = False,
+    ):
+        return self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=test_policy,
+            test_system_prompt=None,
+            knowledge_base=None,
+            test_language=test_language,
+            is_async=False,
+            test_type=TestType.MULTITURN_SAFETY,
+            max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
+            is_sandbox=is_sandbox,
+            num_conversations=num_conversations,
+        )
+
+    create_multiturn_safety_test.__doc__ = f"""
+        Create an Aymara multiturn safety test synchronously and wait for completion.
+
+        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
+        :type test_name: str
+        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
+        :type student_description: str
+        :param test_policy: Policy of the test, which will measure compliance against this policy (required for safety tests).
+        :type test_policy: str
+        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
+        :type test_language: str, optional
+        :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
+        :type num_test_questions: int, optional
+        :param num_conversations: Number of conversations to generate, defaults to 10.
+        :type num_conversations: int, optional
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS} seconds.
+        :type max_wait_time_secs: int, optional
+        :param additional_instructions: Optional additional instructions for test generation
+        :type additional_instructions: str, optional
+        :param good_examples: Optional list of good examples to guide question generation
+        :type good_examples: List[GoodExample], optional
+        :param bad_examples: Optional list of bad examples to guide question generation
+        :type bad_examples: List[BadExample], optional
+        :return: Test response containing test details and generated questions.
+        :rtype: SafetyTestResponse
+
+        :raises ValueError: If the test_name length is not within the allowed range.
+        :raises ValueError: If num_test_questions is not within the allowed range.
+        :raises ValueError: If test_policy is not provided for safety tests.
+        """
+
+    async def create_multiturn_safety_test_async(
+        self,
+        test_name: str,
+        student_description: str,
+        test_policy: str,
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        num_conversations: int = DEFAULT_NUM_CONVERSATIONS,
+        max_wait_time_secs: int = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+        additional_instructions: Optional[str] = None,
+        good_examples: Optional[List[GoodExample]] = None,
+        bad_examples: Optional[List[BadExample]] = None,
+        is_sandbox: Optional[bool] = False,
+    ) -> MultiturnSafetyTestResponse:
+        return await self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=test_policy,
+            test_system_prompt=None,
+            knowledge_base=None,
+            test_language=test_language,
+            is_async=True,
+            test_type=TestType.MULTITURN_SAFETY,
+            max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
+            is_sandbox=is_sandbox,
+            num_conversations=num_conversations,
+        )
+
+    create_multiturn_safety_test_async.__doc__ = f"""
+        Create an Aymara multiturn safety test asynchronously and wait for completion.
+
+        :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
+        :type test_name: str
+        :param student_description: Description of the AI that will take the test (e.g., its purpose, expected use, typical user). The more specific your description is, the less generic the test questions will be.
+        :type student_description: str
+        :param test_policy: Policy of the test, which will measure compliance against this policy (required for safety tests).
+        :type test_policy: str
+        :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
+        :type test_language: str, optional
+        :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
+        :type num_test_questions: int, optional
+        :param num_conversations: Number of conversations to generate, defaults to 10.
+        :type num_conversations: int, optional
+        :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS} seconds.
+        :type max_wait_time_secs: int, optional
+        :param additional_instructions: Optional additional instructions for test generation
+        :type additional_instructions: str, optional
+        :param good_examples: Optional list of good examples to guide question generation
+        :type good_examples: List[GoodExample], optional
+        :param bad_examples: Optional list of bad examples to guide question generation
+        :type bad_examples: List[BadExample], optional
+        :return: Test response containing test details and generated questions.
+        :rtype: SafetyTestResponse
+
+        :raises ValueError: If the test_name length is not within the allowed range.
+        :raises ValueError: If num_test_questions is not within the allowed range.
+        :raises ValueError: If test_policy is not provided for safety tests.
+        """
+
     def _create_test(
         self,
         test_name: str,
@@ -504,12 +631,13 @@ class TestMixin(AymaraAIProtocol):
         test_system_prompt: Optional[str],
         test_policy: Optional[str],
         knowledge_base: Optional[str],
-        num_test_questions: Optional[int],
         max_wait_time_secs: Optional[int],
+        num_test_questions: Optional[int] = None,
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
         is_sandbox: Optional[bool] = False,
+        num_conversations: Optional[int] = None,
     ) -> Union[BaseTestResponse, Coroutine[BaseTestResponse, None, None]]:
         self._validate_test_inputs(
             test_name=test_name,
@@ -523,6 +651,7 @@ class TestMixin(AymaraAIProtocol):
             additional_instructions=additional_instructions,
             good_examples=good_examples,
             bad_examples=bad_examples,
+            num_conversations=num_conversations,
         )
 
         examples = []
@@ -542,8 +671,8 @@ class TestMixin(AymaraAIProtocol):
             test_type=test_type,
             additional_instructions=additional_instructions,
             test_examples=examples if examples else None,
+            num_conversations=num_conversations,
         )
-
         if is_async:
             return self._create_and_wait_for_test_impl_async(
                 test_data, max_wait_time_secs, is_sandbox
@@ -566,6 +695,7 @@ class TestMixin(AymaraAIProtocol):
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
+        num_conversations: Optional[int] = None,
     ) -> None:
         if not student_description:
             raise ValueError("student_description is required")
@@ -591,7 +721,6 @@ class TestMixin(AymaraAIProtocol):
             raise ValueError(
                 f"test_name must be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters"
             )
-
         if num_test_questions is not None:
             if test_type == TestType.JAILBREAK and num_test_questions < 1:
                 raise ValueError("limit_num_questions must be at least one question")
@@ -603,30 +732,47 @@ class TestMixin(AymaraAIProtocol):
                 raise ValueError(
                     f"num_test_questions must be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions"
                 )
-
+        if num_conversations is not None:
+            if test_type != TestType.MULTITURN_SAFETY:
+                raise ValueError(
+                    "num_conversations is only valid for multiturn safety tests"
+                )
+            elif not (
+                DEFAULT_NUM_CONVERSATIONS_MIN
+                <= num_conversations
+                <= DEFAULT_NUM_CONVERSATIONS_MAX
+            ):
+                raise ValueError(
+                    f"num_conversations must be between {DEFAULT_NUM_CONVERSATIONS_MIN} and {DEFAULT_NUM_CONVERSATIONS_MAX} conversations"
+                )
         token1 = len(student_description) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
 
         token_2_field = (
             "test_policy"
-            if test_type == TestType.SAFETY or test_type == TestType.IMAGE_SAFETY
+            if test_type == TestType.SAFETY
+            or test_type == TestType.IMAGE_SAFETY
+            or test_type == TestType.MULTITURN_SAFETY
             else "test_system_prompt"
             if test_type == TestType.JAILBREAK
             else "knowledge_base"
         )
+
         token2 = (
             len(test_policy) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
-            if test_type == TestType.SAFETY or test_type == TestType.IMAGE_SAFETY
+            if test_type == TestType.SAFETY
+            or test_type == TestType.IMAGE_SAFETY
+            or test_type == TestType.MULTITURN_SAFETY
             else len(test_system_prompt) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
             if test_type == TestType.JAILBREAK
             else len(knowledge_base) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
         )
 
         total_tokens = token1 + token2
+
         if total_tokens > DEFAULT_MAX_TOKENS:
             raise ValueError(
                 f"student_description is ~{token1:,} tokens and {token_2_field} is ~{token2:,} tokens. They are ~{total_tokens:,} tokens in total but they should be less than {DEFAULT_MAX_TOKENS:,} tokens."
             )
-
         if additional_instructions is not None:
             token3 = len(additional_instructions) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
             total_tokens = token1 + token2 + token3
@@ -716,10 +862,16 @@ class TestMixin(AymaraAIProtocol):
                     )
 
                 if test_response.test_status == models.TestStatus.FINISHED:
-                    questions = self._get_all_questions_sync(test_uuid)
-                    return BaseTestResponse.from_test_out_schema_and_questions(
-                        test_response, questions, None
-                    )
+                    if test_data.test_type == TestType.MULTITURN_SAFETY:
+                        conversations = create_response.conversations
+                        return BaseTestResponse.from_test_out_schema_and_questions(
+                            test_response, None, conversations
+                        )
+                    else:
+                        questions = self._get_all_questions_sync(test_uuid)
+                        return BaseTestResponse.from_test_out_schema_and_questions(
+                            test_response, questions, None
+                        )
 
                 time.sleep(POLLING_INTERVAL)
 
@@ -771,10 +923,16 @@ class TestMixin(AymaraAIProtocol):
                     )
 
                 if test_response.test_status == models.TestStatus.FINISHED:
-                    questions = await self._get_all_questions_async(test_uuid)
-                    return BaseTestResponse.from_test_out_schema_and_questions(
-                        test_response, questions, None
-                    )
+                    if test_data.test_type == TestType.MULTITURN_SAFETY:
+                        conversations = create_response.conversations
+                        return BaseTestResponse.from_test_out_schema_and_conversations(
+                            test_response, conversations, None
+                        )
+                    else:
+                        questions = await self._get_all_questions_async(test_uuid)
+                        return BaseTestResponse.from_test_out_schema_and_questions(
+                            test_response, questions, None
+                        )
 
                 await asyncio.sleep(POLLING_INTERVAL)
 

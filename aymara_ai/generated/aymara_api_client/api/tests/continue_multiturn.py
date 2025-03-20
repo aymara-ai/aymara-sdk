@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import httpx
 
@@ -13,7 +13,7 @@ from ...types import Response
 
 def _get_kwargs(
     *,
-    body: List["MultiturnContinueInSchema"],
+    body: MultiturnContinueInSchema,
 ) -> Dict[str, Any]:
     headers: Dict[str, Any] = {}
 
@@ -22,10 +22,7 @@ def _get_kwargs(
         "url": "/v1/tests/multiturn/continue",
     }
 
-    _body = []
-    for body_item_data in body:
-        body_item = body_item_data.to_dict()
-        _body.append(body_item)
+    _body = body.to_dict()
 
     _kwargs["json"] = _body
     headers["Content-Type"] = "application/json"
@@ -97,14 +94,15 @@ def _build_response(
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    body: List["MultiturnContinueInSchema"],
+    body: MultiturnContinueInSchema,
 ) -> Response[Union[ErrorResponseSchema, TestOutSchema]]:
     """Continue Multiturn
 
      Continue multiple conversations in a multiturn test with user messages.
 
     Args:
-        body (List['MultiturnContinueInSchema']):
+        body (MultiturnContinueInSchema): Schema for continuing a specific conversation in a
+            multiturn test.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -128,14 +126,15 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient,
-    body: List["MultiturnContinueInSchema"],
+    body: MultiturnContinueInSchema,
 ) -> Optional[Union[ErrorResponseSchema, TestOutSchema]]:
     """Continue Multiturn
 
      Continue multiple conversations in a multiturn test with user messages.
 
     Args:
-        body (List['MultiturnContinueInSchema']):
+        body (MultiturnContinueInSchema): Schema for continuing a specific conversation in a
+            multiturn test.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -154,14 +153,15 @@ def sync(
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    body: List["MultiturnContinueInSchema"],
+    body: MultiturnContinueInSchema,
 ) -> Response[Union[ErrorResponseSchema, TestOutSchema]]:
     """Continue Multiturn
 
      Continue multiple conversations in a multiturn test with user messages.
 
     Args:
-        body (List['MultiturnContinueInSchema']):
+        body (MultiturnContinueInSchema): Schema for continuing a specific conversation in a
+            multiturn test.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -183,14 +183,15 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient,
-    body: List["MultiturnContinueInSchema"],
+    body: MultiturnContinueInSchema,
 ) -> Optional[Union[ErrorResponseSchema, TestOutSchema]]:
     """Continue Multiturn
 
      Continue multiple conversations in a multiturn test with user messages.
 
     Args:
-        body (List['MultiturnContinueInSchema']):
+        body (MultiturnContinueInSchema): Schema for continuing a specific conversation in a
+            multiturn test.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

@@ -1,7 +1,11 @@
-from typing import Any, Dict, List, Type, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
+
+if TYPE_CHECKING:
+    from ..models.message_in_schema import MessageInSchema
+
 
 T = TypeVar("T", bound="MultiturnContinueInSchema")
 
@@ -12,29 +16,27 @@ class MultiturnContinueInSchema:
 
     Attributes:
         test_uuid (str):
-        conversation_uuid (str):
-        message_text (str):
+        messages (List['MessageInSchema']):
     """
 
     test_uuid: str
-    conversation_uuid: str
-    message_text: str
+    messages: List["MessageInSchema"]
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         test_uuid = self.test_uuid
 
-        conversation_uuid = self.conversation_uuid
-
-        message_text = self.message_text
+        messages = []
+        for messages_item_data in self.messages:
+            messages_item = messages_item_data.to_dict()
+            messages.append(messages_item)
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "test_uuid": test_uuid,
-                "conversation_uuid": conversation_uuid,
-                "message_text": message_text,
+                "messages": messages,
             }
         )
 
@@ -42,17 +44,21 @@ class MultiturnContinueInSchema:
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+        from ..models.message_in_schema import MessageInSchema
+
         d = src_dict.copy()
         test_uuid = d.pop("test_uuid")
 
-        conversation_uuid = d.pop("conversation_uuid")
+        messages = []
+        _messages = d.pop("messages")
+        for messages_item_data in _messages:
+            messages_item = MessageInSchema.from_dict(messages_item_data)
 
-        message_text = d.pop("message_text")
+            messages.append(messages_item)
 
         multiturn_continue_in_schema = cls(
             test_uuid=test_uuid,
-            conversation_uuid=conversation_uuid,
-            message_text=message_text,
+            messages=messages,
         )
 
         multiturn_continue_in_schema.additional_properties = d

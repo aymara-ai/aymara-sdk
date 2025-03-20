@@ -19,14 +19,12 @@ class ConversationSchema:
         conversation_uuid (str):
         status (ConversationStatus): Conversation status.
         current_turn (int):
-        max_turns (int):
         messages (List['MessageSchema']):
     """
 
     conversation_uuid: str
     status: ConversationStatus
     current_turn: int
-    max_turns: int
     messages: List["MessageSchema"]
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -36,8 +34,6 @@ class ConversationSchema:
         status = self.status.value
 
         current_turn = self.current_turn
-
-        max_turns = self.max_turns
 
         messages = []
         for messages_item_data in self.messages:
@@ -51,7 +47,6 @@ class ConversationSchema:
                 "conversation_uuid": conversation_uuid,
                 "status": status,
                 "current_turn": current_turn,
-                "max_turns": max_turns,
                 "messages": messages,
             }
         )
@@ -69,8 +64,6 @@ class ConversationSchema:
 
         current_turn = d.pop("current_turn")
 
-        max_turns = d.pop("max_turns")
-
         messages = []
         _messages = d.pop("messages")
         for messages_item_data in _messages:
@@ -82,7 +75,6 @@ class ConversationSchema:
             conversation_uuid=conversation_uuid,
             status=status,
             current_turn=current_turn,
-            max_turns=max_turns,
             messages=messages,
         )
 
