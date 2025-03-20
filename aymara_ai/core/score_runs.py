@@ -47,7 +47,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
         student_answers: List[BaseStudentAnswerInput],
         student_description: Optional[str] = None,
         scoring_examples: Optional[List[ScoringExample]] = None,
-        max_wait_time_secs: Optional[int] = None,
+        max_wait_time_secs: Optional[int] = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
         is_sandbox: Optional[bool] = False,
     ) -> ScoreRunResponse:
         return self._score_test(

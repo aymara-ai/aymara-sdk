@@ -979,8 +979,8 @@ class TestFreeUserScoreRunRestrictions:
     @pytest.fixture(scope="class")
     def default_test(self, free_aymara_client: AymaraAI) -> BaseTestResponse:
         # Get the first default test from Aymara
-        tests = free_aymara_client.list_tests()
-        return free_aymara_client.get_test(tests[0].test_uuid)
+        tests = free_aymara_client.list_evals()
+        return free_aymara_client.get_eval(tests[0].test_uuid)
 
     @pytest.fixture(scope="class")
     def student_answers(self, default_test) -> List[TextStudentAnswerInput]:

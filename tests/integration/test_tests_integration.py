@@ -296,7 +296,7 @@ class TestTestMixin:
         assert created_test.test_status == Status.COMPLETED
         aymara_client.delete_test(created_test.test_uuid)
         with pytest.raises(ResourceError):
-            aymara_client.get_test(created_test.test_uuid)
+            aymara_client.get_eval(created_test.test_uuid)
 
     async def test_delete_jailbreak_test_async(
         self, aymara_client: AymaraAI, jailbreak_test_data
@@ -307,7 +307,7 @@ class TestTestMixin:
         assert created_test.test_status == Status.COMPLETED
         await aymara_client.delete_test_async(created_test.test_uuid)
         with pytest.raises(ResourceError):
-            await aymara_client.get_test_async(created_test.test_uuid)
+            await aymara_client.get_eval_async(created_test.test_uuid)
 
     def test_delete_nonexistent_test(self, aymara_client: AymaraAI):
         with pytest.raises(ResourceError):

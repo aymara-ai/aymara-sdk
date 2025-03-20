@@ -15,6 +15,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
+from aymara_ai.core.evals import EvalMixin
 from aymara_ai.core.policies import PolicyMixin
 from aymara_ai.core.protocols import AymaraAIProtocol
 from aymara_ai.core.score_runs import ScoreRunMixin
@@ -36,6 +37,7 @@ from aymara_ai.version import __version__
 
 
 class AymaraAI(
+    EvalMixin,
     TestMixin,
     ScoreRunMixin,
     SummaryMixin,

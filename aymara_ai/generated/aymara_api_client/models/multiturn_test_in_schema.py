@@ -9,12 +9,13 @@ if TYPE_CHECKING:
     from ..models.example_in_schema import ExampleInSchema
 
 
-T = TypeVar("T", bound="TestInSchema")
+T = TypeVar("T", bound="MultiturnTestInSchema")
 
 
 @_attrs_define
-class TestInSchema:
-    """
+class MultiturnTestInSchema:
+    """Schema for creating a multiturn safety test.
+
     Attributes:
         test_name (str):
         student_description (str):
@@ -27,6 +28,7 @@ class TestInSchema:
         knowledge_base (Union[None, Unset, str]):
         additional_instructions (Union[None, Unset, str]):
         test_examples (Union[List['ExampleInSchema'], None, Unset]):
+        max_turns (Union[Unset, int]):  Default: 10.
     """
 
     test_name: str
@@ -40,6 +42,7 @@ class TestInSchema:
     knowledge_base: Union[None, Unset, str] = UNSET
     additional_instructions: Union[None, Unset, str] = UNSET
     test_examples: Union[List["ExampleInSchema"], None, Unset] = UNSET
+    max_turns: Union[Unset, int] = 10
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -99,6 +102,8 @@ class TestInSchema:
         else:
             test_examples = self.test_examples
 
+        max_turns = self.max_turns
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -125,6 +130,8 @@ class TestInSchema:
             field_dict["additional_instructions"] = additional_instructions
         if test_examples is not UNSET:
             field_dict["test_examples"] = test_examples
+        if max_turns is not UNSET:
+            field_dict["max_turns"] = max_turns
 
         return field_dict
 
@@ -217,7 +224,9 @@ class TestInSchema:
 
         test_examples = _parse_test_examples(d.pop("test_examples", UNSET))
 
-        test_in_schema = cls(
+        max_turns = d.pop("max_turns", UNSET)
+
+        multiturn_test_in_schema = cls(
             test_name=test_name,
             student_description=student_description,
             test_type=test_type,
@@ -229,10 +238,11 @@ class TestInSchema:
             knowledge_base=knowledge_base,
             additional_instructions=additional_instructions,
             test_examples=test_examples,
+            max_turns=max_turns,
         )
 
-        test_in_schema.additional_properties = d
-        return test_in_schema
+        multiturn_test_in_schema.additional_properties = d
+        return multiturn_test_in_schema
 
     @property
     def additional_keys(self) -> List[str]:

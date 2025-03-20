@@ -6,7 +6,6 @@ from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
 from ..models.test_status import TestStatus
-from ..models.test_type import TestType
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
@@ -24,7 +23,7 @@ class TestOutSchema:
         test_uuid (str):
         test_name (str):
         test_status (TestStatus): Test status.
-        test_type (TestType): Test type.
+        test_type (str):
         num_test_questions (Union[None, int]):
         num_conversations (Union[None, int]):
         created_at (datetime.datetime):
@@ -41,7 +40,7 @@ class TestOutSchema:
     test_uuid: str
     test_name: str
     test_status: TestStatus
-    test_type: TestType
+    test_type: str
     num_test_questions: Union[None, int]
     num_conversations: Union[None, int]
     created_at: datetime.datetime
@@ -62,7 +61,7 @@ class TestOutSchema:
 
         test_status = self.test_status.value
 
-        test_type = self.test_type.value
+        test_type = self.test_type
 
         num_test_questions: Union[None, int]
         num_test_questions = self.num_test_questions
@@ -171,7 +170,7 @@ class TestOutSchema:
 
         test_status = TestStatus(d.pop("test_status"))
 
-        test_type = TestType(d.pop("test_type"))
+        test_type = d.pop("test_type")
 
         def _parse_num_test_questions(data: object) -> Union[None, int]:
             if data is None:
