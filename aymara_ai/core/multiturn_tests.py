@@ -1,5 +1,6 @@
 from typing import List
 
+from aymara_ai.core.errors import get_parsed_response
 from aymara_ai.core.protocols import AymaraAIProtocol
 from aymara_ai.generated.aymara_api_client import models
 from aymara_ai.generated.aymara_api_client.api.tests import continue_multiturn
@@ -21,27 +22,19 @@ class MultiturnTestMixin(AymaraAIProtocol):
         """
         # Convert raw message dictionaries to MessageInSchema objects
         formatted_messages = [
-            models.MessageInSchema.from_dict(msg) if isinstance(msg, dict) else msg
-            for msg in messages
+            models.MessageInSchema.from_dict(msg) if isinstance(msg, dict) else msg for msg in messages
         ]
 
         # Create the continue request
-        continue_request = models.MultiturnContinueInSchema(
-            test_uuid=test_uuid, messages=formatted_messages
-        )
+        continue_request = models.MultiturnContinueInSchema(test_uuid=test_uuid, messages=formatted_messages)
 
         response = continue_multiturn.sync_detailed(
             client=self.client,
             body=continue_request,
         )
+        parsed_response = get_parsed_response(response)
 
-        if response.status_code == 404:
-            raise ValueError("Test or question not found")
-
-        if response.status_code == 422:
-            raise ValueError(f"{response.parsed.detail}")
-
-        return response.parsed
+        return parsed_response
 
     async def continue_multiturn_async(
         self,
@@ -58,27 +51,20 @@ class MultiturnTestMixin(AymaraAIProtocol):
         """
         # Convert raw message dictionaries to MessageInSchema objects
         formatted_messages = [
-            models.MessageInSchema.from_dict(msg) if isinstance(msg, dict) else msg
-            for msg in messages
+            models.MessageInSchema.from_dict(msg) if isinstance(msg, dict) else msg for msg in messages
         ]
 
         # Create the continue request
-        continue_request = models.MultiturnContinueInSchema(
-            test_uuid=test_uuid, messages=formatted_messages
-        )
+        continue_request = models.MultiturnContinueInSchema(test_uuid=test_uuid, messages=formatted_messages)
 
         response = await continue_multiturn.asyncio_detailed(
             client=self.client,
             body=continue_request,
         )
 
-        if response.status_code == 404:
-            raise ValueError("Test or question not found")
+        parsed_response = get_parsed_response(response)
 
-        if response.status_code == 422:
-            raise ValueError(f"{response.parsed.detail}")
-
-        return response.parsed
+        return parsed_response
 
     def continue_multiturn_from_dict(
         self,
@@ -95,8 +81,6 @@ class MultiturnTestMixin(AymaraAIProtocol):
         """
         formatted_messages = [models.MessageInSchema.from_dict(msg) for msg in messages]
 
-        continue_request = models.MultiturnContinueInSchema(
-            test_uuid=test_uuid, messages=formatted_messages
-        )
+        continue_request = models.MultiturnContinueInSchema(test_uuid=test_uuid, messages=formatted_messages)
 
         return self.continue_multiturn(continue_request)
