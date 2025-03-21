@@ -17,11 +17,17 @@ from aymara_ai.generated.aymara_api_client.models.answer_in_schema import (
 from aymara_ai.generated.aymara_api_client.models.answer_out_schema import (
     AnswerOutSchema,
 )
+from .generated.aymara_api_client.models.message_sender import MessageSender
+from .generated.aymara_api_client.models.conversation_status import ConversationStatus
 from aymara_ai.generated.aymara_api_client.models.example_in_schema import (
     ExampleInSchema,
 )
 from aymara_ai.generated.aymara_api_client.models.example_type import ExampleType
+from .generated.aymara_api_client.models.message_schema import MessageSchema
 from aymara_ai.generated.aymara_api_client.models.question_schema import QuestionSchema
+from aymara_ai.generated.aymara_api_client.models.conversation_schema import (
+    ConversationSchema,
+)
 from aymara_ai.generated.aymara_api_client.models.score_run_out_schema import (
     ScoreRunOutSchema,
 )
@@ -275,6 +281,80 @@ class QuestionResponse(BaseModel):
         )
 
 
+class MessageResponse(BaseModel):
+    """
+    Message in the conversation
+    """
+
+    message_uuid: Annotated[str, Field(..., description="UUID of the message")]
+    message_text: Annotated[str, Field(..., description="Text of the message")]
+    message_sender: Annotated[
+        MessageSender, Field(..., description="Sender of the message")
+    ]
+    num_turn: Annotated[int, Field(..., description="Turn number of the message")]
+    timestamp: Annotated[datetime, Field(..., description="Timestamp of the message")]
+
+    @classmethod
+    def from_message_schema(cls, message: MessageSchema) -> "MessageResponse":
+        return cls(
+            message_uuid=message.message_uuid,
+            message_text=message.message_text,
+            message_sender=message.message_sender,
+            num_turn=message.num_turn,
+            timestamp=message.timestamp,
+        )
+
+    def to_message_schema(self) -> MessageSchema:
+        return MessageSchema(
+            message_uuid=self.message_uuid,
+            message_text=self.message_text,
+            message_sender=self.message_sender,
+            num_turn=self.num_turn,
+            timestamp=self.timestamp,
+        )
+
+
+class ConversationResponse(BaseModel):
+    """
+    Conversation in the test
+    """
+
+    conversation_uuid: Annotated[
+        str, Field(..., description="UUID of the conversation")
+    ]
+    status: Annotated[
+        ConversationStatus, Field(..., description="Status of the conversation")
+    ]
+    current_turn: Annotated[
+        int, Field(..., description="Current turn in the conversation")
+    ]
+
+    messages: Annotated[
+        List[MessageResponse], Field(..., description="Messages in the conversation")
+    ]
+
+    @classmethod
+    def from_conversation_schema(
+        cls, conversation: ConversationSchema
+    ) -> "ConversationResponse":
+        return cls(
+            conversation_uuid=conversation.conversation_uuid,
+            status=conversation.status,
+            current_turn=conversation.current_turn,
+            messages=[
+                MessageResponse.from_message_schema(m) for m in conversation.messages
+            ],
+        )
+
+    def to_conversation_schema(self) -> ConversationSchema:
+        return ConversationSchema(
+            conversation_uuid=self.conversation_uuid,
+            status=self.status,
+            current_turn=self.current_turn,
+            messages=[m.to_message_schema() for m in self.messages],
+        )
+
+
 class AccuracyQuestionResponse(QuestionResponse):
     """
     Question in the test
@@ -403,6 +483,7 @@ class BaseTestResponse(BaseModel):
         cls,
         test: TestOutSchema,
         questions: Optional[List[QuestionSchema]] = None,
+        conversations: Optional[List[ConversationSchema]] = None,
         failure_reason: Optional[str] = None,
     ) -> "BaseTestResponse":
         base_attributes = {
@@ -436,6 +517,20 @@ class BaseTestResponse(BaseModel):
             )
             return SafetyTestResponse(
                 **base_attributes, test_policy=test.test_policy, questions=questions
+            )
+        elif test.test_type == TestType.MULTITURN_SAFETY:
+            conversations = (
+                [
+                    ConversationResponse.from_conversation_schema(c)
+                    for c in conversations
+                ]
+                if conversations
+                else None
+            )
+            return MultiturnSafetyTestResponse(
+                **base_attributes,
+                test_policy=test.test_policy,
+                conversations=conversations,
             )
         elif test.test_type == TestType.JAILBREAK:
             questions = (
@@ -493,6 +588,18 @@ class AccuracyTestResponse(BaseTestResponse):
     questions: Annotated[
         Optional[List[AccuracyQuestionResponse]],
         Field(None, description="Questions in the test"),
+    ]
+
+
+class MultiturnSafetyTestResponse(BaseTestResponse):
+    """
+    Multiturn safety test response.
+    """
+
+    test_policy: Annotated[str, Field(..., description="Safety Policy to test against")]
+    conversations: Annotated[
+        Optional[List[ConversationResponse]],
+        Field(None, description="Conversations in the test"),
     ]
 
 

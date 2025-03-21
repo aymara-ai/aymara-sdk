@@ -6,13 +6,14 @@ It includes exception classes and utilities for converting API error responses
 into appropriate exceptions.
 """
 
-from typing import Dict, Optional, Type, Any, TypeVar, Union, cast
+from typing import Dict, Optional, Type, Any, TypeVar, Union
 from aymara_ai.generated.aymara_api_client.models.error_code import ErrorCode
-from aymara_ai.generated.aymara_api_client.models.error_response_schema import ErrorResponseSchema
-from aymara_ai.generated.aymara_api_client.models.error_schema import ErrorSchema
+from aymara_ai.generated.aymara_api_client.models.error_response_schema import (
+    ErrorResponseSchema,
+)
 from aymara_ai.generated.aymara_api_client.types import Response
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class AymaraError(Exception):
@@ -23,7 +24,7 @@ class AymaraError(Exception):
         message: str,
         code: ErrorCode = ErrorCode.SERVER_INTERNAL_ERROR,
         request_id: str = "",
-        details: Optional[Dict[str, Any]] = None
+        details: Optional[Dict[str, Any]] = None,
     ):
         """
         Initialize an AymaraError.
@@ -41,26 +42,31 @@ class AymaraError(Exception):
 
 class AuthError(AymaraError):
     """Exception raised for authentication and authorization errors."""
+
     pass
 
 
 class QuotaError(AymaraError):
     """Exception raised for rate limiting and quota errors."""
+
     pass
 
 
 class ResourceError(AymaraError):
     """Exception raised for errors related to resources not being found or conflicts."""
+
     pass
 
 
 class ValidationError(AymaraError):
     """Exception raised for input validation errors."""
+
     pass
 
 
 class ServerError(AymaraError):
     """Exception raised for internal server errors."""
+
     pass
 
 
@@ -87,19 +93,9 @@ def get_exception_class_from_code(code: ErrorCode) -> Type[AymaraError]:
     return ERROR_PREFIX_TO_EXCEPTION.get(prefix, AymaraError)
 
 
-def raise_from_legacy_error(error_response: Response[ErrorSchema]) -> None:
-    """
-    Legacy method to handle older API error responses.
-
-    Now simply extracts and raises the error message directly.
-    """
-    message = getattr(error_response.parsed, 'detail', "An unexpected error occurred")
-    raise ValueError(message)
-
-
 def raise_from_error_response(response_or_error: ErrorResponseSchema) -> None:
     """Raise an appropriate exception from an API response or error.
-    
+
     :param response_or_error: Error response from the API or any other error
     :raises AymaraError: An exception of the appropriate subclass
     """
@@ -108,13 +104,13 @@ def raise_from_error_response(response_or_error: ErrorResponseSchema) -> None:
         raise AymaraError(
             message="An unexpected error occurred",
         )
-    
+
     # Process ErrorResponseSchema objects
     request_id = response_or_error.request_id
     error_data = response_or_error.error
     code = error_data.code
     message = error_data.message
-    
+
     # Convert the details to a dictionary if present
     details = {}
     if error_data.details:
@@ -122,29 +118,28 @@ def raise_from_error_response(response_or_error: ErrorResponseSchema) -> None:
 
     exception_class = get_exception_class_from_code(code)
 
-    raise exception_class(message=message, code=code, request_id=request_id, details=details)
+    raise exception_class(
+        message=message, code=code, request_id=request_id, details=details
+    )
 
 
 def get_parsed_response(response: Response[Union[Any, T]]) -> T:
     """Process an API response, returning its parsed content or raising an appropriate exception.
-    
+
     :param response: Response object from an API call
     :returns: The parsed content of the response on success
     :raises AymaraError: An appropriate exception if the response indicates an error
     """
-    
-    if int(response.status_code) > 299 or (hasattr(response.status_code, "value")
-                                           and int(response.status_code.value) > 299):
-        
-        if isinstance(response.parsed, ErrorSchema) or hasattr(response.parsed, "detail"):
-            raise_from_legacy_error(cast(Response[ErrorSchema], response))
-        
+
+    if int(response.status_code) > 299 or (
+        hasattr(response.status_code, "value") and int(response.status_code.value) > 299
+    ):
         if isinstance(response.parsed, ErrorResponseSchema):
             raise_from_error_response(response.parsed)
-        
+
         raise AymaraError(
             message=f"Request failed with status code {response.status_code}"
         )
-    
+
     # At this point we know it's a success response, so it should be safe to cast
     return response.parsed  # type: ignore

@@ -58,14 +58,14 @@ def _parse_response(
         response_404 = ErrorResponseSchema.from_dict(response.json())
 
         return response_404
-    if response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY:
-        response_422 = ErrorResponseSchema.from_dict(response.json())
-
-        return response_422
     if response.status_code == HTTPStatus.CONFLICT:
         response_409 = ErrorResponseSchema.from_dict(response.json())
 
         return response_409
+    if response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY:
+        response_422 = ErrorResponseSchema.from_dict(response.json())
+
+        return response_422
     if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
         response_429 = ErrorResponseSchema.from_dict(response.json())
 

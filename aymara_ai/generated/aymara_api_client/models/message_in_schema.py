@@ -3,27 +3,32 @@ from typing import Any, Dict, List, Type, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="ErrorSchema")
+T = TypeVar("T", bound="MessageInSchema")
 
 
 @_attrs_define
-class ErrorSchema:
+class MessageInSchema:
     """
     Attributes:
-        detail (str):
+        conversation_uuid (str):
+        message_text (str):
     """
 
-    detail: str
+    conversation_uuid: str
+    message_text: str
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        detail = self.detail
+        conversation_uuid = self.conversation_uuid
+
+        message_text = self.message_text
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "detail": detail,
+                "conversation_uuid": conversation_uuid,
+                "message_text": message_text,
             }
         )
 
@@ -32,14 +37,17 @@ class ErrorSchema:
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         d = src_dict.copy()
-        detail = d.pop("detail")
+        conversation_uuid = d.pop("conversation_uuid")
 
-        error_schema = cls(
-            detail=detail,
+        message_text = d.pop("message_text")
+
+        message_in_schema = cls(
+            conversation_uuid=conversation_uuid,
+            message_text=message_text,
         )
 
-        error_schema.additional_properties = d
-        return error_schema
+        message_in_schema.additional_properties = d
+        return message_in_schema
 
     @property
     def additional_keys(self) -> List[str]:
