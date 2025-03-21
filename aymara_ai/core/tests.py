@@ -852,13 +852,13 @@ class TestMixin(AymaraAIProtocol):
                     test_response.test_status = models.TestStatus.FAILED
                     self.logger.update_progress_bar(test_uuid, Status.FAILED)
                     return BaseTestResponse.from_test_out_schema_and_questions(
-                        test_response, None, "Test creation timed out"
+                        test_response, None, None, "Test creation timed out"
                     )
 
                 if test_response.test_status == models.TestStatus.FAILED:
                     failure_reason = "Internal server error, please try again."
                     return BaseTestResponse.from_test_out_schema_and_questions(
-                        test_response, None, failure_reason
+                        test_response, None, None, failure_reason
                     )
 
                 if test_response.test_status == models.TestStatus.FINISHED:
@@ -913,13 +913,13 @@ class TestMixin(AymaraAIProtocol):
                     test_response.test_status = models.TestStatus.FAILED
                     self.logger.update_progress_bar(test_uuid, Status.FAILED)
                     return BaseTestResponse.from_test_out_schema_and_questions(
-                        test_response, None, "Test creation timed out"
+                        test_response, None, None, "Test creation timed out"
                     )
 
                 if test_response.test_status == models.TestStatus.FAILED:
                     failure_reason = "Internal server error, please try again."
                     return BaseTestResponse.from_test_out_schema_and_questions(
-                        test_response, None, failure_reason
+                        test_response, None, None, failure_reason
                     )
 
                 if test_response.test_status == models.TestStatus.FINISHED:
