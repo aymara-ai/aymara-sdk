@@ -6,11 +6,10 @@ It includes exception classes and utilities for converting API error responses
 into appropriate exceptions.
 """
 
-from typing import Dict, Optional, Type, Any, TypeVar, Union
+from typing import Any, Dict, Optional, Type, TypeVar, Union
+
 from aymara_ai.generated.aymara_api_client.models.error_code import ErrorCode
-from aymara_ai.generated.aymara_api_client.models.error_response_schema import (
-    ErrorResponseSchema,
-)
+from aymara_ai.generated.aymara_api_client.models.error_response_schema import ErrorResponseSchema
 from aymara_ai.generated.aymara_api_client.types import Response
 
 T = TypeVar("T")
@@ -118,9 +117,17 @@ def raise_from_error_response(response_or_error: ErrorResponseSchema) -> None:
 
     exception_class = get_exception_class_from_code(code)
 
-    raise exception_class(
-        message=message, code=code, request_id=request_id, details=details
-    )
+    raise exception_class(message=message, code=code, request_id=request_id, details=details)
+
+
+def raise_from_legacy_error(error_response: Response) -> None:
+    """
+    Legacy method to handle older API error responses.
+
+    Now simply extracts and raises the error message directly.
+    """
+    message = getattr(error_response.parsed, "detail", "An unexpected error occurred")
+    raise ValueError(message)
 
 
 def get_parsed_response(response: Response[Union[Any, T]]) -> T:
@@ -134,12 +141,13 @@ def get_parsed_response(response: Response[Union[Any, T]]) -> T:
     if int(response.status_code) > 299 or (
         hasattr(response.status_code, "value") and int(response.status_code.value) > 299
     ):
+        if hasattr(response.parsed, "detail"):
+            raise_from_legacy_error(response)
+
         if isinstance(response.parsed, ErrorResponseSchema):
             raise_from_error_response(response.parsed)
 
-        raise AymaraError(
-            message=f"Request failed with status code {response.status_code}"
-        )
+        raise AymaraError(message=f"Request failed with status code {response.status_code}")
 
     # At this point we know it's a success response, so it should be safe to cast
     return response.parsed  # type: ignore
