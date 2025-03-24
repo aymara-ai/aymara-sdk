@@ -48,6 +48,39 @@ from aymara_ai.utils.constants import (
 
 
 class TestMixin(AymaraAIProtocol):
+    
+    # Create Instruct Test Methods
+    def create_instruct_test(
+        self,
+        test_name: str,
+        test_type: str,
+        student_description: str,
+        test_policy: str,
+        test_language: str = DEFAULT_TEST_LANGUAGE,
+        num_test_questions: int = DEFAULT_NUM_QUESTIONS,
+        max_wait_time_secs: int = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+        additional_instructions: Optional[str] = None,
+        good_examples: Optional[List[GoodExample]] = None,
+        bad_examples: Optional[List[BadExample]] = None,
+        is_sandbox: Optional[bool] = False,
+    ) -> SafetyTestResponse:
+        return self._create_test(
+            test_name=test_name,
+            student_description=student_description,
+            test_policy=test_policy,
+            test_system_prompt=None,
+            knowledge_base=None,
+            test_language=test_language,
+            num_test_questions=num_test_questions,
+            is_async=False,
+            test_type=test_type,
+            max_wait_time_secs=max_wait_time_secs,
+            additional_instructions=additional_instructions,
+            good_examples=good_examples,
+            bad_examples=bad_examples,
+            is_sandbox=is_sandbox,
+        )
+        
     # Create Safety Test Methods
     def create_safety_test(
         self,
@@ -626,7 +659,7 @@ class TestMixin(AymaraAIProtocol):
         test_name: str,
         student_description: str,
         is_async: bool,
-        test_type: TestType,
+        test_type: str,
         test_language: str,
         test_system_prompt: Optional[str],
         test_policy: Optional[str],
@@ -691,7 +724,7 @@ class TestMixin(AymaraAIProtocol):
         knowledge_base: Optional[str],
         test_language: str,
         num_test_questions: Optional[int],
-        test_type: TestType,
+        test_type: str,
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
@@ -759,12 +792,12 @@ class TestMixin(AymaraAIProtocol):
 
         token2 = (
             len(test_policy) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
-            if test_type == TestType.SAFETY
-            or test_type == TestType.IMAGE_SAFETY
-            or test_type == TestType.MULTITURN_SAFETY
+            if test_policy is not None
             else len(test_system_prompt) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
-            if test_type == TestType.JAILBREAK
+            if test_system_prompt is not None
             else len(knowledge_base) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
+            if knowledge_base is not None
+            else 0
         )
 
         total_tokens = token1 + token2

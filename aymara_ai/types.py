@@ -427,7 +427,7 @@ class BaseTestResponse(BaseModel):
     """
 
     test_uuid: Annotated[str, Field(..., description="UUID of the test")]
-    test_type: Annotated[TestType, Field(..., description="Type of the test")]
+    test_type: Annotated[str, Field(..., description="Type of the test")]
     test_name: Annotated[str, Field(..., description="Name of the test")]
     test_status: Annotated[Status, Field(..., description="Status of the test")]
     created_at: Annotated[
@@ -556,7 +556,16 @@ class BaseTestResponse(BaseModel):
                 questions=questions,
             )
         else:
-            raise ValueError(f"Unsupported test type: {test.test_type}")
+            
+            questions = (
+                [QuestionResponse.from_question_schema(q) for q in questions]
+                if questions
+                else None
+            )
+            return BaseTestResponse(
+                **base_attributes,
+                questions=questions,
+            )
 
 
 class SafetyTestResponse(BaseTestResponse):
