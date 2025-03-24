@@ -18,6 +18,7 @@ from aymara_ai.types import (
     BadExample,
     BaseTestResponse,
     GoodExample,
+    InstructionOptions,
     JailbreakTestResponse,
     ListTestResponse,
     MultiturnSafetyTestResponse,
@@ -26,11 +27,13 @@ from aymara_ai.types import (
 )
 from aymara_ai.utils.constants import (
     DEFAULT_ACCURACY_MAX_WAIT_TIME_SECS,
-    DEFAULT_NUM_CONVERSATIONS,
     DEFAULT_ACCURACY_NUM_QUESTIONS,
     DEFAULT_CHAR_TO_TOKEN_MULTIPLIER,
     DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
     DEFAULT_MAX_TOKENS,
+    DEFAULT_NUM_CONVERSATIONS,
+    DEFAULT_NUM_CONVERSATIONS_MAX,
+    DEFAULT_NUM_CONVERSATIONS_MIN,
     DEFAULT_NUM_QUESTIONS,
     DEFAULT_NUM_QUESTIONS_MAX,
     DEFAULT_NUM_QUESTIONS_MIN,
@@ -42,45 +45,39 @@ from aymara_ai.utils.constants import (
     MAX_EXAMPLES_LENGTH,
     POLLING_INTERVAL,
     SUPPORTED_LANGUAGES,
-    DEFAULT_NUM_CONVERSATIONS_MIN,
-    DEFAULT_NUM_CONVERSATIONS_MAX,
 )
 
 
 class TestMixin(AymaraAIProtocol):
-    
-    # Create Instruct Test Methods
-    def create_instruct_test(
+    def create_eval(
         self,
-        test_name: str,
-        test_type: str,
-        student_description: str,
-        test_policy: str,
-        test_language: str = DEFAULT_TEST_LANGUAGE,
-        num_test_questions: int = DEFAULT_NUM_QUESTIONS,
+        *,
+        name: str,
+        template: str,
+        ai_under_test: str,
+        instructOptions: Optional[InstructionOptions] = None,
+        language: str = DEFAULT_TEST_LANGUAGE,
+        batch_size: int = DEFAULT_NUM_QUESTIONS,
         max_wait_time_secs: int = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
-        additional_instructions: Optional[str] = None,
-        good_examples: Optional[List[GoodExample]] = None,
-        bad_examples: Optional[List[BadExample]] = None,
         is_sandbox: Optional[bool] = False,
-    ) -> SafetyTestResponse:
+    ) -> BaseTestResponse:
         return self._create_test(
-            test_name=test_name,
-            student_description=student_description,
-            test_policy=test_policy,
+            test_name=name,
+            student_description=ai_under_test,
+            test_policy=instructOptions.policy if instructOptions else None,
             test_system_prompt=None,
             knowledge_base=None,
-            test_language=test_language,
-            num_test_questions=num_test_questions,
+            test_language=language,
+            num_test_questions=batch_size,
             is_async=False,
-            test_type=test_type,
+            test_type=template,
             max_wait_time_secs=max_wait_time_secs,
-            additional_instructions=additional_instructions,
-            good_examples=good_examples,
-            bad_examples=bad_examples,
+            additional_instructions=instructOptions.additional_instructions if instructOptions else None,
+            good_examples=instructOptions.good_examples if instructOptions else None,
+            bad_examples=instructOptions.bad_examples if instructOptions else None,
             is_sandbox=is_sandbox,
         )
-        
+
     # Create Safety Test Methods
     def create_safety_test(
         self,
@@ -707,13 +704,9 @@ class TestMixin(AymaraAIProtocol):
             num_conversations=num_conversations,
         )
         if is_async:
-            return self._create_and_wait_for_test_impl_async(
-                test_data, max_wait_time_secs, is_sandbox
-            )
+            return self._create_and_wait_for_test_impl_async(test_data, max_wait_time_secs, is_sandbox)
         else:
-            return self._create_and_wait_for_test_impl_sync(
-                test_data, max_wait_time_secs, is_sandbox
-            )
+            return self._create_and_wait_for_test_impl_sync(test_data, max_wait_time_secs, is_sandbox)
 
     def _validate_test_inputs(
         self,
@@ -736,9 +729,7 @@ class TestMixin(AymaraAIProtocol):
         if test_language not in SUPPORTED_LANGUAGES:
             raise ValueError(f"test_language must be one of {SUPPORTED_LANGUAGES}")
 
-        if (
-            test_type == TestType.SAFETY or test_type == TestType.IMAGE_SAFETY
-        ) and test_policy is None:
+        if (test_type == TestType.SAFETY or test_type == TestType.IMAGE_SAFETY) and test_policy is None:
             raise ValueError("test_policy is required for safety tests")
 
         if test_type == TestType.JAILBREAK and test_system_prompt is None:
@@ -747,10 +738,7 @@ class TestMixin(AymaraAIProtocol):
         if test_type == TestType.ACCURACY and knowledge_base is None:
             raise ValueError("knowledge_base is required for accuracy tests")
 
-        if (
-            len(test_name) < DEFAULT_TEST_NAME_LEN_MIN
-            or len(test_name) > DEFAULT_TEST_NAME_LEN_MAX
-        ):
+        if len(test_name) < DEFAULT_TEST_NAME_LEN_MIN or len(test_name) > DEFAULT_TEST_NAME_LEN_MAX:
             raise ValueError(
                 f"test_name must be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters"
             )
@@ -758,23 +746,15 @@ class TestMixin(AymaraAIProtocol):
             if test_type == TestType.JAILBREAK and num_test_questions < 1:
                 raise ValueError("limit_num_questions must be at least one question")
             elif test_type != TestType.JAILBREAK and not (
-                DEFAULT_NUM_QUESTIONS_MIN
-                <= num_test_questions
-                <= DEFAULT_NUM_QUESTIONS_MAX
+                DEFAULT_NUM_QUESTIONS_MIN <= num_test_questions <= DEFAULT_NUM_QUESTIONS_MAX
             ):
                 raise ValueError(
                     f"num_test_questions must be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions"
                 )
         if num_conversations is not None:
             if test_type != TestType.MULTITURN_SAFETY:
-                raise ValueError(
-                    "num_conversations is only valid for multiturn safety tests"
-                )
-            elif not (
-                DEFAULT_NUM_CONVERSATIONS_MIN
-                <= num_conversations
-                <= DEFAULT_NUM_CONVERSATIONS_MAX
-            ):
+                raise ValueError("num_conversations is only valid for multiturn safety tests")
+            elif not (DEFAULT_NUM_CONVERSATIONS_MIN <= num_conversations <= DEFAULT_NUM_CONVERSATIONS_MAX):
                 raise ValueError(
                     f"num_conversations must be between {DEFAULT_NUM_CONVERSATIONS_MIN} and {DEFAULT_NUM_CONVERSATIONS_MAX} conversations"
                 )
@@ -826,14 +806,10 @@ class TestMixin(AymaraAIProtocol):
             # Validate example types separately
             for example in good_examples or bad_examples:
                 if not isinstance(example, (GoodExample, BadExample)):
-                    raise ValueError(
-                        "examples must be instances of GoodExample or BadExample"
-                    )
+                    raise ValueError("examples must be instances of GoodExample or BadExample")
 
             if len(good_examples or bad_examples) > MAX_EXAMPLES_LENGTH:
-                raise ValueError(
-                    f"examples must be less than {MAX_EXAMPLES_LENGTH} examples"
-                )
+                raise ValueError(f"examples must be less than {MAX_EXAMPLES_LENGTH} examples")
 
         # Add knowledge_base to token calculation if it exists
         if knowledge_base is not None:
@@ -854,9 +830,7 @@ class TestMixin(AymaraAIProtocol):
         is_sandbox: Optional[bool] = None,
     ) -> BaseTestResponse:
         start_time = time.time()
-        response = create_test.sync_detailed(
-            client=self.client, body=test_data, is_sandbox=is_sandbox
-        )
+        response = create_test.sync_detailed(client=self.client, body=test_data, is_sandbox=is_sandbox)
 
         create_response = get_parsed_response(response)
 
@@ -869,9 +843,7 @@ class TestMixin(AymaraAIProtocol):
             Status.from_api_status(create_response.test_status),
         ):
             while True:
-                response = get_test.sync_detailed(
-                    client=self.client, test_uuid=test_uuid
-                )
+                response = get_test.sync_detailed(client=self.client, test_uuid=test_uuid)
                 test_response = get_parsed_response(response)
 
                 self.logger.update_progress_bar(
@@ -897,14 +869,10 @@ class TestMixin(AymaraAIProtocol):
                 if test_response.test_status == models.TestStatus.FINISHED:
                     if test_data.test_type == TestType.MULTITURN_SAFETY:
                         conversations = create_response.conversations
-                        return BaseTestResponse.from_test_out_schema_and_questions(
-                            test_response, None, conversations
-                        )
+                        return BaseTestResponse.from_test_out_schema_and_questions(test_response, None, conversations)
                     else:
                         questions = self._get_all_questions_sync(test_uuid)
-                        return BaseTestResponse.from_test_out_schema_and_questions(
-                            test_response, questions, None
-                        )
+                        return BaseTestResponse.from_test_out_schema_and_questions(test_response, questions, None)
 
                 time.sleep(POLLING_INTERVAL)
 
@@ -915,9 +883,7 @@ class TestMixin(AymaraAIProtocol):
         is_sandbox: Optional[bool] = None,
     ) -> BaseTestResponse:
         start_time = time.time()
-        response = await create_test.asyncio_detailed(
-            client=self.client, body=test_data, is_sandbox=is_sandbox
-        )
+        response = await create_test.asyncio_detailed(client=self.client, body=test_data, is_sandbox=is_sandbox)
 
         create_response = get_parsed_response(response)
 
@@ -930,9 +896,7 @@ class TestMixin(AymaraAIProtocol):
             Status.from_api_status(create_response.test_status),
         ):
             while True:
-                response = await get_test.asyncio_detailed(
-                    client=self.client, test_uuid=test_uuid
-                )
+                response = await get_test.asyncio_detailed(client=self.client, test_uuid=test_uuid)
                 test_response = get_parsed_response(response)
 
                 self.logger.update_progress_bar(
@@ -963,9 +927,7 @@ class TestMixin(AymaraAIProtocol):
                         )
                     else:
                         questions = await self._get_all_questions_async(test_uuid)
-                        return BaseTestResponse.from_test_out_schema_and_questions(
-                            test_response, questions, None
-                        )
+                        return BaseTestResponse.from_test_out_schema_and_questions(test_response, questions, None)
 
                 await asyncio.sleep(POLLING_INTERVAL)
 
@@ -1008,23 +970,17 @@ class TestMixin(AymaraAIProtocol):
         if test_response.test_status == models.TestStatus.FINISHED:
             questions = self._get_all_questions_sync(test_uuid)
 
-        return BaseTestResponse.from_test_out_schema_and_questions(
-            test_response, questions
-        )
+        return BaseTestResponse.from_test_out_schema_and_questions(test_response, questions)
 
     async def _get_test_async_impl(self, test_uuid: str) -> BaseTestResponse:
-        response = await get_test.asyncio_detailed(
-            client=self.client, test_uuid=test_uuid
-        )
+        response = await get_test.asyncio_detailed(client=self.client, test_uuid=test_uuid)
 
         test_response = get_parsed_response(response)
         questions = None
         if test_response.test_status == models.TestStatus.FINISHED:
             questions = await self._get_all_questions_async(test_uuid)
 
-        return BaseTestResponse.from_test_out_schema_and_questions(
-            test_response, questions
-        )
+        return BaseTestResponse.from_test_out_schema_and_questions(test_response, questions)
 
     # List Tests Methods
     def list_tests(self) -> ListTestResponse:
@@ -1055,18 +1011,13 @@ class TestMixin(AymaraAIProtocol):
                 break
             offset += len(paged_response.items)
 
-        return [
-            BaseTestResponse.from_test_out_schema_and_questions(test)
-            for test in all_tests
-        ]
+        return [BaseTestResponse.from_test_out_schema_and_questions(test) for test in all_tests]
 
     async def _list_tests_async_impl(self) -> List[BaseTestResponse]:
         all_tests = []
         offset = 0
         while True:
-            response = await list_tests.asyncio_detailed(
-                client=self.client, offset=offset
-            )
+            response = await list_tests.asyncio_detailed(client=self.client, offset=offset)
 
             paged_response = get_parsed_response(response)
             all_tests.extend(paged_response.items)
@@ -1074,19 +1025,14 @@ class TestMixin(AymaraAIProtocol):
                 break
             offset += len(paged_response.items)
 
-        return [
-            BaseTestResponse.from_test_out_schema_and_questions(test)
-            for test in all_tests
-        ]
+        return [BaseTestResponse.from_test_out_schema_and_questions(test) for test in all_tests]
 
     # Helper Methods
     def _get_all_questions_sync(self, test_uuid: str) -> List[models.QuestionSchema]:
         questions = []
         offset = 0
         while True:
-            response = get_test_questions.sync_detailed(
-                client=self.client, test_uuid=test_uuid, offset=offset
-            )
+            response = get_test_questions.sync_detailed(client=self.client, test_uuid=test_uuid, offset=offset)
 
             paged_response = get_parsed_response(response)
             questions.extend(paged_response.items)
@@ -1095,15 +1041,11 @@ class TestMixin(AymaraAIProtocol):
             offset += len(paged_response.items)
         return questions
 
-    async def _get_all_questions_async(
-        self, test_uuid: str
-    ) -> List[models.QuestionSchema]:
+    async def _get_all_questions_async(self, test_uuid: str) -> List[models.QuestionSchema]:
         questions = []
         offset = 0
         while True:
-            response = await get_test_questions.asyncio_detailed(
-                client=self.client, test_uuid=test_uuid, offset=offset
-            )
+            response = await get_test_questions.asyncio_detailed(client=self.client, test_uuid=test_uuid, offset=offset)
 
             paged_response = get_parsed_response(response)
             questions.extend(paged_response.items)
@@ -1123,7 +1065,5 @@ class TestMixin(AymaraAIProtocol):
         """
         Delete a test asynchronously.
         """
-        response = await delete_test.asyncio_detailed(
-            client=self.client, test_uuid=test_uuid
-        )
+        response = await delete_test.asyncio_detailed(client=self.client, test_uuid=test_uuid)
         parsed_response = get_parsed_response(response)

@@ -11,44 +11,27 @@ import pandas as pd
 from pydantic import BaseModel, Field, RootModel, model_validator
 
 from aymara_ai.generated.aymara_api_client.models import ScoreRunSuiteSummaryOutSchema
-from aymara_ai.generated.aymara_api_client.models.answer_in_schema import (
-    AnswerInSchema,
-)
-from aymara_ai.generated.aymara_api_client.models.answer_out_schema import (
-    AnswerOutSchema,
-)
-from .generated.aymara_api_client.models.message_sender import MessageSender
-from .generated.aymara_api_client.models.conversation_status import ConversationStatus
-from aymara_ai.generated.aymara_api_client.models.example_in_schema import (
-    ExampleInSchema,
-)
+from aymara_ai.generated.aymara_api_client.models.answer_in_schema import AnswerInSchema
+from aymara_ai.generated.aymara_api_client.models.answer_out_schema import AnswerOutSchema
+from aymara_ai.generated.aymara_api_client.models.conversation_schema import ConversationSchema
+from aymara_ai.generated.aymara_api_client.models.example_in_schema import ExampleInSchema
 from aymara_ai.generated.aymara_api_client.models.example_type import ExampleType
-from .generated.aymara_api_client.models.message_schema import MessageSchema
 from aymara_ai.generated.aymara_api_client.models.question_schema import QuestionSchema
-from aymara_ai.generated.aymara_api_client.models.conversation_schema import (
-    ConversationSchema,
-)
-from aymara_ai.generated.aymara_api_client.models.score_run_out_schema import (
-    ScoreRunOutSchema,
-)
-from aymara_ai.generated.aymara_api_client.models.score_run_status import (
-    ScoreRunStatus,
-)
-from aymara_ai.generated.aymara_api_client.models.score_run_suite_summary_status import (
-    ScoreRunSuiteSummaryStatus,
-)
-from aymara_ai.generated.aymara_api_client.models.score_run_summary_out_schema import (
-    ScoreRunSummaryOutSchema,
-)
-from aymara_ai.generated.aymara_api_client.models.scoring_example_in_schema import (
-    ScoringExampleInSchema,
-)
+from aymara_ai.generated.aymara_api_client.models.score_run_out_schema import ScoreRunOutSchema
+from aymara_ai.generated.aymara_api_client.models.score_run_status import ScoreRunStatus
+from aymara_ai.generated.aymara_api_client.models.score_run_suite_summary_status import ScoreRunSuiteSummaryStatus
+from aymara_ai.generated.aymara_api_client.models.score_run_summary_out_schema import ScoreRunSummaryOutSchema
+from aymara_ai.generated.aymara_api_client.models.scoring_example_in_schema import ScoringExampleInSchema
 from aymara_ai.generated.aymara_api_client.models.scoring_example_in_schema_example_type import (
     ScoringExampleInSchemaExampleType,
 )
 from aymara_ai.generated.aymara_api_client.models.test_out_schema import TestOutSchema
 from aymara_ai.generated.aymara_api_client.models.test_status import TestStatus
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
+
+from .generated.aymara_api_client.models.conversation_status import ConversationStatus
+from .generated.aymara_api_client.models.message_schema import MessageSchema
+from .generated.aymara_api_client.models.message_sender import MessageSender
 
 
 class Status(str, Enum):
@@ -61,9 +44,7 @@ class Status(str, Enum):
     FAILED = "FAILED"
 
     @classmethod
-    def from_api_status(
-        cls, api_status: Union[TestStatus, ScoreRunStatus, ScoreRunSuiteSummaryStatus]
-    ) -> "Status":
+    def from_api_status(cls, api_status: Union[TestStatus, ScoreRunStatus, ScoreRunSuiteSummaryStatus]) -> "Status":
         """
         Transform an API status to the user-friendly status.
 
@@ -106,9 +87,7 @@ class BaseStudentAnswerInput(BaseModel):
     """
 
     question_uuid: Annotated[str, Field(..., description="UUID of the question")]
-    is_refusal: Annotated[
-        bool, Field(default=False, description="Whether the student refused to answer")
-    ]
+    is_refusal: Annotated[bool, Field(default=False, description="Whether the student refused to answer")]
     exclude_from_scoring: Annotated[
         bool,
         Field(
@@ -132,11 +111,7 @@ class BaseStudentAnswerInput(BaseModel):
         if not self.exclude_from_scoring:
             answer_text = getattr(self, "answer_text", None)
             answer_image_path = getattr(self, "answer_image_path", None)
-            if (
-                answer_text is None
-                and answer_image_path is None
-                and not self.is_refusal
-            ):
+            if answer_text is None and answer_image_path is None and not self.is_refusal:
                 raise ValueError(
                     "Either answer_text or answer_image_path must be provided "
                     "unless exclude_from_scoring or is_refusal is True"
@@ -149,16 +124,12 @@ class TextStudentAnswerInput(BaseStudentAnswerInput):
     Student text answer for a question
     """
 
-    answer_text: Annotated[
-        Optional[str], Field(..., description="Answer text provided by the student")
-    ]
+    answer_text: Annotated[Optional[str], Field(..., description="Answer text provided by the student")]
 
     @classmethod
     def from_answer_in_schema(cls, answer: AnswerInSchema) -> "TextStudentAnswerInput":
         if answer.answer_text is None:
-            raise ValueError(
-                "Cannot create TextStudentAnswerInput from answer without text"
-            )
+            raise ValueError("Cannot create TextStudentAnswerInput from answer without text")
         return cls(
             question_uuid=answer.question_uuid,
             answer_text=answer.answer_text,
@@ -172,16 +143,12 @@ class ImageStudentAnswerInput(BaseStudentAnswerInput):
     Student image answer for a question
     """
 
-    answer_image_path: Annotated[
-        Optional[str], Field(default=None, description="Path to the image")
-    ]
+    answer_image_path: Annotated[Optional[str], Field(default=None, description="Path to the image")]
 
     @classmethod
     def from_answer_in_schema(cls, answer: AnswerInSchema) -> "ImageStudentAnswerInput":
         if answer.answer_image_path is None:
-            raise ValueError(
-                "Cannot create ImageStudentAnswerInput from answer without image path"
-            )
+            raise ValueError("Cannot create ImageStudentAnswerInput from answer without image path")
         return cls(
             question_uuid=answer.question_uuid,
             answer_image_path=answer.answer_image_path,
@@ -201,9 +168,7 @@ class ScoringExample(BaseModel):
         Optional[str],
         Field(None, description="Explanation of why this answer should pass/fail"),
     ]
-    is_passing: Annotated[
-        bool, Field(..., description="Whether this is a passing example")
-    ]
+    is_passing: Annotated[bool, Field(..., description="Whether this is a passing example")]
 
     def to_scoring_example_in_schema(self) -> ScoringExampleInSchema:
         return ScoringExampleInSchema(
@@ -222,16 +187,12 @@ class ImageScoringExample(BaseModel):
     """
 
     question_text: Annotated[str, Field(..., description="Example question text")]
-    image_description: Annotated[
-        str, Field(..., description="Description of the image")
-    ]
+    image_description: Annotated[str, Field(..., description="Description of the image")]
     explanation: Annotated[
         Optional[str],
         Field(None, description="Explanation of why this answer should pass/fail"),
     ]
-    is_passing: Annotated[
-        bool, Field(..., description="Whether this is a passing example")
-    ]
+    is_passing: Annotated[bool, Field(..., description="Whether this is a passing example")]
 
     def to_scoring_example_in_schema(self) -> ScoringExampleInSchema:
         return ScoringExampleInSchema(
@@ -250,9 +211,7 @@ class CreateScoreRunInput(BaseModel):
     """
 
     test_uuid: Annotated[str, Field(..., description="UUID of the test")]
-    student_responses: Annotated[
-        List[TextStudentAnswerInput], Field(..., description="Student responses")
-    ]
+    student_responses: Annotated[List[TextStudentAnswerInput], Field(..., description="Student responses")]
     scoring_examples: Annotated[
         Optional[List[ScoringExample]],
         Field(None, description="Examples to guide scoring"),
@@ -288,9 +247,7 @@ class MessageResponse(BaseModel):
 
     message_uuid: Annotated[str, Field(..., description="UUID of the message")]
     message_text: Annotated[str, Field(..., description="Text of the message")]
-    message_sender: Annotated[
-        MessageSender, Field(..., description="Sender of the message")
-    ]
+    message_sender: Annotated[MessageSender, Field(..., description="Sender of the message")]
     num_turn: Annotated[int, Field(..., description="Turn number of the message")]
     timestamp: Annotated[datetime, Field(..., description="Timestamp of the message")]
 
@@ -319,31 +276,19 @@ class ConversationResponse(BaseModel):
     Conversation in the test
     """
 
-    conversation_uuid: Annotated[
-        str, Field(..., description="UUID of the conversation")
-    ]
-    status: Annotated[
-        ConversationStatus, Field(..., description="Status of the conversation")
-    ]
-    current_turn: Annotated[
-        int, Field(..., description="Current turn in the conversation")
-    ]
+    conversation_uuid: Annotated[str, Field(..., description="UUID of the conversation")]
+    status: Annotated[ConversationStatus, Field(..., description="Status of the conversation")]
+    current_turn: Annotated[int, Field(..., description="Current turn in the conversation")]
 
-    messages: Annotated[
-        List[MessageResponse], Field(..., description="Messages in the conversation")
-    ]
+    messages: Annotated[List[MessageResponse], Field(..., description="Messages in the conversation")]
 
     @classmethod
-    def from_conversation_schema(
-        cls, conversation: ConversationSchema
-    ) -> "ConversationResponse":
+    def from_conversation_schema(cls, conversation: ConversationSchema) -> "ConversationResponse":
         return cls(
             conversation_uuid=conversation.conversation_uuid,
             status=conversation.status,
             current_turn=conversation.current_turn,
-            messages=[
-                MessageResponse.from_message_schema(m) for m in conversation.messages
-            ],
+            messages=[MessageResponse.from_message_schema(m) for m in conversation.messages],
         )
 
     def to_conversation_schema(self) -> ConversationSchema:
@@ -366,9 +311,7 @@ class AccuracyQuestionResponse(QuestionResponse):
     ]
 
     @classmethod
-    def from_question_schema(
-        cls, question: QuestionSchema
-    ) -> "AccuracyQuestionResponse":
+    def from_question_schema(cls, question: QuestionSchema) -> "AccuracyQuestionResponse":
         return cls(
             question_uuid=question.question_uuid,
             question_text=question.question_text,
@@ -430,21 +373,15 @@ class BaseTestResponse(BaseModel):
     test_type: Annotated[str, Field(..., description="Type of the test")]
     test_name: Annotated[str, Field(..., description="Name of the test")]
     test_status: Annotated[Status, Field(..., description="Status of the test")]
-    created_at: Annotated[
-        datetime, Field(..., description="Timestamp of the test creation")
-    ]
+    created_at: Annotated[datetime, Field(..., description="Timestamp of the test creation")]
 
-    num_test_questions: Annotated[
-        Optional[int], Field(None, description="Number of test questions")
-    ]
+    num_test_questions: Annotated[Optional[int], Field(None, description="Number of test questions")]
 
     questions: Annotated[
         Optional[List[QuestionResponse]],
         Field(None, description="Questions in the test"),
     ]
-    failure_reason: Annotated[
-        Optional[str], Field(None, description="Reason for the test failure")
-    ]
+    failure_reason: Annotated[Optional[str], Field(None, description="Reason for the test failure")]
 
     good_examples: Annotated[
         Optional[List[GoodExample]],
@@ -510,22 +447,11 @@ class BaseTestResponse(BaseModel):
             else None,
         }
         if test.test_type == TestType.SAFETY or test.test_type == TestType.IMAGE_SAFETY:
-            questions = (
-                [QuestionResponse.from_question_schema(q) for q in questions]
-                if questions
-                else None
-            )
-            return SafetyTestResponse(
-                **base_attributes, test_policy=test.test_policy, questions=questions
-            )
+            questions = [QuestionResponse.from_question_schema(q) for q in questions] if questions else None
+            return SafetyTestResponse(**base_attributes, test_policy=test.test_policy, questions=questions)
         elif test.test_type == TestType.MULTITURN_SAFETY:
             conversations = (
-                [
-                    ConversationResponse.from_conversation_schema(c)
-                    for c in conversations
-                ]
-                if conversations
-                else None
+                [ConversationResponse.from_conversation_schema(c) for c in conversations] if conversations else None
             )
             return MultiturnSafetyTestResponse(
                 **base_attributes,
@@ -533,22 +459,14 @@ class BaseTestResponse(BaseModel):
                 conversations=conversations,
             )
         elif test.test_type == TestType.JAILBREAK:
-            questions = (
-                [QuestionResponse.from_question_schema(q) for q in questions]
-                if questions
-                else None
-            )
+            questions = [QuestionResponse.from_question_schema(q) for q in questions] if questions else None
             return JailbreakTestResponse(
                 **base_attributes,
                 test_system_prompt=test.test_system_prompt,
                 questions=questions,
             )
         elif test.test_type == TestType.ACCURACY:
-            questions = (
-                [AccuracyQuestionResponse.from_question_schema(q) for q in questions]
-                if questions
-                else None
-            )
+            questions = [AccuracyQuestionResponse.from_question_schema(q) for q in questions] if questions else None
 
             return AccuracyTestResponse(
                 **base_attributes,
@@ -556,12 +474,7 @@ class BaseTestResponse(BaseModel):
                 questions=questions,
             )
         else:
-            
-            questions = (
-                [QuestionResponse.from_question_schema(q) for q in questions]
-                if questions
-                else None
-            )
+            questions = [QuestionResponse.from_question_schema(q) for q in questions] if questions else None
             return BaseTestResponse(
                 **base_attributes,
                 questions=questions,
@@ -581,9 +494,7 @@ class JailbreakTestResponse(BaseTestResponse):
     Jailbreak test response.
     """
 
-    test_system_prompt: Annotated[
-        str, Field(..., description="System prompt to jailbreak")
-    ]
+    test_system_prompt: Annotated[str, Field(..., description="System prompt to jailbreak")]
 
 
 class AccuracyTestResponse(BaseTestResponse):
@@ -591,9 +502,7 @@ class AccuracyTestResponse(BaseTestResponse):
     Accuracy test response.
     """
 
-    knowledge_base: Annotated[
-        str, Field(..., description="Knowledge base to test against")
-    ]
+    knowledge_base: Annotated[str, Field(..., description="Knowledge base to test against")]
     questions: Annotated[
         Optional[List[AccuracyQuestionResponse]],
         Field(None, description="Questions in the test"),
@@ -659,25 +568,13 @@ class ScoredAnswerResponse(BaseModel):
 
     answer_uuid: Annotated[str, Field(..., description="UUID of the answer")]
     question_uuid: Annotated[str, Field(..., description="UUID of the question")]
-    answer_text: Annotated[
-        Optional[str], Field(default=None, description="Answer to the question")
-    ]
-    answer_image_path: Annotated[
-        Optional[str], Field(default=None, description="Path to the answer image")
-    ]
-    answer_image_url: Annotated[
-        Optional[str], Field(default=None, description="URL to the answer image")
-    ]
+    answer_text: Annotated[Optional[str], Field(default=None, description="Answer to the question")]
+    answer_image_path: Annotated[Optional[str], Field(default=None, description="Path to the answer image")]
+    answer_image_url: Annotated[Optional[str], Field(default=None, description="URL to the answer image")]
     question_text: Annotated[str, Field(..., description="Question in the test")]
-    explanation: Annotated[
-        Optional[str], Field(default=None, description="Explanation for the score")
-    ]
-    confidence: Annotated[
-        Optional[float], Field(default=None, description="Confidence score")
-    ]
-    is_passed: Annotated[
-        Optional[bool], Field(default=None, description="Whether the answer is passed")
-    ]
+    explanation: Annotated[Optional[str], Field(default=None, description="Explanation for the score")]
+    confidence: Annotated[Optional[float], Field(default=None, description="Confidence score")]
+    is_passed: Annotated[Optional[bool], Field(default=None, description="Whether the answer is passed")]
     exclude_from_scoring: Annotated[
         bool,
         Field(
@@ -697,20 +594,16 @@ class ScoredAnswerResponse(BaseModel):
     def from_answer_out_schema(cls, answer: AnswerOutSchema) -> "ScoredAnswerResponse":
         # Handle potential Unset values for answer_text and answer_image_path
         answer_text = (
-            None
-            if not hasattr(answer, "answer_text") or answer.answer_text is None
-            else str(answer.answer_text)
+            None if not hasattr(answer, "answer_text") or answer.answer_text is None else str(answer.answer_text)
         )
         answer_image_path = (
             None
-            if not hasattr(answer, "answer_image_path")
-            or answer.answer_image_path is None
+            if not hasattr(answer, "answer_image_path") or answer.answer_image_path is None
             else str(answer.answer_image_path)
         )
         answer_image_url = (
             None
-            if not hasattr(answer, "answer_image_url")
-            or answer.answer_image_url is None
+            if not hasattr(answer, "answer_image_url") or answer.answer_image_url is None
             else str(answer.answer_image_url)
         )
 
@@ -734,19 +627,13 @@ class AccuracyScoredAnswerResponse(ScoredAnswerResponse):
     A single answer to a question in the test that has been scored.
     """
 
-    accuracy_question_type: Annotated[
-        str, Field(..., description="Type of the question for accuracy tests")
-    ]
+    accuracy_question_type: Annotated[str, Field(..., description="Type of the question for accuracy tests")]
 
     @classmethod
-    def from_answer_out_schema(
-        cls, answer: AnswerOutSchema
-    ) -> "AccuracyScoredAnswerResponse":
+    def from_answer_out_schema(cls, answer: AnswerOutSchema) -> "AccuracyScoredAnswerResponse":
         # Handle potential Unset values for answer_text
         answer_text = (
-            None
-            if not hasattr(answer, "answer_text") or answer.answer_text is None
-            else str(answer.answer_text)
+            None if not hasattr(answer, "answer_text") or answer.answer_text is None else str(answer.answer_text)
         )
 
         return cls(
@@ -769,9 +656,7 @@ class ScoreRunResponse(BaseModel):
     """
 
     score_run_uuid: Annotated[str, Field(..., description="UUID of the score run")]
-    score_run_status: Annotated[
-        Status, Field(..., description="Status of the score run")
-    ]
+    score_run_status: Annotated[Status, Field(..., description="Status of the score run")]
 
     test: Annotated[BaseTestResponse, Field(..., description="Test response")]
     answers: Annotated[
@@ -779,17 +664,11 @@ class ScoreRunResponse(BaseModel):
         Field(None, description="List of scored answers"),
     ]
 
-    created_at: Annotated[
-        datetime, Field(..., description="Timestamp of the score run creation")
-    ]
+    created_at: Annotated[datetime, Field(..., description="Timestamp of the score run creation")]
 
-    failure_reason: Annotated[
-        Optional[str], Field(None, description="Reason for the score run failure")
-    ]
+    failure_reason: Annotated[Optional[str], Field(None, description="Reason for the score run failure")]
 
-    pass_rate: Annotated[
-        Optional[float], Field(None, description="Pass rate of the score run")
-    ]
+    pass_rate: Annotated[Optional[float], Field(None, description="Pass rate of the score run")]
 
     def to_scores_df(self) -> pd.DataFrame:
         """Create a scores DataFrame."""
@@ -828,9 +707,7 @@ class ScoreRunResponse(BaseModel):
             "score_run_status": Status.from_api_status(score_run.score_run_status),
             "test": BaseTestResponse.from_test_out_schema_and_questions(
                 score_run.test,
-                questions=[answer.question for answer in answers]
-                if answers is not None
-                else None,
+                questions=[answer.question for answer in answers] if answers is not None else None,
             ),
             "created_at": score_run.created_at,
             "failure_reason": failure_reason,
@@ -838,26 +715,14 @@ class ScoreRunResponse(BaseModel):
         }
         if score_run.test.test_type == TestType.ACCURACY:
             answers = (
-                [
-                    AccuracyScoredAnswerResponse.from_answer_out_schema(answer)
-                    for answer in answers
-                ]
-                if answers
-                else None
+                [AccuracyScoredAnswerResponse.from_answer_out_schema(answer) for answer in answers] if answers else None
             )
             return AccuracyScoreRunResponse(
                 **base_attributes,
                 answers=answers,
             )
         else:
-            answers = (
-                [
-                    ScoredAnswerResponse.from_answer_out_schema(answer)
-                    for answer in answers
-                ]
-                if answers
-                else None
-            )
+            answers = [ScoredAnswerResponse.from_answer_out_schema(answer) for answer in answers] if answers else None
 
         return cls(
             **base_attributes,
@@ -940,24 +805,16 @@ class ScoreRunSummaryResponse(BaseModel):
     Score run summary response.
     """
 
-    score_run_summary_uuid: Annotated[
-        str, Field(..., description="UUID of the score run summary")
-    ]
-    passing_answers_summary: Annotated[
-        str, Field(..., description="Summary of the passing answers")
-    ]
-    failing_answers_summary: Annotated[
-        str, Field(..., description="Summary of the failing answers")
-    ]
+    score_run_summary_uuid: Annotated[str, Field(..., description="UUID of the score run summary")]
+    passing_answers_summary: Annotated[str, Field(..., description="Summary of the passing answers")]
+    failing_answers_summary: Annotated[str, Field(..., description="Summary of the failing answers")]
     improvement_advice: Annotated[str, Field(..., description="Advice for improvement")]
     test_name: Annotated[str, Field(..., description="Name of the test")]
     test_type: Annotated[TestType, Field(..., description="Type of the test")]
     score_run_uuid: Annotated[str, Field(..., description="UUID of the score run")]
 
     @classmethod
-    def from_score_run_summary_out_schema(
-        cls, summary: ScoreRunSummaryOutSchema
-    ) -> "ScoreRunSummaryResponse":
+    def from_score_run_summary_out_schema(cls, summary: ScoreRunSummaryOutSchema) -> "ScoreRunSummaryResponse":
         return cls(
             score_run_summary_uuid=summary.score_run_summary_uuid,
             passing_answers_summary=summary.passing_answers_summary,
@@ -974,23 +831,13 @@ class ScoreRunSuiteSummaryResponse(BaseModel):
     Score run suite summary response.
     """
 
-    score_run_suite_summary_uuid: Annotated[
-        str, Field(..., description="UUID of the score run suite summary")
-    ]
+    score_run_suite_summary_uuid: Annotated[str, Field(..., description="UUID of the score run suite summary")]
 
-    score_run_suite_summary_status: Annotated[
-        Status, Field(..., description="Status of the score run suite summary")
-    ]
+    score_run_suite_summary_status: Annotated[Status, Field(..., description="Status of the score run suite summary")]
 
-    overall_passing_answers_summary: Annotated[
-        Optional[str], Field(None, description="Summary of the passing answers")
-    ]
-    overall_failing_answers_summary: Annotated[
-        Optional[str], Field(None, description="Summary of the failing answers")
-    ]
-    overall_improvement_advice: Annotated[
-        Optional[str], Field(None, description="Advice for improvement")
-    ]
+    overall_passing_answers_summary: Annotated[Optional[str], Field(None, description="Summary of the passing answers")]
+    overall_failing_answers_summary: Annotated[Optional[str], Field(None, description="Summary of the failing answers")]
+    overall_improvement_advice: Annotated[Optional[str], Field(None, description="Advice for improvement")]
 
     score_run_summaries: Annotated[
         List[ScoreRunSummaryResponse],
@@ -1002,9 +849,7 @@ class ScoreRunSuiteSummaryResponse(BaseModel):
         Field(..., description="Timestamp of the score run suite summary creation"),
     ]
 
-    failure_reason: Annotated[
-        Optional[str], Field(None, description="Reason for the score run failure")
-    ]
+    failure_reason: Annotated[Optional[str], Field(None, description="Reason for the score run failure")]
 
     def to_df(self) -> pd.DataFrame:
         """Create a scores DataFrame."""
@@ -1013,30 +858,18 @@ class ScoreRunSuiteSummaryResponse(BaseModel):
         for summary in self.score_run_summaries:
             if summary.test_type == TestType.ACCURACY:
                 # Extract sections using XML tags
-                passing_sections = re.findall(
-                    r"<(\w+)>(.*?)</\1>", summary.passing_answers_summary, re.DOTALL
-                )
+                passing_sections = re.findall(r"<(\w+)>(.*?)</\1>", summary.passing_answers_summary, re.DOTALL)
                 failing_sections = (
-                    re.findall(
-                        r"<(\w+)>(.*?)</\1>", summary.failing_answers_summary, re.DOTALL
-                    )
+                    re.findall(r"<(\w+)>(.*?)</\1>", summary.failing_answers_summary, re.DOTALL)
                     if summary.failing_answers_summary
                     else []
                 )
-                advice_sections = re.findall(
-                    r"<(\w+)>(.*?)</\1>", summary.improvement_advice, re.DOTALL
-                )
+                advice_sections = re.findall(r"<(\w+)>(.*?)</\1>", summary.improvement_advice, re.DOTALL)
 
                 # Create a mapping of question types to their content
-                passing_by_type = {
-                    tag: content.strip() for tag, content in passing_sections
-                }
-                failing_by_type = {
-                    tag: content.strip() for tag, content in failing_sections
-                }
-                advice_by_type = {
-                    tag: content.strip() for tag, content in advice_sections
-                }
+                passing_by_type = {tag: content.strip() for tag, content in passing_sections}
+                failing_by_type = {tag: content.strip() for tag, content in failing_sections}
+                advice_by_type = {tag: content.strip() for tag, content in advice_sections}
 
                 # Get ordered unique question types while preserving order
                 question_types = []
@@ -1115,3 +948,16 @@ class ListScoreRunSuiteSummaryResponse(RootModel):
 
     def __len__(self) -> int:
         return len(self.root)
+
+
+class InstructionOptions(BaseModel):
+    """
+    Instruction options for the evaluation
+    """
+
+    policy: Annotated[str, Field(..., description="Policy to evaluate against")]
+    additional_instructions: Annotated[
+        Optional[str], Field(..., description="Additional instructions for the evaluation")
+    ] = Field(default=None)
+    good_examples: Annotated[List[GoodExample], Field(default_factory=list, description="Path to the instruction image")]
+    bad_examples: Annotated[List[BadExample], Field(default_factory=list, description="URL to the instruction image")]
