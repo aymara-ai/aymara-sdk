@@ -37,10 +37,9 @@ class EvalMixin(AymaraAIProtocol):
         template: str,
         ai_under_eval: str,
         instruct_options: Optional[InstructionOptions] = None,
-        language: str = DEFAULT_TEST_LANGUAGE,
         batch_size: int = DEFAULT_NUM_QUESTIONS,
         max_wait_time_secs: int = DEFAULT_MAX_WAIT_TIME_SECS,
-        is_sandbox: Optional[bool] = False,
+        use_sandbox: Optional[bool] = False,
     ) -> BaseTestResponse:
         """Create an evaluation synchronously and wait for completion.
 
@@ -77,22 +76,24 @@ class EvalMixin(AymaraAIProtocol):
             )
             ```
         """
+        use_sandbox = use_sandbox or self.use_sandbox
+
         # Wrap the async implementation with run_async
         return run_async(
             self._create_eval(
                 test_name=name,
                 student_description=ai_under_eval,
-                test_policy=instruct_options.policy if instruct_options else None,
+                test_policy=instruct_options.ai_instructions if instruct_options else None,
                 test_system_prompt=None,
                 knowledge_base=None,
-                test_language=language,
+                test_language=instruct_options.language if instruct_options else DEFAULT_TEST_LANGUAGE,
                 num_test_questions=batch_size,
                 test_type=template,
                 max_wait_time_secs=max_wait_time_secs,
-                additional_instructions=instruct_options.additional_instructions if instruct_options else None,
+                additional_instructions=instruct_options.eval_instructions if instruct_options else None,
                 good_examples=instruct_options.good_examples if instruct_options else None,
                 bad_examples=instruct_options.bad_examples if instruct_options else None,
-                is_sandbox=is_sandbox,
+                is_sandbox=use_sandbox,
             )
         )
 
@@ -147,14 +148,14 @@ class EvalMixin(AymaraAIProtocol):
         return await self._create_eval(
             test_name=name,
             student_description=ai_under_eval,
-            test_policy=instruct_options.policy if instruct_options else None,
+            test_policy=instruct_options.ai_instructions if instruct_options else None,
             test_system_prompt=None,
             knowledge_base=None,
-            test_language=language,
+            test_language=instruct_options.language if instruct_options else DEFAULT_TEST_LANGUAGE,
             num_test_questions=batch_size,
             test_type=template,
             max_wait_time_secs=max_wait_time_secs,
-            additional_instructions=instruct_options.additional_instructions if instruct_options else None,
+            additional_instructions=instruct_options.eval_instructions if instruct_options else None,
             good_examples=instruct_options.good_examples if instruct_options else None,
             bad_examples=instruct_options.bad_examples if instruct_options else None,
             is_sandbox=is_sandbox,

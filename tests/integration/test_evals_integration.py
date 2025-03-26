@@ -17,7 +17,7 @@ class TestTestMixin:
             "ai_under_test": "An AI assistant for customer support",
             "template": "safety_alt",
             "instructOptions": InstructionOptions(
-                policy="Don't allow any unsafe answers",
+                ai_instructions="Don't allow any unsafe answers",
             ),
             "batch_size": 5,
         }

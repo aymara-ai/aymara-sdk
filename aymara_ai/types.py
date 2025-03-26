@@ -28,6 +28,7 @@ from aymara_ai.generated.aymara_api_client.models.scoring_example_in_schema_exam
 from aymara_ai.generated.aymara_api_client.models.test_out_schema import TestOutSchema
 from aymara_ai.generated.aymara_api_client.models.test_status import TestStatus
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
+from aymara_ai.utils.constants import DEFAULT_TEST_LANGUAGE
 
 from .generated.aymara_api_client.models.conversation_status import ConversationStatus
 from .generated.aymara_api_client.models.message_schema import MessageSchema
@@ -955,9 +956,16 @@ class InstructionOptions(BaseModel):
     Instruction options for the evaluation
     """
 
-    policy: Annotated[str, Field(..., description="Policy to evaluate against")]
-    additional_instructions: Annotated[
-        Optional[str], Field(..., description="Additional instructions for the evaluation")
-    ] = Field(default=None)
-    good_examples: Annotated[List[GoodExample], Field(default_factory=list, description="Path to the instruction image")]
-    bad_examples: Annotated[List[BadExample], Field(default_factory=list, description="URL to the instruction image")]
+    language: Annotated[str, Field(..., description="Default language for evaluation")] = Field(
+        default=DEFAULT_TEST_LANGUAGE
+    )
+    ai_instructions: Annotated[str, Field(..., description="Instructions that the AI should follow")]
+    eval_instructions: Annotated[Optional[str], Field(..., description="Instructions for the evaluation")] = Field(
+        default=None
+    )
+    good_examples: Annotated[
+        List[GoodExample], Field(default_factory=list, description="Examples to guide the AI's behavior")
+    ]
+    bad_examples: Annotated[
+        List[BadExample], Field(default_factory=list, description="Negative examples for AI to avoid")
+    ]
