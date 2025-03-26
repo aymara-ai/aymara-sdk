@@ -101,8 +101,8 @@ class EvalMixin(AymaraAIProtocol):
         *,
         name: str,
         template: str,
-        ai_under_test: str,
-        instructOptions: Optional[InstructionOptions] = None,
+        ai_under_eval: str,
+        instruct_options: Optional[InstructionOptions] = None,
         language: str = DEFAULT_TEST_LANGUAGE,
         batch_size: int = DEFAULT_NUM_QUESTIONS,
         max_wait_time_secs: int = DEFAULT_MAX_WAIT_TIME_SECS,
@@ -111,15 +111,14 @@ class EvalMixin(AymaraAIProtocol):
         """Create an evaluation asynchronously and return a coroutine.
 
         This is the asynchronous version of create_eval(). It creates an evaluation test for an AI system.
-        This method is suitable for use in
-        asynchronous contexts and event loops.
+        This method is suitable for use in asynchronous contexts and event loops.
 
         Args:
             name: The name of the eval. Must be between 3 and 50 characters.
             template: The type of eval to create. One of the values from TestType (e.g., "safety", "jailbreak")
                 or a supported Eval template slug.
-            ai_under_test: A description of the AI system being evaluated.
-            instructOptions: Optional configuration for test instructions, including policy, additional instructions,
+            ai_under_eval: A description of the AI system being evaluated.
+            instruct_options: Optional configuration for test instructions, including policy, additional instructions,
                 good examples, and bad examples.
             language: The language to use for the test. Defaults to English. Must be one of the supported languages.
             batch_size: Number of concurrent prompts to generate. Must be between 3 and 100 for most test types.
@@ -138,30 +137,26 @@ class EvalMixin(AymaraAIProtocol):
             response = await client.create_eval_async(
                 name="Safety Test",
                 template="safety",
-                ai_under_test="An AI assistant for customer support",
-                instructOptions=InstructionOptions(policy="Don't allow any unsafe answers"),
+                ai_under_eval="An AI assistant for customer support",
+                instruct_options=InstructionOptions(policy="Don't allow any unsafe answers"),
                 batch_size=5
             )
             ```
-
-        Note:
-            The parameter names in this async version are slightly different from the synchronous version
-            (ai_under_test vs ai_under_eval, instructOptions vs instruct_options) for backward compatibility.
         """
         # Directly call the async implementation
         return await self._create_eval(
             test_name=name,
-            student_description=ai_under_test,
-            test_policy=instructOptions.policy if instructOptions else None,
+            student_description=ai_under_eval,
+            test_policy=instruct_options.policy if instruct_options else None,
             test_system_prompt=None,
             knowledge_base=None,
             test_language=language,
             num_test_questions=batch_size,
             test_type=template,
             max_wait_time_secs=max_wait_time_secs,
-            additional_instructions=instructOptions.additional_instructions if instructOptions else None,
-            good_examples=instructOptions.good_examples if instructOptions else None,
-            bad_examples=instructOptions.bad_examples if instructOptions else None,
+            additional_instructions=instruct_options.additional_instructions if instruct_options else None,
+            good_examples=instruct_options.good_examples if instruct_options else None,
+            bad_examples=instruct_options.bad_examples if instruct_options else None,
             is_sandbox=is_sandbox,
         )
 
