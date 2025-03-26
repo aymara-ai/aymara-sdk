@@ -25,6 +25,7 @@ from aymara_ai.core.tests import TestMixin
 from aymara_ai.core.uploads import UploadMixin
 from aymara_ai.generated.aymara_api_client import client
 from aymara_ai.types import AccuracyScoreRunResponse, ImageStudentAnswerInput, SafetyTestResponse, ScoreRunResponse
+from aymara_ai.utils.async_utils import get_loop
 from aymara_ai.utils.logger import SDKLogger
 from aymara_ai.version import __version__
 
@@ -70,7 +71,7 @@ class AymaraAI(
         if api_key is None:
             self.logger.error("API key is required")
             raise ValueError("API key is required")
-
+        self.loop = get_loop()
         self.client = client.Client(
             base_url=base_url,
             headers={"x-api-key": api_key},
