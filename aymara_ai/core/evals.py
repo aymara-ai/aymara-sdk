@@ -13,12 +13,12 @@ from aymara_ai.utils.async_utils import run_async
 from aymara_ai.utils.constants import (
     DEFAULT_CHAR_TO_TOKEN_MULTIPLIER,
     DEFAULT_MAX_TOKENS,
+    DEFAULT_MAX_WAIT_TIME_SECS,
     DEFAULT_NUM_CONVERSATIONS_MAX,
     DEFAULT_NUM_CONVERSATIONS_MIN,
     DEFAULT_NUM_QUESTIONS,
     DEFAULT_NUM_QUESTIONS_MAX,
     DEFAULT_NUM_QUESTIONS_MIN,
-    DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
     DEFAULT_TEST_LANGUAGE,
     DEFAULT_TEST_NAME_LEN_MAX,
     DEFAULT_TEST_NAME_LEN_MIN,
@@ -35,29 +35,63 @@ class EvalMixin(AymaraAIProtocol):
         *,
         name: str,
         template: str,
-        ai_under_test: str,
-        instructOptions: Optional[InstructionOptions] = None,
+        ai_under_eval: str,
+        instruct_options: Optional[InstructionOptions] = None,
         language: str = DEFAULT_TEST_LANGUAGE,
         batch_size: int = DEFAULT_NUM_QUESTIONS,
-        max_wait_time_secs: int = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+        max_wait_time_secs: int = DEFAULT_MAX_WAIT_TIME_SECS,
         is_sandbox: Optional[bool] = False,
     ) -> BaseTestResponse:
-        """Create a test synchronously and wait for completion."""
+        """Create an evaluation synchronously and wait for completion.
+
+        This method creates an evaluation for an AI system and waits for it to complete before returning.
+        It handles all the background processes involved in eval creation, validation, and execution.
+
+        Args:
+            name: The name of the eval. Must be between 3 and 50 characters.
+            template: The type of eval to create. One of the values from TestType (e.g., "safety", "jailbreak")
+                or a supported Eval template slug.
+            ai_under_eval: A description of the AI system being evaluated.
+            instruct_options: Optional configuration for test instructions, including policy, additional instructions,
+                good examples, and bad examples.
+            language: The language to use for the test. Defaults to English. Must be one of the supported languages.
+            batch_size: Number of concurrent prompts to generate. Must be between 3 and 100 for most test types.
+            max_wait_time_secs: Maximum time to wait for eval completion in seconds.
+            is_sandbox: Whether to create the eval in sandbox mode (not counted against quotas).
+
+        Returns:
+            BaseTestResponse: Object containing test information, status, and generated questions or conversations.
+
+        Raises:
+            ValueError: If any validation checks fail (invalid name length, unsupported language, etc.)
+            APIError: If there's an issue with the API communication.
+
+        Example:
+            ```python
+            response = client.create_eval(
+                name="Safety Test",
+                template="safety",
+                ai_under_eval="An AI assistant for customer support",
+                instruct_options=InstructionOptions(policy="Don't allow any unsafe answers"),
+                batch_size=5
+            )
+            ```
+        """
         # Wrap the async implementation with run_async
         return run_async(
             self._create_eval(
                 test_name=name,
-                student_description=ai_under_test,
-                test_policy=instructOptions.policy if instructOptions else None,
+                student_description=ai_under_eval,
+                test_policy=instruct_options.policy if instruct_options else None,
                 test_system_prompt=None,
                 knowledge_base=None,
                 test_language=language,
                 num_test_questions=batch_size,
                 test_type=template,
                 max_wait_time_secs=max_wait_time_secs,
-                additional_instructions=instructOptions.additional_instructions if instructOptions else None,
-                good_examples=instructOptions.good_examples if instructOptions else None,
-                bad_examples=instructOptions.bad_examples if instructOptions else None,
+                additional_instructions=instruct_options.additional_instructions if instruct_options else None,
+                good_examples=instruct_options.good_examples if instruct_options else None,
+                bad_examples=instruct_options.bad_examples if instruct_options else None,
                 is_sandbox=is_sandbox,
             )
         )
@@ -71,10 +105,49 @@ class EvalMixin(AymaraAIProtocol):
         instructOptions: Optional[InstructionOptions] = None,
         language: str = DEFAULT_TEST_LANGUAGE,
         batch_size: int = DEFAULT_NUM_QUESTIONS,
-        max_wait_time_secs: int = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
+        max_wait_time_secs: int = DEFAULT_MAX_WAIT_TIME_SECS,
         is_sandbox: Optional[bool] = False,
     ) -> BaseTestResponse:
-        """Create a test asynchronously and wait for completion."""
+        """Create an evaluation asynchronously and return a coroutine.
+
+        This is the asynchronous version of create_eval(). It creates an evaluation test for an AI system.
+        This method is suitable for use in
+        asynchronous contexts and event loops.
+
+        Args:
+            name: The name of the eval. Must be between 3 and 50 characters.
+            template: The type of eval to create. One of the values from TestType (e.g., "safety", "jailbreak")
+                or a supported Eval template slug.
+            ai_under_test: A description of the AI system being evaluated.
+            instructOptions: Optional configuration for test instructions, including policy, additional instructions,
+                good examples, and bad examples.
+            language: The language to use for the test. Defaults to English. Must be one of the supported languages.
+            batch_size: Number of concurrent prompts to generate. Must be between 3 and 100 for most test types.
+            max_wait_time_secs: Maximum time to wait for eval completion in seconds.
+            is_sandbox: Whether to create the eval in sandbox mode (not counted against quotas).
+
+        Returns:
+            BaseTestResponse: Object containing test information, status, and generated questions or conversations.
+
+        Raises:
+            ValueError: If any validation checks fail (invalid name length, unsupported language, etc.)
+            APIError: If there's an issue with the API communication.
+
+        Example:
+            ```python
+            response = await client.create_eval_async(
+                name="Safety Test",
+                template="safety",
+                ai_under_test="An AI assistant for customer support",
+                instructOptions=InstructionOptions(policy="Don't allow any unsafe answers"),
+                batch_size=5
+            )
+            ```
+
+        Note:
+            The parameter names in this async version are slightly different from the synchronous version
+            (ai_under_test vs ai_under_eval, instructOptions vs instruct_options) for backward compatibility.
+        """
         # Directly call the async implementation
         return await self._create_eval(
             test_name=name,
@@ -110,7 +183,7 @@ class EvalMixin(AymaraAIProtocol):
         num_conversations: Optional[int] = None,
     ) -> BaseTestResponse:
         """Primary implementation for creating tests (async version)."""
-        self._validate_test_inputs(
+        self._validate_eval_inputs(
             test_name=test_name,
             student_description=student_description,
             test_policy=test_policy,
@@ -146,9 +219,9 @@ class EvalMixin(AymaraAIProtocol):
         )
 
         # Always use the async implementation
-        return await self._create_and_wait_for_test_impl(test_data, max_wait_time_secs, is_sandbox)
+        return await self._create_and_wait_for_eval_impl(test_data, max_wait_time_secs, is_sandbox)
 
-    def _validate_test_inputs(
+    def _validate_eval_inputs(
         self,
         test_name: str,
         student_description: str,
@@ -274,7 +347,7 @@ class EvalMixin(AymaraAIProtocol):
                     f"in total but they should be less than {DEFAULT_MAX_TOKENS:,} tokens."
                 )
 
-    async def _create_and_wait_for_test_impl(
+    async def _create_and_wait_for_eval_impl(
         self,
         test_data: models.TestInSchema,
         max_wait_time_secs: int,
