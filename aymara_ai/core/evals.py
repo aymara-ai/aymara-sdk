@@ -344,7 +344,7 @@ class EvalMixin(AymaraAIProtocol):
 
     async def _create_and_wait_for_eval_impl(
         self,
-        test_data: models.TestInSchema,
+        eval_config: models.TestInSchema,
         max_wait_time_secs: int,
         is_sandbox: Optional[bool] = None,
     ) -> BaseTestResponse:
@@ -352,7 +352,7 @@ class EvalMixin(AymaraAIProtocol):
         start_time = time.time()
 
         # Create the test
-        response = await create_test.asyncio_detailed(client=self.client, body=test_data, is_sandbox=is_sandbox)
+        response = await create_test.asyncio_detailed(client=self.client, body=eval_config, is_sandbox=is_sandbox)
         create_response: models.TestOutSchema = get_parsed_response(response)
 
         test_uuid = create_response.test_uuid
@@ -389,7 +389,7 @@ class EvalMixin(AymaraAIProtocol):
                     )
 
                 if test_response.test_status == models.TestStatus.FINISHED:
-                    if test_data.test_type == TestType.MULTITURN_SAFETY:
+                    if eval_config.test_type == TestType.MULTITURN_SAFETY:
                         conversations = create_response.conversations
                         return BaseTestResponse.from_test_out_schema_and_questions(test_response, None, conversations)
                     else:
