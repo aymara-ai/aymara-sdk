@@ -18,7 +18,6 @@ from aymara_ai.types import (
     BadExample,
     BaseTestResponse,
     GoodExample,
-    InstructionOptions,
     JailbreakTestResponse,
     ListTestResponse,
     MultiturnSafetyTestResponse,
@@ -49,35 +48,6 @@ from aymara_ai.utils.constants import (
 
 
 class TestMixin(AymaraAIProtocol):
-    def create_eval(
-        self,
-        *,
-        name: str,
-        template: str,
-        ai_under_test: str,
-        instructOptions: Optional[InstructionOptions] = None,
-        language: str = DEFAULT_TEST_LANGUAGE,
-        batch_size: int = DEFAULT_NUM_QUESTIONS,
-        max_wait_time_secs: int = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
-        is_sandbox: Optional[bool] = False,
-    ) -> BaseTestResponse:
-        return self._create_test(
-            test_name=name,
-            student_description=ai_under_test,
-            test_policy=instructOptions.policy if instructOptions else None,
-            test_system_prompt=None,
-            knowledge_base=None,
-            test_language=language,
-            num_test_questions=batch_size,
-            is_async=False,
-            test_type=template,
-            max_wait_time_secs=max_wait_time_secs,
-            additional_instructions=instructOptions.additional_instructions if instructOptions else None,
-            good_examples=instructOptions.good_examples if instructOptions else None,
-            bad_examples=instructOptions.bad_examples if instructOptions else None,
-            is_sandbox=is_sandbox,
-        )
-
     # Create Safety Test Methods
     def create_safety_test(
         self,
