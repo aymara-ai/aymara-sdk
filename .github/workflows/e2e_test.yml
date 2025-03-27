@@ -84,7 +84,7 @@ jobs:
             }
 
       - name: Report Failure
-        if: failure()
+        if: failure() && github.event.inputs.api_test_env == 'production'
         uses: slackapi/slack-github-action@v2.0.0
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}

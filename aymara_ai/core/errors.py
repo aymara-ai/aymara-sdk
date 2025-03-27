@@ -130,7 +130,7 @@ def raise_from_legacy_error(error_response: Response) -> None:
     raise ValueError(message)
 
 
-def get_parsed_response(response: Response[Union[Any, T]]) -> T:
+def get_parsed_response(response: Response[Union[ErrorResponseSchema, T]]) -> T:
     """Process an API response, returning its parsed content or raising an appropriate exception.
 
     :param response: Response object from an API call

@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..models.test_type import TestType
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
@@ -19,7 +18,7 @@ class TestInSchema:
     Attributes:
         test_name (str):
         student_description (str):
-        test_type (Union[Unset, TestType]): Test type. Default: TestType.SAFETY.
+        test_type (Union[Unset, str]):  Default: 'safety'.
         test_language (Union[Unset, str]):  Default: 'en'.
         test_policy (Union[None, Unset, str]):
         num_test_questions (Union[None, Unset, int]):
@@ -32,7 +31,7 @@ class TestInSchema:
 
     test_name: str
     student_description: str
-    test_type: Union[Unset, TestType] = TestType.SAFETY
+    test_type: Union[Unset, str] = "safety"
     test_language: Union[Unset, str] = "en"
     test_policy: Union[None, Unset, str] = UNSET
     num_test_questions: Union[None, Unset, int] = UNSET
@@ -48,9 +47,7 @@ class TestInSchema:
 
         student_description = self.student_description
 
-        test_type: Union[Unset, str] = UNSET
-        if not isinstance(self.test_type, Unset):
-            test_type = self.test_type.value
+        test_type = self.test_type
 
         test_language = self.test_language
 
@@ -140,12 +137,7 @@ class TestInSchema:
 
         student_description = d.pop("student_description")
 
-        _test_type = d.pop("test_type", UNSET)
-        test_type: Union[Unset, TestType]
-        if isinstance(_test_type, Unset):
-            test_type = UNSET
-        else:
-            test_type = TestType(_test_type)
+        test_type = d.pop("test_type", UNSET)
 
         test_language = d.pop("test_language", UNSET)
 

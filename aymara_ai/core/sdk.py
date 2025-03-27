@@ -15,28 +15,24 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
+from aymara_ai.core.evals import EvalMixin
+from aymara_ai.core.multiturn_tests import MultiturnTestMixin
 from aymara_ai.core.policies import PolicyMixin
 from aymara_ai.core.protocols import AymaraAIProtocol
 from aymara_ai.core.score_runs import ScoreRunMixin
 from aymara_ai.core.summaries import SummaryMixin
 from aymara_ai.core.tests import TestMixin
 from aymara_ai.core.uploads import UploadMixin
-from aymara_ai.core.multiturn_tests import MultiturnTestMixin
-from aymara_ai.generated.aymara_api_client import (
-    client,
-)
-from aymara_ai.types import (
-    AccuracyScoreRunResponse,
-    ImageStudentAnswerInput,
-    SafetyTestResponse,
-    ScoreRunResponse,
-)
+from aymara_ai.generated.aymara_api_client import client
+from aymara_ai.types import AccuracyScoreRunResponse, ImageStudentAnswerInput, SafetyTestResponse, ScoreRunResponse
+from aymara_ai.utils.async_utils import get_loop
 from aymara_ai.utils.logger import SDKLogger
 from aymara_ai.version import __version__
 
 
 class AymaraAI(
     TestMixin,
+    EvalMixin,
     ScoreRunMixin,
     SummaryMixin,
     UploadMixin,
@@ -65,15 +61,17 @@ class AymaraAI(
         self,
         api_key: Optional[str] = None,
         base_url: str = "https://api.aymara.ai",
+        use_sandbox: bool = False,
     ):
         self.logger = SDKLogger()
+        self.use_sandbox = use_sandbox or os.getenv("AYMARA_USE_SANDBOX", "false").lower() == "true"
 
         if api_key is None:
             api_key = os.getenv("AYMARA_API_KEY")
         if api_key is None:
             self.logger.error("API key is required")
             raise ValueError("API key is required")
-
+        self.loop = get_loop()
         self.client = client.Client(
             base_url=base_url,
             headers={"x-api-key": api_key},
@@ -163,9 +161,7 @@ class AymaraAI(
         return pd.DataFrame(
             data=data,
             columns=["test_name", "pass_rate", "pass_total"],
-            index=pd.Index(
-                [score.score_run_uuid for score in score_runs], name="score_run_uuid"
-            ),
+            index=pd.Index([score.score_run_uuid for score in score_runs], name="score_run_uuid"),
         )
 
     @staticmethod
@@ -288,9 +284,7 @@ class AymaraAI(
             xlabel = "Score Runs" if xaxis_is_score_run_uuids else "Tests"
 
         AymaraAI._plot_pass_stats(
-            names=df_pass_stats[
-                "score_run_uuid" if xaxis_is_score_run_uuids else "test_name"
-            ],
+            names=df_pass_stats["score_run_uuid" if xaxis_is_score_run_uuids else "test_name"],
             pass_stats=df_pass_stats["pass_rate" if yaxis_is_percent else "pass_total"],
             title=title,
             xlabel=xlabel,
@@ -442,9 +436,7 @@ class AymaraAI(
         n_tests = len(test_answers)
         total_rows = n_tests * 2
         fig = plt.figure(figsize=figsize or (n_images_per_test * 3, total_rows * 4))
-        gs = gridspec.GridSpec(
-            total_rows, n_images_per_test, figure=fig, height_ratios=[1, 20] * n_tests
-        )
+        gs = gridspec.GridSpec(total_rows, n_images_per_test, figure=fig, height_ratios=[1, 20] * n_tests)
         fig.subplots_adjust(hspace=0.1, wspace=0.1)
 
         row = 0
@@ -483,11 +475,7 @@ class AymaraAI(
             else:
                 score_run = next(s for s in score_runs if s.test.test_uuid == test_uuid)
                 scores = [
-                    next(
-                        s
-                        for s in score_run.answers
-                        if s.question_uuid == a.question_uuid
-                    )
+                    next(s for s in score_run.answers if s.question_uuid == a.question_uuid)
                     for a in answers[:n_images_per_test]
                 ]
                 captions = [
