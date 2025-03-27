@@ -16,7 +16,7 @@ ENVIRONMENT = os.getenv("API_TEST_ENV", "production")
 
 @pytest.fixture(scope="session")
 @pytest.mark.asyncio
-def aymara_client():
+async def aymara_client(event_loop):
     if ENVIRONMENT == "staging":
         base_url = "https://staging-api.aymara.ai"
         testing_api_key = os.getenv("STAGING_INTEGRATION_TESTING_API_KEY")
@@ -32,7 +32,7 @@ def aymara_client():
 
 @pytest.fixture(scope="session")
 @pytest.mark.asyncio
-def free_aymara_client() -> AymaraAI:
+async def free_aymara_client(event_loop) -> AymaraAI:
     if ENVIRONMENT == "staging":
         base_url = "https://staging-api.aymara.ai"
         api_key = os.getenv("STAGING_FREE_INTEGRATION_TESTING_API_KEY")
@@ -54,7 +54,7 @@ def pytest_collection_modifyitems(items):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def cleanup(aymara_client):
+async def cleanup(aymara_client):
     yield
     # Run integration test check endpoint to clean up test data
     integration_test.sync_detailed(client=aymara_client.client)
