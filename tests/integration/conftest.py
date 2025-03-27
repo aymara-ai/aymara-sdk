@@ -15,8 +15,7 @@ ENVIRONMENT = os.getenv("API_TEST_ENV", "production")
 
 
 @pytest.fixture(scope="session")
-@pytest.mark.asyncio
-async def aymara_client(event_loop):
+async def aymara_client():
     if ENVIRONMENT == "staging":
         base_url = "https://staging-api.aymara.ai"
         testing_api_key = os.getenv("STAGING_INTEGRATION_TESTING_API_KEY")
@@ -31,8 +30,7 @@ async def aymara_client(event_loop):
 
 
 @pytest.fixture(scope="session")
-@pytest.mark.asyncio
-async def free_aymara_client(event_loop) -> AymaraAI:
+async def free_aymara_client() -> AymaraAI:
     if ENVIRONMENT == "staging":
         base_url = "https://staging-api.aymara.ai"
         api_key = os.getenv("STAGING_FREE_INTEGRATION_TESTING_API_KEY")
