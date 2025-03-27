@@ -46,7 +46,7 @@ def _try_get_pytest_loop() -> Optional[asyncio.AbstractEventLoop]:
     return None
 
 
-def get_loop() -> asyncio.AbstractEventLoop:
+def get_loop(*, create_new: bool = False) -> asyncio.AbstractEventLoop:
     """
     Get the appropriate event loop for any context.
 
@@ -55,6 +55,10 @@ def get_loop() -> asyncio.AbstractEventLoop:
     - Asyncio contexts
     - pytest with asyncio fixtures
     - Jupyter notebooks
+
+    Args:
+        create_new: If True, creates a new loop even if no existing loop is found.
+                   This should be set to True when a temporary loop is needed for a single operation.
 
     Returns:
         The appropriate event loop for the current context
@@ -72,14 +76,20 @@ def get_loop() -> asyncio.AbstractEventLoop:
     if pytest_loop:
         return pytest_loop
 
-    # Priority 3: Use or create global app loop
+    # Priority 3: If create_new is True, return a new loop without setting as default
+    if create_new:
+        loop = asyncio.new_event_loop()
+        logger.debug(f"Created new temporary loop: {loop!r}, id={id(loop)}")
+        return loop
+
+    # Priority 4: Use or create global app loop
     global _APP_LOOP
     with _LOOP_LOCK:
         if _APP_LOOP is None or _APP_LOOP.is_closed():
             # Create new loop and set as default for this thread
             _APP_LOOP = asyncio.new_event_loop()
             asyncio.set_event_loop(_APP_LOOP)
-            logger.debug(f"Created new loop: {_APP_LOOP!r}, id={id(_APP_LOOP)}")
+            logger.debug(f"Created new global app loop: {_APP_LOOP!r}, id={id(_APP_LOOP)}")
 
     return _APP_LOOP
 
@@ -133,7 +143,14 @@ def run_async(coro: Awaitable[T]) -> T:
     except RuntimeError:
         logger.debug("No running loop found in run_async")
 
-    # Standard synchronous context
+    # Check for pytest loop again (in case it wasn't detected earlier)
+    pytest_loop = _try_get_pytest_loop()
+    if pytest_loop:
+        return pytest_loop.run_until_complete(coro)
+
+    # No running event loop - use the global app loop
+    # For concurrent tests, we need a persistent loop that doesn't close
+    # after each operation, so we use get_loop() instead of a temporary loop
     loop = get_loop()
     try:
         result = loop.run_until_complete(coro)
