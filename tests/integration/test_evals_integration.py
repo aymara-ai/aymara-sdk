@@ -3,7 +3,7 @@ import os
 import pytest
 
 from aymara_ai.core.sdk import AymaraAI
-from aymara_ai.types import BadExample, BaseTestResponse, GoodExample, InstructionOptions, Status, TestType
+from aymara_ai.types import BadExample, EvalResponse, GoodExample, InstructionOptions, Status, TestType
 
 ENVIRONMENT = os.getenv("API_TEST_ENV", "production")
 
@@ -85,10 +85,10 @@ class TestTestMixin:
         instruct_options: InstructionOptions = eval_test_data["instruct_options"]
         instruct_options.ai_instructions = test_policy
         response = aymara_client.create_eval(**eval_test_data)
-        assert isinstance(response, BaseTestResponse)
-        assert response.test_status == Status.COMPLETED
-        assert response.questions is not None
-        assert len(response.questions) == eval_test_data["batch_size"]
+        assert isinstance(response, EvalResponse)
+        assert response.status == Status.COMPLETED
+        assert response.prompts is not None
+        assert len(response.prompts) == eval_test_data["batch_size"]
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -103,10 +103,10 @@ class TestTestMixin:
         instruct_options: InstructionOptions = eval_test_data["instruct_options"]
         instruct_options.ai_instructions = test_policy
         response = await aymara_client.create_eval_async(**eval_test_data)
-        assert isinstance(response, BaseTestResponse)
-        assert response.test_status == Status.COMPLETED
-        assert response.questions is not None
-        assert len(response.questions) == eval_test_data["batch_size"]
+        assert isinstance(response, EvalResponse)
+        assert response.status == Status.COMPLETED
+        assert response.prompts is not None
+        assert len(response.prompts) == eval_test_data["batch_size"]
 
     def test_create_eval_with_examples(self, aymara_client: AymaraAI, eval_test_data, example_data):
         """Test creating a evaluation with good and bad examples."""
@@ -114,10 +114,10 @@ class TestTestMixin:
         instruct_options.good_examples = example_data["good_examples"]
         instruct_options.bad_examples = example_data["bad_examples"]
         response = aymara_client.create_eval(**eval_test_data)
-        assert isinstance(response, BaseTestResponse)
-        assert response.test_status == Status.COMPLETED
-        assert response.questions is not None
-        assert len(response.questions) == eval_test_data["batch_size"]
+        assert isinstance(response, EvalResponse)
+        assert response.status == Status.COMPLETED
+        assert response.prompts is not None
+        assert len(response.prompts) == eval_test_data["batch_size"]
         assert response.good_examples is not None
         assert len(response.good_examples) == len(example_data["good_examples"])
         assert response.bad_examples is not None
@@ -130,10 +130,10 @@ class TestTestMixin:
         instruct_options.good_examples = example_data["good_examples"]
         instruct_options.bad_examples = example_data["bad_examples"]
         response = await aymara_client.create_eval_async(**eval_test_data)
-        assert isinstance(response, BaseTestResponse)
-        assert response.test_status == Status.COMPLETED
-        assert response.questions is not None
-        assert len(response.questions) == eval_test_data["batch_size"]
+        assert isinstance(response, EvalResponse)
+        assert response.status == Status.COMPLETED
+        assert response.prompts is not None
+        assert len(response.prompts) == eval_test_data["batch_size"]
         assert response.good_examples is not None
         assert len(response.good_examples) == len(example_data["good_examples"])
         assert response.bad_examples is not None
