@@ -27,8 +27,10 @@ def get_loop() -> asyncio.AbstractEventLoop:
         The appropriate event loop for the current context
     """
     # Try to get the running loop first (works in async contexts)
+    loop = None
     try:
-        return asyncio.get_running_loop()
+        loop = asyncio.get_running_loop()
+
     except RuntimeError:
         # No running loop, create/return our application loop
         pass
@@ -36,6 +38,7 @@ def get_loop() -> asyncio.AbstractEventLoop:
     global _APP_LOOP
 
     with _LOOP_LOCK:
+        _APP_LOOP = loop
         # Check if we have a valid app loop already
         if _APP_LOOP is None or _APP_LOOP.is_closed():
             # Create new loop and set as default for this thread

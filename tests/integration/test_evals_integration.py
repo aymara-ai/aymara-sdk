@@ -81,6 +81,7 @@ class TestTestMixin:
             "custom_policy_string",
         ],
     )
+    @pytest.mark.asyncio
     def test_create_safety_eval_sync(self, aymara_client: AymaraAI, eval_test_data, test_policy):
         instruct_options: InstructionOptions = eval_test_data["instruct_options"]
         instruct_options.ai_instructions = test_policy
@@ -108,6 +109,7 @@ class TestTestMixin:
         assert response.prompts is not None
         assert len(response.prompts) == eval_test_data["batch_size"]
 
+    @pytest.mark.asyncio
     def test_create_eval_with_examples(self, aymara_client: AymaraAI, eval_test_data, example_data):
         """Test creating a evaluation with good and bad examples."""
         instruct_options: InstructionOptions = eval_test_data["instruct_options"]
