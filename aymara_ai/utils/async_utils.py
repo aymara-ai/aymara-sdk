@@ -30,19 +30,31 @@ def _get_caller_info() -> str:
 def _try_get_pytest_loop() -> Optional[asyncio.AbstractEventLoop]:
     """Helper to extract pytest loop detection logic."""
     try:
+        # First check the current running loop as this is most reliable in pytest context
+        try:
+            loop = asyncio.get_running_loop()
+            return loop
+        except RuntimeError:
+            pass
+
         import pytest
         import pytest_asyncio
 
-        # Check if we're in pytest with py.path or pathlib
-        if hasattr(pytest, "config"):
-            # Try to find the pytest-asyncio loop
-            if hasattr(pytest_asyncio, "plugin") and hasattr(pytest_asyncio.plugin, "_event_loop"):
-                loop = getattr(pytest_asyncio.plugin, "_event_loop")
-                if loop and not loop.is_closed():
-                    logger.debug(f"Found pytest_asyncio loop: {loop!r}, id={id(loop)}")
-                    return cast(asyncio.AbstractEventLoop, loop)
+        # Try to find the pytest-asyncio loop through their module
+        if hasattr(pytest_asyncio, "plugin") and hasattr(pytest_asyncio.plugin, "_event_loop"):
+            loop = getattr(pytest_asyncio.plugin, "_event_loop")
+            if loop and not loop.is_closed():
+                logger.debug(f"Found pytest_asyncio loop: {loop!r}, id={id(loop)}")
+                return cast(asyncio.AbstractEventLoop, loop)
+
+        # Try getting the default event loop, which pytest often configures
+        loop = asyncio.get_event_loop_policy().get_event_loop()
+        if loop and not loop.is_closed():
+            return loop
+
     except (ImportError, AttributeError):
         pass
+
     return None
 
 
@@ -94,6 +106,13 @@ def get_loop(*, create_new: bool = False) -> asyncio.AbstractEventLoop:
     return _APP_LOOP
 
 
+def _in_pytest_context() -> bool:
+    """Check if we are running in a pytest context."""
+    import sys
+
+    return any("pytest" in arg for arg in sys.argv)
+
+
 def run_async(coro: Awaitable[T]) -> T:
     """
     Run a coroutine in any context (sync, async, pytest, jupyter).
@@ -117,6 +136,29 @@ def run_async(coro: Awaitable[T]) -> T:
             return loop.run_until_complete(coro)
         return coro.result()
 
+    # Handle pytest special case first
+    # This is critical for pytest-asyncio fixtures which are very sensitive to loop management
+    if _in_pytest_context():
+        try:
+            # Priority 1: Get the current running loop
+            loop = asyncio.get_running_loop()
+            # If we're already in a running loop, just use run_coroutine_threadsafe
+            future = asyncio.run_coroutine_threadsafe(coro, loop)
+            return future.result()
+        except RuntimeError:
+            # No running loop, try to get pytest's loop
+            pytest_loop = _try_get_pytest_loop()
+            if pytest_loop:
+                return pytest_loop.run_until_complete(coro)
+
+            # Fall back to global app loop
+            global _APP_LOOP
+            with _LOOP_LOCK:
+                if _APP_LOOP is None or _APP_LOOP.is_closed():
+                    _APP_LOOP = asyncio.new_event_loop()
+                    asyncio.set_event_loop(_APP_LOOP)
+                return _APP_LOOP.run_until_complete(coro)
+
     # Special case for Jupyter environment
     try:
         import IPython
@@ -133,7 +175,7 @@ def run_async(coro: Awaitable[T]) -> T:
     except (ImportError, AttributeError):
         pass
 
-    # Try to get the current running loop
+    # Standard case: Try to get the current running loop
     try:
         loop = asyncio.get_running_loop()
         # We're in an event loop already
@@ -143,14 +185,8 @@ def run_async(coro: Awaitable[T]) -> T:
     except RuntimeError:
         logger.debug("No running loop found in run_async")
 
-    # Check for pytest loop again (in case it wasn't detected earlier)
-    pytest_loop = _try_get_pytest_loop()
-    if pytest_loop:
-        return pytest_loop.run_until_complete(coro)
-
     # No running event loop - use the global app loop
-    # For concurrent tests, we need a persistent loop that doesn't close
-    # after each operation, so we use get_loop() instead of a temporary loop
+    # We need a persistent loop that doesn't close
     loop = get_loop()
     try:
         result = loop.run_until_complete(coro)
