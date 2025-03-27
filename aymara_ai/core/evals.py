@@ -56,7 +56,7 @@ class EvalMixin(AymaraAIProtocol):
             language: The language to use for the test. Defaults to English. Must be one of the supported languages.
             batch_size: Number of concurrent prompts to generate. Must be between 3 and 100 for most test types.
             max_wait_time_secs: Maximum time to wait for eval completion in seconds.
-            is_sandbox: Whether to create the eval in sandbox mode (not counted against quotas).
+            use_sandbox: Whether to create the eval in sandbox mode (not counted against quotas).
 
         Returns:
             EvalResponse: Object containing eval information, status, and generated questions.
@@ -92,7 +92,7 @@ class EvalMixin(AymaraAIProtocol):
                 additional_instructions=instruct_options.eval_instructions if instruct_options else None,
                 good_examples=instruct_options.good_examples if instruct_options else None,
                 bad_examples=instruct_options.bad_examples if instruct_options else None,
-                is_sandbox=use_sandbox,
+                use_sandbox=use_sandbox,
             )
         )
 
@@ -105,7 +105,7 @@ class EvalMixin(AymaraAIProtocol):
         instruct_options: Optional[InstructionOptions] = None,
         batch_size: int = DEFAULT_NUM_QUESTIONS,
         max_wait_time_secs: int = DEFAULT_MAX_WAIT_TIME_SECS,
-        is_sandbox: Optional[bool] = False,
+        use_sandbox: Optional[bool] = False,
     ) -> EvalResponse:
         """Create an evaluation asynchronously and return a coroutine.
 
@@ -121,7 +121,7 @@ class EvalMixin(AymaraAIProtocol):
                 good examples, and bad examples.
             batch_size: Number of concurrent prompts to generate. Must be between 3 and 100 for most test types.
             max_wait_time_secs: Maximum time to wait for eval completion in seconds.
-            is_sandbox: Whether to create the eval in sandbox mode (not counted against quotas).
+            use_sandbox: Whether to create the eval in sandbox mode (not counted against quotas).
 
         Returns:
             EvalResponse: Object containing eval information, status, and generated questions.
@@ -155,7 +155,7 @@ class EvalMixin(AymaraAIProtocol):
             additional_instructions=instruct_options.eval_instructions if instruct_options else None,
             good_examples=instruct_options.good_examples if instruct_options else None,
             bad_examples=instruct_options.bad_examples if instruct_options else None,
-            is_sandbox=is_sandbox,
+            use_sandbox=use_sandbox,
         )
 
     async def _create_eval(
@@ -173,12 +173,12 @@ class EvalMixin(AymaraAIProtocol):
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
-        is_sandbox: Optional[bool] = False,
+        use_sandbox: Optional[bool] = False,
         num_conversations: Optional[int] = None,
     ) -> EvalResponse:
         """Primary implementation for creating tests (async version)."""
 
-        use_sandbox = is_sandbox or self.use_sandbox
+        use_sandbox = use_sandbox or self.use_sandbox
 
         self._validate_eval_inputs(
             test_name=test_name,
