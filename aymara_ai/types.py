@@ -365,6 +365,93 @@ class BadExample(BaseModel):
         )
 
 
+class EvalResponse(BaseModel):
+    """
+    Eval response. May or may not have prompts, depending on the eval status.
+    """
+
+    eval_uuid: Annotated[str, Field(..., description="UUID of the eval")]
+    template: Annotated[str, Field(..., description="Type of the eval")]
+    name: Annotated[str, Field(..., description="Name of the eval")]
+    status: Annotated[Status, Field(..., description="Status of the eval")]
+    created_at: Annotated[datetime, Field(..., description="Timestamp of the eval creation")]
+
+    batch_size: Annotated[Optional[int], Field(None, description="Number of eval prompts per batch")]
+
+    prompts: Annotated[
+        Optional[List[QuestionResponse]],
+        Field(None, description="Initial prompts in the eval"),
+    ]
+    failure_reason: Annotated[Optional[str], Field(None, description="Reason for the eval failure")]
+
+    good_examples: Annotated[
+        Optional[List[GoodExample]],
+        Field(None, description="Good examples for the eval"),
+    ]
+    bad_examples: Annotated[
+        Optional[List[BadExample]],
+        Field(None, description="Bad examples for the eval"),
+    ]
+
+    def to_questions_df(self) -> pd.DataFrame:
+        """Create a questions DataFrame."""
+
+        if not self.prompts:
+            return pd.DataFrame()
+
+        rows = [
+            {
+                "eval_uuid": self.eval_uuid,
+                "eval_name": self.name,
+                "question_uuid": question.question_uuid,
+                "question_text": question.question_text,
+                **(
+                    {"accuracy_question_type": question.accuracy_question_type}
+                    if self.template == TestType.ACCURACY
+                    else {}
+                ),
+            }
+            for question in self.prompts
+        ]
+
+        return pd.DataFrame(rows)
+
+    @classmethod
+    def from_test_out_schema_and_questions(
+        cls,
+        *,
+        test: TestOutSchema,
+        questions: Optional[List[QuestionSchema]] = None,
+        failure_reason: Optional[str] = None,
+    ) -> "EvalResponse":
+        model_attributes = {
+            "eval_uuid": test.test_uuid,
+            "template": test.test_type,
+            "name": test.test_name,
+            "status": Status.from_api_status(test.test_status),
+            "created_at": test.created_at,
+            "batch_size": test.num_test_questions,
+            "failure_reason": failure_reason,
+            "good_examples": [
+                GoodExample(question_text=e.example_text, explanation=e.explanation)
+                for e in test.test_examples
+                if e.example_type == ExampleType.GOOD
+            ]
+            if test.test_examples
+            else None,
+            "bad_examples": [
+                BadExample(question_text=e.example_text, explanation=e.explanation)
+                for e in test.test_examples
+                if e.example_type == ExampleType.BAD
+            ]
+            if test.test_examples
+            else None,
+        }
+        prompts = [QuestionResponse.from_question_schema(q) for q in questions] if questions else None
+        model_attributes["prompts"] = prompts
+        return EvalResponse.model_validate(model_attributes)
+
+
 class BaseTestResponse(BaseModel):
     """
     Test response. May or may not have questions, depending on the test status.
