@@ -231,7 +231,7 @@ class EvalMixin(AymaraAIProtocol):
 
         if total_tokens > DEFAULT_MAX_TOKENS:
             raise ValueError(
-                f"ai_instructions is ~{token1:,} tokens and {token_2_field} is ~{token2:,} tokens. "
+                f"ai_description is ~{token1:,} tokens and {token_2_field} is ~{token2:,} tokens. "
                 f"They are ~{total_tokens:,} tokens in total but they should be less than "
                 f"{DEFAULT_MAX_TOKENS:,} tokens."
             )
@@ -241,7 +241,7 @@ class EvalMixin(AymaraAIProtocol):
 
             if total_tokens > DEFAULT_MAX_TOKENS:
                 raise ValueError(
-                    f"ai_instructions is ~{token1:,} tokens, {token_2_field} is ~{token2:,} tokens, "
+                    f"ai_description is ~{token1:,} tokens, {token_2_field} is ~{token2:,} tokens, "
                     f"and eval_instructions is ~{token3:,} tokens. They are ~{total_tokens:,} tokens "
                     f"in total but they should be less than {DEFAULT_MAX_TOKENS:,} tokens."
                 )
