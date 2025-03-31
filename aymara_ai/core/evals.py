@@ -63,7 +63,7 @@ class EvalMixin(AymaraAIProtocol):
             use_sandbox: Whether to create the eval in sandbox mode (not counted against quotas).
 
         Returns:
-            EvalResponse: Object containing eval information, status, and generated questions.
+            BaseTestResponse: Object containing eval information, status, and generated questions.
 
         Raises:
             ValueError: If any validation checks fail (invalid name length, unsupported language, etc.)
