@@ -8,7 +8,7 @@ from aymara_ai.generated.aymara_api_client import models
 from aymara_ai.generated.aymara_api_client.api.tests import create_test, get_test, get_test_questions
 from aymara_ai.generated.aymara_api_client.models.paged_question_schema import PagedQuestionSchema
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
-from aymara_ai.types import EvalResponse, PromptExample, Status
+from aymara_ai.types import BaseTestResponse, PromptExample, Status
 from aymara_ai.utils.async_utils import run_async
 from aymara_ai.utils.constants import (
     DEFAULT_CHAR_TO_TOKEN_MULTIPLIER,
@@ -43,11 +43,11 @@ class EvalMixin(AymaraAIProtocol):
         prompt_examples: Optional[List[PromptExample]] = None,
         max_wait_time_secs: int = DEFAULT_MAX_WAIT_TIME_SECS,
         use_sandbox: Optional[bool] = False,
-    ) -> EvalResponse:
+    ) -> BaseTestResponse:
         """Create an evaluation synchronously and wait for completion.
 
         This method creates an evaluation for an AI system and waits for it to complete before returning.
-        It handles all the background processes involved in eval creation, validation, and execution.
+        It handles all the background processes involved in eval creation, validation, and prompt generation.
 
         Args:
             name: The name of the eval. Must be between 3 and 50 characters.
@@ -67,7 +67,7 @@ class EvalMixin(AymaraAIProtocol):
 
         Raises:
             ValueError: If any validation checks fail (invalid name length, unsupported language, etc.)
-            APIError: If there's an issue with the API communication.
+            AymaraError: If there's an issue related to using the Aymara API.
 
         Example:
             ```python
@@ -111,7 +111,7 @@ class EvalMixin(AymaraAIProtocol):
         prompt_examples: Optional[List[PromptExample]] = None,
         max_wait_time_secs: int = DEFAULT_MAX_WAIT_TIME_SECS,
         use_sandbox: Optional[bool] = False,
-    ) -> EvalResponse:
+    ) -> BaseTestResponse:
         """Create an evaluation asynchronously and wait for completion.
 
         See the `create_eval` method for detailed arguments and return values.
@@ -146,7 +146,7 @@ class EvalMixin(AymaraAIProtocol):
         num_prompts: Optional[int] = None,
         prompt_examples: Optional[List[PromptExample]] = None,
         use_sandbox: Optional[bool] = False,
-    ) -> EvalResponse:
+    ) -> BaseTestResponse:
         """Primary implementation for creating tests (async version)."""
 
         use_sandbox = use_sandbox or self.use_sandbox
@@ -260,7 +260,7 @@ class EvalMixin(AymaraAIProtocol):
         eval_config: models.TestInSchema,
         max_wait_time_secs: int,
         is_sandbox: Optional[bool] = None,
-    ) -> EvalResponse:
+    ) -> BaseTestResponse:
         """Primary implementation of test creation and waiting logic (async version)."""
         start_time = time.time()
 
@@ -291,13 +291,13 @@ class EvalMixin(AymaraAIProtocol):
                 if elapsed_time > max_wait_time_secs:
                     test_response.test_status = models.TestStatus.FAILED
                     self.logger.update_progress_bar(test_uuid, Status.FAILED)
-                    return EvalResponse.from_test_out_schema_and_questions(
+                    return BaseTestResponse.from_test_out_schema_and_questions(
                         test=test_response, questions=None, failure_reason="Test creation timed out"
                     )
 
                 if test_response.test_status == models.TestStatus.FAILED:
                     failure_reason = "Internal server error, please try again."
-                    return EvalResponse.from_test_out_schema_and_questions(
+                    return BaseTestResponse.from_test_out_schema_and_questions(
                         test=test_response, questions=None, failure_reason=failure_reason
                     )
 
@@ -305,7 +305,7 @@ class EvalMixin(AymaraAIProtocol):
                     if eval_config.test_type != TestType.MULTITURN_SAFETY:
                         questions = await self._get_all_prompts_async(test_uuid)
 
-                    return EvalResponse.from_test_out_schema_and_questions(test=test_response, questions=questions)
+                    return BaseTestResponse.from_test_out_schema_and_questions(test=test_response, questions=questions)
 
                 # Sleep before next poll
                 await asyncio.sleep(POLLING_INTERVAL)
