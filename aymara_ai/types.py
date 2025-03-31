@@ -28,7 +28,6 @@ from aymara_ai.generated.aymara_api_client.models.scoring_example_in_schema_exam
 from aymara_ai.generated.aymara_api_client.models.test_out_schema import TestOutSchema
 from aymara_ai.generated.aymara_api_client.models.test_status import TestStatus
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
-from aymara_ai.utils.constants import DEFAULT_TEST_LANGUAGE
 
 from .generated.aymara_api_client.models.conversation_status import ConversationStatus
 from .generated.aymara_api_client.models.message_schema import MessageSchema
@@ -1038,21 +1037,21 @@ class ListScoreRunSuiteSummaryResponse(RootModel):
         return len(self.root)
 
 
-class InstructionOptions(BaseModel):
+class PromptExample(BaseModel):
     """
-    Instruction options for the evaluation
+    An example to guide prompt generation
     """
 
-    language: Annotated[str, Field(..., description="Default language for evaluation")] = Field(
-        default=DEFAULT_TEST_LANGUAGE
-    )
-    ai_instructions: Annotated[str, Field(..., description="Instructions that the AI should follow")]
-    eval_instructions: Annotated[Optional[str], Field(..., description="Instructions for the evaluation")] = Field(
-        default=None
-    )
-    good_examples: Annotated[
-        List[GoodExample], Field(default_factory=list, description="Examples to guide the AI's behavior")
+    content: Annotated[str, Field(..., description="Example content")]
+    explanation: Annotated[
+        Optional[str],
+        Field(None, description="Explanation of why this is example is good or bad"),
     ]
-    bad_examples: Annotated[
-        List[BadExample], Field(default_factory=list, description="Negative examples for AI to avoid")
-    ]
+    is_bad: Annotated[bool, Field(False, description="Whether to use this as a bad example")]
+
+    def to_example_in_schema(self) -> "ExampleInSchema":
+        return ExampleInSchema(
+            example_type=ExampleType.BAD if self.is_bad else ExampleType.GOOD,
+            example_text=self.content,
+            explanation=self.explanation,
+        )
