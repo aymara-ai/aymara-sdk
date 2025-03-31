@@ -10,7 +10,7 @@ ENVIRONMENT = os.getenv("API_TEST_ENV", "production")
 TestType.__test__ = False  # type: ignore
 
 
-class TestTestMixin:
+class TestEvalMixin:
     @pytest.fixture
     def eval_test_data(self):
         return {
