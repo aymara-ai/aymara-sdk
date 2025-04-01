@@ -4,6 +4,7 @@ from .answer_in_schema import AnswerInSchema
 from .answer_out_schema import AnswerOutSchema
 from .billing_cycle_usage_schema import BillingCycleUsageSchema
 from .conversation_schema import ConversationSchema
+from .conversation_score_schema import ConversationScoreSchema
 from .conversation_status import ConversationStatus
 from .error_code import ErrorCode
 from .error_data_schema import ErrorDataSchema
@@ -18,9 +19,8 @@ from .image_upload_request_in_schema import ImageUploadRequestInSchema
 from .input_ import Input
 from .integration_test_response import IntegrationTestResponse
 from .message_in_schema import MessageInSchema
-from .message_schema import MessageSchema
-from .message_sender import MessageSender
 from .multiturn_continue_in_schema import MultiturnContinueInSchema
+from .multiturn_out_schema import MultiturnOutSchema
 from .organization_out_schema import OrganizationOutSchema
 from .paged_answer_out_schema import PagedAnswerOutSchema
 from .paged_policy_schema import PagedPolicySchema
@@ -56,6 +56,7 @@ __all__ = (
     "AnswerOutSchema",
     "BillingCycleUsageSchema",
     "ConversationSchema",
+    "ConversationScoreSchema",
     "ConversationStatus",
     "ErrorCode",
     "ErrorDataSchema",
@@ -70,9 +71,8 @@ __all__ = (
     "Input",
     "IntegrationTestResponse",
     "MessageInSchema",
-    "MessageSchema",
-    "MessageSender",
     "MultiturnContinueInSchema",
+    "MultiturnOutSchema",
     "OrganizationOutSchema",
     "PagedAnswerOutSchema",
     "PagedPolicySchema",

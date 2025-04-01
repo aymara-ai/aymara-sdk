@@ -3,28 +3,28 @@ from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..models.conversation_status import ConversationStatus
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.answer_out_schema import AnswerOutSchema
     from ..models.question_schema import QuestionSchema
 
 
-T = TypeVar("T", bound="ConversationSchema")
+T = TypeVar("T", bound="ConversationScoreSchema")
 
 
 @_attrs_define
-class ConversationSchema:
+class ConversationScoreSchema:
     """
     Attributes:
         conversation_uuid (str):
-        status (ConversationStatus): Conversation status.
+        scores (List['AnswerOutSchema']):
         current_turn (int):
         prompt (Union['QuestionSchema', None, Unset]):
     """
 
     conversation_uuid: str
-    status: ConversationStatus
+    scores: List["AnswerOutSchema"]
     current_turn: int
     prompt: Union["QuestionSchema", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -34,7 +34,10 @@ class ConversationSchema:
 
         conversation_uuid = self.conversation_uuid
 
-        status = self.status.value
+        scores = []
+        for scores_item_data in self.scores:
+            scores_item = scores_item_data.to_dict()
+            scores.append(scores_item)
 
         current_turn = self.current_turn
 
@@ -51,7 +54,7 @@ class ConversationSchema:
         field_dict.update(
             {
                 "conversation_uuid": conversation_uuid,
-                "status": status,
+                "scores": scores,
                 "current_turn": current_turn,
             }
         )
@@ -62,12 +65,18 @@ class ConversationSchema:
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
+        from ..models.answer_out_schema import AnswerOutSchema
         from ..models.question_schema import QuestionSchema
 
         d = src_dict.copy()
         conversation_uuid = d.pop("conversation_uuid")
 
-        status = ConversationStatus(d.pop("status"))
+        scores = []
+        _scores = d.pop("scores")
+        for scores_item_data in _scores:
+            scores_item = AnswerOutSchema.from_dict(scores_item_data)
+
+            scores.append(scores_item)
 
         current_turn = d.pop("current_turn")
 
@@ -88,15 +97,15 @@ class ConversationSchema:
 
         prompt = _parse_prompt(d.pop("prompt", UNSET))
 
-        conversation_schema = cls(
+        conversation_score_schema = cls(
             conversation_uuid=conversation_uuid,
-            status=status,
+            scores=scores,
             current_turn=current_turn,
             prompt=prompt,
         )
 
-        conversation_schema.additional_properties = d
-        return conversation_schema
+        conversation_score_schema.additional_properties = d
+        return conversation_score_schema
 
     @property
     def additional_keys(self) -> List[str]:

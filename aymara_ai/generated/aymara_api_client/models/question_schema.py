@@ -15,11 +15,13 @@ class QuestionSchema:
         question_uuid (str):
         question_text (str):
         accuracy_question_type (Union[None, Unset, str]):
+        conversation_turn (Union[None, Unset, int]):
     """
 
     question_uuid: str
     question_text: str
     accuracy_question_type: Union[None, Unset, str] = UNSET
+    conversation_turn: Union[None, Unset, int] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -33,6 +35,12 @@ class QuestionSchema:
         else:
             accuracy_question_type = self.accuracy_question_type
 
+        conversation_turn: Union[None, Unset, int]
+        if isinstance(self.conversation_turn, Unset):
+            conversation_turn = UNSET
+        else:
+            conversation_turn = self.conversation_turn
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -43,6 +51,8 @@ class QuestionSchema:
         )
         if accuracy_question_type is not UNSET:
             field_dict["accuracy_question_type"] = accuracy_question_type
+        if conversation_turn is not UNSET:
+            field_dict["conversation_turn"] = conversation_turn
 
         return field_dict
 
@@ -62,10 +72,20 @@ class QuestionSchema:
 
         accuracy_question_type = _parse_accuracy_question_type(d.pop("accuracy_question_type", UNSET))
 
+        def _parse_conversation_turn(data: object) -> Union[None, Unset, int]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, int], data)
+
+        conversation_turn = _parse_conversation_turn(d.pop("conversation_turn", UNSET))
+
         question_schema = cls(
             question_uuid=question_uuid,
             question_text=question_text,
             accuracy_question_type=accuracy_question_type,
+            conversation_turn=conversation_turn,
         )
 
         question_schema.additional_properties = d
