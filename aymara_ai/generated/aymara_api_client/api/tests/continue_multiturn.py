@@ -7,19 +7,27 @@ from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.error_response_schema import ErrorResponseSchema
 from ...models.multiturn_continue_in_schema import MultiturnContinueInSchema
-from ...models.test_out_schema import TestOutSchema
-from ...types import Response
+from ...models.multiturn_out_schema import MultiturnOutSchema
+from ...types import UNSET, Response, Unset
 
 
 def _get_kwargs(
     *,
     body: MultiturnContinueInSchema,
+    continue_eval: Union[Unset, bool] = True,
 ) -> Dict[str, Any]:
     headers: Dict[str, Any] = {}
+
+    params: Dict[str, Any] = {}
+
+    params["continue_eval"] = continue_eval
+
+    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
     _kwargs: Dict[str, Any] = {
         "method": "post",
         "url": "/v1/tests/multiturn/continue",
+        "params": params,
     }
 
     _body = body.to_dict()
@@ -33,9 +41,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[ErrorResponseSchema, TestOutSchema]]:
+) -> Optional[Union[ErrorResponseSchema, MultiturnOutSchema]]:
     if response.status_code == HTTPStatus.OK:
-        response_200 = TestOutSchema.from_dict(response.json())
+        response_200 = MultiturnOutSchema.from_dict(response.json())
 
         return response_200
     if response.status_code == HTTPStatus.BAD_REQUEST:
@@ -82,7 +90,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[ErrorResponseSchema, TestOutSchema]]:
+) -> Response[Union[ErrorResponseSchema, MultiturnOutSchema]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -95,12 +103,14 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
     body: MultiturnContinueInSchema,
-) -> Response[Union[ErrorResponseSchema, TestOutSchema]]:
+    continue_eval: Union[Unset, bool] = True,
+) -> Response[Union[ErrorResponseSchema, MultiturnOutSchema]]:
     """Continue Multiturn
 
      Continue multiple conversations in a multiturn test with user messages.
 
     Args:
+        continue_eval (Union[Unset, bool]):  Default: True.
         body (MultiturnContinueInSchema): Schema for continuing a specific conversation in a
             multiturn test.
 
@@ -109,11 +119,12 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[ErrorResponseSchema, TestOutSchema]]
+        Response[Union[ErrorResponseSchema, MultiturnOutSchema]]
     """
 
     kwargs = _get_kwargs(
         body=body,
+        continue_eval=continue_eval,
     )
 
     response = client.get_httpx_client().request(
@@ -127,12 +138,14 @@ def sync(
     *,
     client: AuthenticatedClient,
     body: MultiturnContinueInSchema,
-) -> Optional[Union[ErrorResponseSchema, TestOutSchema]]:
+    continue_eval: Union[Unset, bool] = True,
+) -> Optional[Union[ErrorResponseSchema, MultiturnOutSchema]]:
     """Continue Multiturn
 
      Continue multiple conversations in a multiturn test with user messages.
 
     Args:
+        continue_eval (Union[Unset, bool]):  Default: True.
         body (MultiturnContinueInSchema): Schema for continuing a specific conversation in a
             multiturn test.
 
@@ -141,12 +154,13 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[ErrorResponseSchema, TestOutSchema]
+        Union[ErrorResponseSchema, MultiturnOutSchema]
     """
 
     return sync_detailed(
         client=client,
         body=body,
+        continue_eval=continue_eval,
     ).parsed
 
 
@@ -154,12 +168,14 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
     body: MultiturnContinueInSchema,
-) -> Response[Union[ErrorResponseSchema, TestOutSchema]]:
+    continue_eval: Union[Unset, bool] = True,
+) -> Response[Union[ErrorResponseSchema, MultiturnOutSchema]]:
     """Continue Multiturn
 
      Continue multiple conversations in a multiturn test with user messages.
 
     Args:
+        continue_eval (Union[Unset, bool]):  Default: True.
         body (MultiturnContinueInSchema): Schema for continuing a specific conversation in a
             multiturn test.
 
@@ -168,11 +184,12 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[ErrorResponseSchema, TestOutSchema]]
+        Response[Union[ErrorResponseSchema, MultiturnOutSchema]]
     """
 
     kwargs = _get_kwargs(
         body=body,
+        continue_eval=continue_eval,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -184,12 +201,14 @@ async def asyncio(
     *,
     client: AuthenticatedClient,
     body: MultiturnContinueInSchema,
-) -> Optional[Union[ErrorResponseSchema, TestOutSchema]]:
+    continue_eval: Union[Unset, bool] = True,
+) -> Optional[Union[ErrorResponseSchema, MultiturnOutSchema]]:
     """Continue Multiturn
 
      Continue multiple conversations in a multiturn test with user messages.
 
     Args:
+        continue_eval (Union[Unset, bool]):  Default: True.
         body (MultiturnContinueInSchema): Schema for continuing a specific conversation in a
             multiturn test.
 
@@ -198,12 +217,13 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[ErrorResponseSchema, TestOutSchema]
+        Union[ErrorResponseSchema, MultiturnOutSchema]
     """
 
     return (
         await asyncio_detailed(
             client=client,
             body=body,
+            continue_eval=continue_eval,
         )
     ).parsed
