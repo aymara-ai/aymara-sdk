@@ -10,7 +10,7 @@ on:
         type: string
       api_test_env:
         description: "API test environment"
-        required: false
+        required: true
         type: choice
         options:
           - production
