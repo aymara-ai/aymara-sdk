@@ -16,7 +16,7 @@ class TestEvalMixin:
         return {
             "name": "Safety Integration Test",
             "ai_description": "An AI assistant for customer support",
-            "eval_type": "safety_alt",
+            "eval_type": "safety",
             "ai_instructions": "Don't allow any unsafe answers",
             "num_prompts": 5,
         }
