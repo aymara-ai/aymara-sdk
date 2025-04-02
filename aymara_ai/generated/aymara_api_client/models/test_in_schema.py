@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.content_type import ContentType
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
@@ -27,6 +28,8 @@ class TestInSchema:
         knowledge_base (Union[None, Unset, str]):
         additional_instructions (Union[None, Unset, str]):
         test_examples (Union[List['ExampleInSchema'], None, Unset]):
+        is_jailbreak (Union[Unset, bool]):  Default: False.
+        modality (Union[Unset, ContentType]): Content type for question items. Default: ContentType.TEXT.
     """
 
     test_name: str
@@ -40,6 +43,8 @@ class TestInSchema:
     knowledge_base: Union[None, Unset, str] = UNSET
     additional_instructions: Union[None, Unset, str] = UNSET
     test_examples: Union[List["ExampleInSchema"], None, Unset] = UNSET
+    is_jailbreak: Union[Unset, bool] = False
+    modality: Union[Unset, ContentType] = ContentType.TEXT
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -99,6 +104,12 @@ class TestInSchema:
         else:
             test_examples = self.test_examples
 
+        is_jailbreak = self.is_jailbreak
+
+        modality: Union[Unset, str] = UNSET
+        if not isinstance(self.modality, Unset):
+            modality = self.modality.value
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -125,6 +136,10 @@ class TestInSchema:
             field_dict["additional_instructions"] = additional_instructions
         if test_examples is not UNSET:
             field_dict["test_examples"] = test_examples
+        if is_jailbreak is not UNSET:
+            field_dict["is_jailbreak"] = is_jailbreak
+        if modality is not UNSET:
+            field_dict["modality"] = modality
 
         return field_dict
 
@@ -217,6 +232,15 @@ class TestInSchema:
 
         test_examples = _parse_test_examples(d.pop("test_examples", UNSET))
 
+        is_jailbreak = d.pop("is_jailbreak", UNSET)
+
+        _modality = d.pop("modality", UNSET)
+        modality: Union[Unset, ContentType]
+        if isinstance(_modality, Unset):
+            modality = UNSET
+        else:
+            modality = ContentType(_modality)
+
         test_in_schema = cls(
             test_name=test_name,
             student_description=student_description,
@@ -229,6 +253,8 @@ class TestInSchema:
             knowledge_base=knowledge_base,
             additional_instructions=additional_instructions,
             test_examples=test_examples,
+            is_jailbreak=is_jailbreak,
+            modality=modality,
         )
 
         test_in_schema.additional_properties = d
