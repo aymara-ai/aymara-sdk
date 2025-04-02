@@ -49,8 +49,6 @@ from aymara_ai.generated.aymara_api_client.models.test_out_schema import TestOut
 from aymara_ai.generated.aymara_api_client.models.test_status import TestStatus
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
 
-from .generated.aymara_api_client.models.conversation_status import ConversationStatus
-
 
 class Status(str, Enum):
     """Status for Test or Score Run"""
