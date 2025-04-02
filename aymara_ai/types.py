@@ -265,6 +265,10 @@ class QuestionResponse(BaseModel):
 
     question_text: Annotated[str, Field(..., description="Question in the test")]
     question_uuid: Annotated[str, Field(..., description="UUID of the question")]
+    conversation_turn: Annotated[
+        Optional[int],
+        Field(None, description="Turn number of the question in the conversation"),
+    ]
 
     @classmethod
     def from_question_schema(cls, question: QuestionSchema) -> "QuestionResponse":
@@ -278,39 +282,6 @@ class QuestionResponse(BaseModel):
             question_uuid=self.question_uuid,
             question_text=self.question_text,
         )
-
-
-# class MessageResponse(BaseModel):
-#     """
-#     Message in the conversation
-#     """
-
-#     message_uuid: Annotated[str, Field(..., description="UUID of the message")]
-#     message_text: Annotated[str, Field(..., description="Text of the message")]
-#     message_sender: Annotated[
-#         MessageSender, Field(..., description="Sender of the message")
-#     ]
-#     num_turn: Annotated[int, Field(..., description="Turn number of the message")]
-#     timestamp: Annotated[datetime, Field(..., description="Timestamp of the message")]
-
-#     @classmethod
-#     def from_message_schema(cls, message: MessageSchema) -> "MessageResponse":
-#         return cls(
-#             message_uuid=message.message_uuid,
-#             message_text=message.message_text,
-#             message_sender=message.message_sender,
-#             num_turn=message.num_turn,
-#             timestamp=message.timestamp,
-#         )
-
-#     def to_message_schema(self) -> MessageSchema:
-#         return MessageSchema(
-#             message_uuid=self.message_uuid,
-#             message_text=self.message_text,
-#             message_sender=self.message_sender,
-#             num_turn=self.num_turn,
-#             timestamp=self.timestamp,
-#         )
 
 
 class ConversationResponse(BaseModel):
@@ -328,9 +299,6 @@ class ConversationResponse(BaseModel):
         int, Field(..., description="Current turn in the conversation")
     ]
 
-    # messages: Annotated[
-    #     List[MessageResponse], Field(..., description="Messages in the conversation")
-    # ]
     prompt: Annotated[
         Optional[QuestionResponse],
         Field(None, description="Response to question in the conversation"),
@@ -345,9 +313,6 @@ class ConversationResponse(BaseModel):
             status=conversation.status,
             current_turn=conversation.current_turn,
             prompt=QuestionResponse.from_question_schema(conversation.prompt),
-            #   messages=[
-            #       MessageResponse.from_message_schema(m) for m in conversation.messages
-            # ],
         )
 
     def to_conversation_schema(self) -> ConversationSchema:
@@ -355,7 +320,6 @@ class ConversationResponse(BaseModel):
             conversation_uuid=self.conversation_uuid,
             status=self.status,
             current_turn=self.current_turn,
-            # messages=[m.to_message_schema() for m in self.messages],
             prompt=self.prompt.to_question_schema(),
         )
 
