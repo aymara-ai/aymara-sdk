@@ -511,7 +511,7 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
         is_sandbox: Optional[bool] = False,
-    ):
+    ) -> MultiturnSafetyTestResponse:
         return self._create_test(
             test_name=test_name,
             student_description=student_description,
