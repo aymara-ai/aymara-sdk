@@ -53,16 +53,13 @@ jobs:
         env:
           PROD_E2E_TESTING_API_KEY: ${{ secrets.PROD_E2E_TESTING_API_KEY }}
           STAGING_E2E_TESTING_API_KEY: ${{ secrets.STAGING_E2E_TESTING_API_KEY }}
-          API_TEST_ENV: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV }}
+          API_TEST_ENV: ${{ github.event.inputs.api_test_env || vars.API_TEST_ENV}}
           OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           RUN_E2E: true
         run: |
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            API_TEST_ENV="production"
-          fi
           echo "Running e2e tests against API environment: $API_TEST_ENV"
           uv run pytest tests/end_to_end/ -v -m e2e
 

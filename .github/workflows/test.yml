@@ -14,7 +14,7 @@ on:
         type: string
       api_test_env:
         description: "API test environment"
-        required: false
+        required: true
         type: choice
         options:
           - production
@@ -60,9 +60,13 @@ jobs:
           PROD_FREE_INTEGRATION_TESTING_API_KEY: ${{ secrets.PROD_FREE_INTEGRATION_TESTING_API_KEY }}
           STAGING_INTEGRATION_TESTING_API_KEY: ${{ secrets.STAGING_INTEGRATION_TESTING_API_KEY }}
           STAGING_FREE_INTEGRATION_TESTING_API_KEY: ${{ secrets.STAGING_FREE_INTEGRATION_TESTING_API_KEY }}
-          API_TEST_ENV: ${{ github.event.inputs.api_test_env || github.event.client_payload.environment || vars.API_TEST_ENV }}
+          API_TEST_ENV: ${{ github.event.inputs.api_test_env || github.event.client_payload.environment }}
         run: |
           VERSION=${{ github.event.inputs.version || github.event.client_payload.sdk_version }}
+
+          if [ -z "$API_TEST_ENV" ]; then
+            API_TEST_ENV="staging"
+          fi
           echo "Running tests against API environment: $API_TEST_ENV"
           if [ -z "$VERSION" ]; then
             echo "Running tests on ${GITHUB_HEAD_REF:-$GITHUB_REF_NAME} branch"
