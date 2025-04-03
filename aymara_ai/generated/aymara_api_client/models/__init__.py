@@ -19,7 +19,6 @@ from .get_image_presigned_urls_response import GetImagePresignedUrlsResponse
 from .image_upload_request_in_schema import ImageUploadRequestInSchema
 from .input_ import Input
 from .integration_test_response import IntegrationTestResponse
-from .message_in_schema import MessageInSchema
 from .multiturn_continue_in_schema import MultiturnContinueInSchema
 from .multiturn_out_schema import MultiturnOutSchema
 from .organization_out_schema import OrganizationOutSchema
@@ -72,7 +71,6 @@ __all__ = (
     "ImageUploadRequestInSchema",
     "Input",
     "IntegrationTestResponse",
-    "MessageInSchema",
     "MultiturnContinueInSchema",
     "MultiturnOutSchema",
     "OrganizationOutSchema",

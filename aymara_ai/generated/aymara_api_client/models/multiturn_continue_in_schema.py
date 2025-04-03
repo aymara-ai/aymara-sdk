@@ -1,10 +1,12 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, List, Type, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..types import UNSET, Unset
+
 if TYPE_CHECKING:
-    from ..models.message_in_schema import MessageInSchema
+    from ..models.answer_in_schema import AnswerInSchema
 
 
 T = TypeVar("T", bound="MultiturnContinueInSchema")
@@ -16,49 +18,72 @@ class MultiturnContinueInSchema:
 
     Attributes:
         test_uuid (str):
-        messages (List['MessageInSchema']):
+        answers (Union[List['AnswerInSchema'], None, Unset]):
     """
 
     test_uuid: str
-    messages: List["MessageInSchema"]
+    answers: Union[List["AnswerInSchema"], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         test_uuid = self.test_uuid
 
-        messages = []
-        for messages_item_data in self.messages:
-            messages_item = messages_item_data.to_dict()
-            messages.append(messages_item)
+        answers: Union[List[Dict[str, Any]], None, Unset]
+        if isinstance(self.answers, Unset):
+            answers = UNSET
+        elif isinstance(self.answers, list):
+            answers = []
+            for answers_type_0_item_data in self.answers:
+                answers_type_0_item = answers_type_0_item_data.to_dict()
+                answers.append(answers_type_0_item)
+
+        else:
+            answers = self.answers
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "test_uuid": test_uuid,
-                "messages": messages,
             }
         )
+        if answers is not UNSET:
+            field_dict["answers"] = answers
 
         return field_dict
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        from ..models.message_in_schema import MessageInSchema
+        from ..models.answer_in_schema import AnswerInSchema
 
         d = src_dict.copy()
         test_uuid = d.pop("test_uuid")
 
-        messages = []
-        _messages = d.pop("messages")
-        for messages_item_data in _messages:
-            messages_item = MessageInSchema.from_dict(messages_item_data)
+        def _parse_answers(data: object) -> Union[List["AnswerInSchema"], None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                answers_type_0 = []
+                _answers_type_0 = data
+                for answers_type_0_item_data in _answers_type_0:
+                    answers_type_0_item = AnswerInSchema.from_dict(answers_type_0_item_data)
 
-            messages.append(messages_item)
+                    answers_type_0.append(answers_type_0_item)
+
+                return answers_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[List["AnswerInSchema"], None, Unset], data)
+
+        answers = _parse_answers(d.pop("answers", UNSET))
 
         multiturn_continue_in_schema = cls(
             test_uuid=test_uuid,
-            messages=messages,
+            answers=answers,
         )
 
         multiturn_continue_in_schema.additional_properties = d
