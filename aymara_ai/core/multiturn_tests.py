@@ -4,6 +4,7 @@ from aymara_ai.core.errors import get_parsed_response
 from aymara_ai.core.protocols import AymaraAIProtocol
 from aymara_ai.generated.aymara_api_client import models
 from aymara_ai.generated.aymara_api_client.api.tests import continue_multiturn
+from ..generated.aymara_api_client.models.multiturn_out_schema import MultiturnOutSchema
 
 
 class MultiturnTestMixin(AymaraAIProtocol):
@@ -13,7 +14,7 @@ class MultiturnTestMixin(AymaraAIProtocol):
         answers: List[dict],
         max_wait_time_secs: Optional[int] = None,
         continue_eval: bool = True,
-    ):
+    ) -> MultiturnOutSchema:
         """
         Continue multiple multiturn conversations by providing user responses.
 
@@ -50,7 +51,7 @@ class MultiturnTestMixin(AymaraAIProtocol):
         answers: List[dict],
         max_wait_time_secs: Optional[int] = None,
         continue_eval: bool = True,
-    ):
+    ) -> MultiturnOutSchema:
         """
         Continue multiple multiturn conversations asynchronously by providing user responses.
 
