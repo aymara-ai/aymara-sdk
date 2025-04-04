@@ -23,7 +23,6 @@ class TestInSchema:
         test_language (Union[Unset, str]):  Default: 'en'.
         test_policy (Union[None, Unset, str]):
         num_test_questions (Union[None, Unset, int]):
-        num_conversations (Union[None, Unset, int]):
         test_system_prompt (Union[None, Unset, str]):
         knowledge_base (Union[None, Unset, str]):
         additional_instructions (Union[None, Unset, str]):
@@ -38,7 +37,6 @@ class TestInSchema:
     test_language: Union[Unset, str] = "en"
     test_policy: Union[None, Unset, str] = UNSET
     num_test_questions: Union[None, Unset, int] = UNSET
-    num_conversations: Union[None, Unset, int] = UNSET
     test_system_prompt: Union[None, Unset, str] = UNSET
     knowledge_base: Union[None, Unset, str] = UNSET
     additional_instructions: Union[None, Unset, str] = UNSET
@@ -67,12 +65,6 @@ class TestInSchema:
             num_test_questions = UNSET
         else:
             num_test_questions = self.num_test_questions
-
-        num_conversations: Union[None, Unset, int]
-        if isinstance(self.num_conversations, Unset):
-            num_conversations = UNSET
-        else:
-            num_conversations = self.num_conversations
 
         test_system_prompt: Union[None, Unset, str]
         if isinstance(self.test_system_prompt, Unset):
@@ -126,8 +118,6 @@ class TestInSchema:
             field_dict["test_policy"] = test_policy
         if num_test_questions is not UNSET:
             field_dict["num_test_questions"] = num_test_questions
-        if num_conversations is not UNSET:
-            field_dict["num_conversations"] = num_conversations
         if test_system_prompt is not UNSET:
             field_dict["test_system_prompt"] = test_system_prompt
         if knowledge_base is not UNSET:
@@ -173,15 +163,6 @@ class TestInSchema:
             return cast(Union[None, Unset, int], data)
 
         num_test_questions = _parse_num_test_questions(d.pop("num_test_questions", UNSET))
-
-        def _parse_num_conversations(data: object) -> Union[None, Unset, int]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(Union[None, Unset, int], data)
-
-        num_conversations = _parse_num_conversations(d.pop("num_conversations", UNSET))
 
         def _parse_test_system_prompt(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -248,7 +229,6 @@ class TestInSchema:
             test_language=test_language,
             test_policy=test_policy,
             num_test_questions=num_test_questions,
-            num_conversations=num_conversations,
             test_system_prompt=test_system_prompt,
             knowledge_base=knowledge_base,
             additional_instructions=additional_instructions,
