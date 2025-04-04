@@ -61,7 +61,12 @@ def test_create_safety_test(aymara_client):
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
             items=[
-                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
+                models.QuestionSchema(
+                    question_uuid="q1",
+                    question_text="Question 1",
+                    conversation_uuid="conv1",
+                    conversation_turn=1,
+                )
             ],
             count=1,
         )
@@ -117,7 +122,12 @@ async def test_create_jailbreak_test_async(aymara_client):
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
             items=[
-                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
+                models.QuestionSchema(
+                    question_uuid="q1",
+                    question_text="Question 1",
+                    conversation_uuid="conv1",
+                    conversation_turn=1,
+                )
             ],
             count=1,
         )
@@ -197,7 +207,12 @@ def test_get_test(aymara_client):
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
             items=[
-                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
+                models.QuestionSchema(
+                    question_uuid="q1",
+                    question_text="Question 1",
+                    conversation_uuid="conv1",
+                    conversation_turn=1,
+                )
             ],
             count=1,
         )
@@ -235,7 +250,12 @@ async def test_get_test_async(aymara_client):
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
             items=[
-                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
+                models.QuestionSchema(
+                    question_uuid="q1",
+                    question_text="Question 1",
+                    conversation_uuid="conv1",
+                    conversation_turn=1,
+                )
             ],
             count=1,
         )
@@ -484,7 +504,14 @@ def test_create_and_wait_for_test_impl_sync_success(aymara_client):
 
     mock_get_questions = MagicMock()
     mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
-        items=[models.QuestionSchema(question_uuid="q1", question_text="Question 1")],
+        items=[
+            models.QuestionSchema(
+                question_uuid="q1",
+                question_text="Question 1",
+                conversation_uuid="conv1",
+                conversation_turn=1,
+            )
+        ],
         count=1,
     )
     mock_get_questions.return_value.status_code = 200
@@ -547,7 +574,14 @@ async def test_create_and_wait_for_test_impl_async_success(aymara_client):
 
     mock_get_questions = AsyncMock()
     mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
-        items=[models.QuestionSchema(question_uuid="q1", question_text="Question 1")],
+        items=[
+            models.QuestionSchema(
+                question_uuid="q1",
+                question_text="Question 1",
+                conversation_uuid="conv1",
+                conversation_turn=1,
+            )
+        ],
         count=1,
     )
     mock_get_questions.return_value.status_code = 200
@@ -714,7 +748,14 @@ def test_create_and_wait_for_test_impl_timeout_sync(aymara_client):
 
     mock_get_questions = MagicMock()
     mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
-        items=[models.QuestionSchema(question_uuid="q1", question_text="Question 1")],
+        items=[
+            models.QuestionSchema(
+                question_uuid="q1",
+                question_text="Question 1",
+                conversation_uuid="conv1",
+                conversation_turn=1,
+            )
+        ],
         count=1,
     )
     mock_get_questions.return_value.status_code = 200
@@ -784,7 +825,14 @@ async def test_create_and_wait_for_test_impl_timeout_async(aymara_client):
 
     mock_get_questions = AsyncMock()
     mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
-        items=[models.QuestionSchema(question_uuid="q1", question_text="Question 1")],
+        items=[
+            models.QuestionSchema(
+                question_uuid="q1",
+                question_text="Question 1",
+                conversation_uuid="conv1",
+                conversation_turn=1,
+            )
+        ],
         count=1,
     )
     mock_get_questions.return_value.status_code = 200
@@ -814,7 +862,14 @@ async def test_create_and_wait_for_test_impl_timeout_async(aymara_client):
 def test_get_all_questions_single_page_sync(aymara_client):
     mock_get_questions = MagicMock()
     mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
-        items=[models.QuestionSchema(question_uuid="q1", question_text="Question 1")],
+        items=[
+            models.QuestionSchema(
+                question_uuid="q1",
+                question_text="Question 1",
+                conversation_uuid="conv1",
+                conversation_turn=1,
+            )
+        ],
         count=1,
     )
     mock_get_questions.return_value.status_code = 200
@@ -833,7 +888,14 @@ def test_get_all_questions_single_page_sync(aymara_client):
 async def test_get_all_questions_single_page_async(aymara_client):
     mock_get_questions = AsyncMock()
     mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
-        items=[models.QuestionSchema(question_uuid="q1", question_text="Question 1")],
+        items=[
+            models.QuestionSchema(
+                question_uuid="q1",
+                question_text="Question 1",
+                conversation_uuid="conv1",
+                conversation_turn=1,
+            )
+        ],
         count=1,
     )
     mock_get_questions.return_value.status_code = 200
@@ -855,10 +917,16 @@ def test_get_all_questions_multiple_pages_sync(aymara_client):
             parsed=models.PagedQuestionSchema(
                 items=[
                     models.QuestionSchema(
-                        question_uuid="q1", question_text="Question 1"
+                        question_uuid="q1",
+                        question_text="Question 1",
+                        conversation_uuid="conv1",
+                        conversation_turn=1,
                     ),
                     models.QuestionSchema(
-                        question_uuid="q2", question_text="Question 2"
+                        question_uuid="q2",
+                        question_text="Question 2",
+                        conversation_uuid="conv1",
+                        conversation_turn=1,
                     ),
                 ],
                 count=3,
@@ -869,7 +937,10 @@ def test_get_all_questions_multiple_pages_sync(aymara_client):
             parsed=models.PagedQuestionSchema(
                 items=[
                     models.QuestionSchema(
-                        question_uuid="q3", question_text="Question 3"
+                        question_uuid="q3",
+                        question_text="Question 3",
+                        conversation_uuid="conv1",
+                        conversation_turn=1,
                     )
                 ],
                 count=3,
@@ -898,10 +969,16 @@ async def test_get_all_questions_multiple_pages_async(aymara_client):
             parsed=models.PagedQuestionSchema(
                 items=[
                     models.QuestionSchema(
-                        question_uuid="q1", question_text="Question 1"
+                        question_uuid="q1",
+                        question_text="Question 1",
+                        conversation_uuid="conv1",
+                        conversation_turn=1,
                     ),
                     models.QuestionSchema(
-                        question_uuid="q2", question_text="Question 2"
+                        question_uuid="q2",
+                        question_text="Question 2",
+                        conversation_uuid="conv1",
+                        conversation_turn=1,
                     ),
                 ],
                 count=3,
@@ -912,7 +989,10 @@ async def test_get_all_questions_multiple_pages_async(aymara_client):
             parsed=models.PagedQuestionSchema(
                 items=[
                     models.QuestionSchema(
-                        question_uuid="q3", question_text="Question 3"
+                        question_uuid="q3",
+                        question_text="Question 3",
+                        conversation_uuid="conv1",
+                        conversation_turn=1,
                     )
                 ],
                 count=3,
@@ -1038,7 +1118,12 @@ def test_logger_progress_bar(aymara_client):
         ]
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
             items=[
-                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
+                models.QuestionSchema(
+                    question_uuid="q1",
+                    question_text="Question 1",
+                    conversation_uuid="conv1",
+                    conversation_turn=1,
+                )
             ],
             count=1,
         )
@@ -1239,7 +1324,12 @@ def test_create_image_safety_test(aymara_client):
         mock_get_test.return_value.status_code = 200
         mock_get_questions.return_value.parsed = models.PagedQuestionSchema(
             items=[
-                models.QuestionSchema(question_uuid="q1", question_text="Question 1")
+                models.QuestionSchema(
+                    question_uuid="q1",
+                    question_text="Question 1",
+                    conversation_uuid="conv1",
+                    conversation_turn=1,
+                )
             ],
             count=1,
         )
@@ -1300,6 +1390,8 @@ def test_create_accuracy_test(aymara_client):
                     question_uuid="q1",
                     question_text="Question 1",
                     accuracy_question_type="type_1",
+                    conversation_uuid="conv1",
+                    conversation_turn=1,
                 )
             ],
             count=1,
@@ -1363,6 +1455,8 @@ async def test_create_accuracy_test_async(aymara_client):
                     question_uuid="q1",
                     question_text="Question 1",
                     accuracy_question_type="type_1",
+                    conversation_uuid="conv1",
+                    conversation_turn=1,
                 )
             ],
             count=1,
