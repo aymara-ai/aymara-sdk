@@ -9,7 +9,6 @@ from ..models.test_status import TestStatus
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.conversation_schema import ConversationSchema
     from ..models.example_out_schema import ExampleOutSchema
 
 
@@ -28,13 +27,11 @@ class TestOutSchema:
         updated_at (datetime.datetime):
         organization_name (Union[None, Unset, str]):
         num_test_questions (Union[None, Unset, int]):
-        num_conversations (Union[None, Unset, int]):
         test_system_prompt (Union[None, Unset, str]):
         test_policy (Union[None, Unset, str]):
         knowledge_base (Union[None, Unset, str]):
         additional_instructions (Union[None, Unset, str]):
         test_examples (Union[List['ExampleOutSchema'], None, Unset]):
-        conversations (Union[List['ConversationSchema'], None, Unset]):
     """
 
     test_uuid: str
@@ -45,13 +42,11 @@ class TestOutSchema:
     updated_at: datetime.datetime
     organization_name: Union[None, Unset, str] = UNSET
     num_test_questions: Union[None, Unset, int] = UNSET
-    num_conversations: Union[None, Unset, int] = UNSET
     test_system_prompt: Union[None, Unset, str] = UNSET
     test_policy: Union[None, Unset, str] = UNSET
     knowledge_base: Union[None, Unset, str] = UNSET
     additional_instructions: Union[None, Unset, str] = UNSET
     test_examples: Union[List["ExampleOutSchema"], None, Unset] = UNSET
-    conversations: Union[List["ConversationSchema"], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -78,12 +73,6 @@ class TestOutSchema:
             num_test_questions = UNSET
         else:
             num_test_questions = self.num_test_questions
-
-        num_conversations: Union[None, Unset, int]
-        if isinstance(self.num_conversations, Unset):
-            num_conversations = UNSET
-        else:
-            num_conversations = self.num_conversations
 
         test_system_prompt: Union[None, Unset, str]
         if isinstance(self.test_system_prompt, Unset):
@@ -121,18 +110,6 @@ class TestOutSchema:
         else:
             test_examples = self.test_examples
 
-        conversations: Union[List[Dict[str, Any]], None, Unset]
-        if isinstance(self.conversations, Unset):
-            conversations = UNSET
-        elif isinstance(self.conversations, list):
-            conversations = []
-            for conversations_type_0_item_data in self.conversations:
-                conversations_type_0_item = conversations_type_0_item_data.to_dict()
-                conversations.append(conversations_type_0_item)
-
-        else:
-            conversations = self.conversations
-
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -149,8 +126,6 @@ class TestOutSchema:
             field_dict["organization_name"] = organization_name
         if num_test_questions is not UNSET:
             field_dict["num_test_questions"] = num_test_questions
-        if num_conversations is not UNSET:
-            field_dict["num_conversations"] = num_conversations
         if test_system_prompt is not UNSET:
             field_dict["test_system_prompt"] = test_system_prompt
         if test_policy is not UNSET:
@@ -161,14 +136,11 @@ class TestOutSchema:
             field_dict["additional_instructions"] = additional_instructions
         if test_examples is not UNSET:
             field_dict["test_examples"] = test_examples
-        if conversations is not UNSET:
-            field_dict["conversations"] = conversations
 
         return field_dict
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        from ..models.conversation_schema import ConversationSchema
         from ..models.example_out_schema import ExampleOutSchema
 
         d = src_dict.copy()
@@ -201,15 +173,6 @@ class TestOutSchema:
             return cast(Union[None, Unset, int], data)
 
         num_test_questions = _parse_num_test_questions(d.pop("num_test_questions", UNSET))
-
-        def _parse_num_conversations(data: object) -> Union[None, Unset, int]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(Union[None, Unset, int], data)
-
-        num_conversations = _parse_num_conversations(d.pop("num_conversations", UNSET))
 
         def _parse_test_system_prompt(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -269,28 +232,6 @@ class TestOutSchema:
 
         test_examples = _parse_test_examples(d.pop("test_examples", UNSET))
 
-        def _parse_conversations(data: object) -> Union[List["ConversationSchema"], None, Unset]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, list):
-                    raise TypeError()
-                conversations_type_0 = []
-                _conversations_type_0 = data
-                for conversations_type_0_item_data in _conversations_type_0:
-                    conversations_type_0_item = ConversationSchema.from_dict(conversations_type_0_item_data)
-
-                    conversations_type_0.append(conversations_type_0_item)
-
-                return conversations_type_0
-            except:  # noqa: E722
-                pass
-            return cast(Union[List["ConversationSchema"], None, Unset], data)
-
-        conversations = _parse_conversations(d.pop("conversations", UNSET))
-
         test_out_schema = cls(
             test_uuid=test_uuid,
             test_name=test_name,
@@ -300,13 +241,11 @@ class TestOutSchema:
             updated_at=updated_at,
             organization_name=organization_name,
             num_test_questions=num_test_questions,
-            num_conversations=num_conversations,
             test_system_prompt=test_system_prompt,
             test_policy=test_policy,
             knowledge_base=knowledge_base,
             additional_instructions=additional_instructions,
             test_examples=test_examples,
-            conversations=conversations,
         )
 
         test_out_schema.additional_properties = d

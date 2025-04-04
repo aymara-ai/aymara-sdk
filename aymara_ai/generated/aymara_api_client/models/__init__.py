@@ -4,9 +4,7 @@ from .answer_in_schema import AnswerInSchema
 from .answer_out_schema import AnswerOutSchema
 from .billing_cycle_usage_schema import BillingCycleUsageSchema
 from .content_type import ContentType
-from .conversation_schema import ConversationSchema
 from .conversation_score_schema import ConversationScoreSchema
-from .conversation_status import ConversationStatus
 from .error_code import ErrorCode
 from .error_data_schema import ErrorDataSchema
 from .error_data_schema_details import ErrorDataSchemaDetails
@@ -56,9 +54,7 @@ __all__ = (
     "AnswerOutSchema",
     "BillingCycleUsageSchema",
     "ContentType",
-    "ConversationSchema",
     "ConversationScoreSchema",
-    "ConversationStatus",
     "ErrorCode",
     "ErrorDataSchema",
     "ErrorDataSchemaDetails",

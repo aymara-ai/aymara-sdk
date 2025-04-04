@@ -30,9 +30,6 @@ from aymara_ai.utils.constants import (
     DEFAULT_CHAR_TO_TOKEN_MULTIPLIER,
     DEFAULT_JAILBREAK_MAX_WAIT_TIME_SECS,
     DEFAULT_MAX_TOKENS,
-    DEFAULT_NUM_CONVERSATIONS,
-    DEFAULT_NUM_CONVERSATIONS_MAX,
-    DEFAULT_NUM_CONVERSATIONS_MIN,
     DEFAULT_NUM_QUESTIONS,
     DEFAULT_NUM_QUESTIONS_MAX,
     DEFAULT_NUM_QUESTIONS_MIN,
@@ -505,12 +502,12 @@ class TestMixin(AymaraAIProtocol):
         student_description: str,
         test_policy: str,
         test_language: str = DEFAULT_TEST_LANGUAGE,
-        num_conversations: int = DEFAULT_NUM_CONVERSATIONS,
         max_wait_time_secs: int = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
         is_sandbox: Optional[bool] = False,
+        num_test_questions: Optional[int] = None,
     ) -> MultiturnSafetyTestResponse:
         return self._create_test(
             test_name=test_name,
@@ -526,7 +523,7 @@ class TestMixin(AymaraAIProtocol):
             good_examples=good_examples,
             bad_examples=bad_examples,
             is_sandbox=is_sandbox,
-            num_conversations=num_conversations,
+            num_test_questions=num_test_questions,
         )
 
     create_multiturn_safety_test.__doc__ = f"""
@@ -542,8 +539,6 @@ class TestMixin(AymaraAIProtocol):
         :type test_language: str, optional
         :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
         :type num_test_questions: int, optional
-        :param num_conversations: Number of conversations to generate, defaults to 10.
-        :type num_conversations: int, optional
         :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS} seconds.
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
@@ -566,12 +561,12 @@ class TestMixin(AymaraAIProtocol):
         student_description: str,
         test_policy: str,
         test_language: str = DEFAULT_TEST_LANGUAGE,
-        num_conversations: int = DEFAULT_NUM_CONVERSATIONS,
         max_wait_time_secs: int = DEFAULT_SAFETY_MAX_WAIT_TIME_SECS,
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
         is_sandbox: Optional[bool] = False,
+        num_test_questions: Optional[int] = None,
     ) -> MultiturnSafetyTestResponse:
         return await self._create_test(
             test_name=test_name,
@@ -587,7 +582,7 @@ class TestMixin(AymaraAIProtocol):
             good_examples=good_examples,
             bad_examples=bad_examples,
             is_sandbox=is_sandbox,
-            num_conversations=num_conversations,
+            num_test_questions=num_test_questions,
         )
 
     create_multiturn_safety_test_async.__doc__ = f"""
@@ -603,8 +598,6 @@ class TestMixin(AymaraAIProtocol):
         :type test_language: str, optional
         :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
         :type num_test_questions: int, optional
-        :param num_conversations: Number of conversations to generate, defaults to 10.
-        :type num_conversations: int, optional
         :param max_wait_time_secs: Maximum wait time for test creation, defaults to {DEFAULT_SAFETY_MAX_WAIT_TIME_SECS} seconds.
         :type max_wait_time_secs: int, optional
         :param additional_instructions: Optional additional instructions for test generation
@@ -614,7 +607,7 @@ class TestMixin(AymaraAIProtocol):
         :param bad_examples: Optional list of bad examples to guide question generation
         :type bad_examples: List[BadExample], optional
         :return: Test response containing test details and generated questions.
-        :rtype: SafetyTestResponse
+        :rtype: MultiturnSafetyTestResponse
 
         :raises ValueError: If the test_name length is not within the allowed range.
         :raises ValueError: If num_test_questions is not within the allowed range.
@@ -637,7 +630,6 @@ class TestMixin(AymaraAIProtocol):
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
         is_sandbox: Optional[bool] = False,
-        num_conversations: Optional[int] = None,
     ) -> Union[BaseTestResponse, Coroutine[BaseTestResponse, None, None]]:
         self._validate_test_inputs(
             test_name=test_name,
@@ -651,7 +643,6 @@ class TestMixin(AymaraAIProtocol):
             additional_instructions=additional_instructions,
             good_examples=good_examples,
             bad_examples=bad_examples,
-            num_conversations=num_conversations,
         )
 
         examples = []
@@ -671,7 +662,6 @@ class TestMixin(AymaraAIProtocol):
             test_type=test_type,
             additional_instructions=additional_instructions,
             test_examples=examples if examples else None,
-            num_conversations=num_conversations,
         )
         if is_async:
             return self._create_and_wait_for_test_impl_async(
@@ -695,7 +685,6 @@ class TestMixin(AymaraAIProtocol):
         additional_instructions: Optional[str] = None,
         good_examples: Optional[List[GoodExample]] = None,
         bad_examples: Optional[List[BadExample]] = None,
-        num_conversations: Optional[int] = None,
     ) -> None:
         if not student_description:
             raise ValueError("student_description is required")
@@ -731,19 +720,6 @@ class TestMixin(AymaraAIProtocol):
             ):
                 raise ValueError(
                     f"num_test_questions must be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions"
-                )
-        if num_conversations is not None:
-            if test_type != TestType.MULTITURN_SAFETY:
-                raise ValueError(
-                    "num_conversations is only valid for multiturn safety tests"
-                )
-            elif not (
-                DEFAULT_NUM_CONVERSATIONS_MIN
-                <= num_conversations
-                <= DEFAULT_NUM_CONVERSATIONS_MAX
-            ):
-                raise ValueError(
-                    f"num_conversations must be between {DEFAULT_NUM_CONVERSATIONS_MIN} and {DEFAULT_NUM_CONVERSATIONS_MAX} conversations"
                 )
         token1 = len(student_description) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
 
@@ -861,16 +837,10 @@ class TestMixin(AymaraAIProtocol):
                     )
 
                 if test_response.test_status == models.TestStatus.FINISHED:
-                    if test_data.test_type == TestType.MULTITURN_SAFETY:
-                        conversations = create_response.conversations
-                        return BaseTestResponse.from_test_out_schema_and_questions(
-                            test_response, None, conversations
-                        )
-                    else:
-                        questions = self._get_all_questions_sync(test_uuid)
-                        return BaseTestResponse.from_test_out_schema_and_questions(
-                            test_response, questions, None
-                        )
+                    questions = self._get_all_questions_sync(test_uuid)
+                    return BaseTestResponse.from_test_out_schema_and_questions(
+                        test_response, questions, None
+                    )
 
                 time.sleep(POLLING_INTERVAL)
 
@@ -922,16 +892,10 @@ class TestMixin(AymaraAIProtocol):
                     )
 
                 if test_response.test_status == models.TestStatus.FINISHED:
-                    if test_data.test_type == TestType.MULTITURN_SAFETY:
-                        conversations = create_response.conversations
-                        return BaseTestResponse.from_test_out_schema_and_questions(
-                            test_response, None, conversations
-                        )
-                    else:
-                        questions = await self._get_all_questions_async(test_uuid)
-                        return BaseTestResponse.from_test_out_schema_and_questions(
-                            test_response, questions, None
-                        )
+                    questions = await self._get_all_questions_async(test_uuid)
+                    return BaseTestResponse.from_test_out_schema_and_questions(
+                        test_response, questions, None
+                    )
 
                 await asyncio.sleep(POLLING_INTERVAL)
 

@@ -17,12 +17,6 @@ from aymara_ai.generated.aymara_api_client.models.answer_in_schema import (
 from aymara_ai.generated.aymara_api_client.models.answer_out_schema import (
     AnswerOutSchema,
 )
-from aymara_ai.generated.aymara_api_client.models.conversation_schema import (
-    ConversationSchema,
-)
-from aymara_ai.generated.aymara_api_client.models.conversation_status import (
-    ConversationStatus,
-)
 from aymara_ai.generated.aymara_api_client.models.example_in_schema import (
     ExampleInSchema,
 )
@@ -267,58 +261,26 @@ class QuestionResponse(BaseModel):
         Optional[int],
         Field(None, description="Turn number of the question in the conversation"),
     ]
+    conversation_uuid: Annotated[
+        Optional[str],
+        Field(None, description="UUID of the conversation"),
+    ]
 
     @classmethod
     def from_question_schema(cls, question: QuestionSchema) -> "QuestionResponse":
         return cls(
             question_uuid=question.question_uuid,
             question_text=question.question_text,
+            conversation_uuid=question.conversation_uuid,
+            conversation_turn=question.conversation_turn,
         )
 
     def to_question_schema(self) -> QuestionSchema:
         return QuestionSchema(
             question_uuid=self.question_uuid,
             question_text=self.question_text,
-        )
-
-
-class ConversationResponse(BaseModel):
-    """
-    Conversation in the test
-    """
-
-    conversation_uuid: Annotated[
-        str, Field(..., description="UUID of the conversation")
-    ]
-    status: Annotated[
-        ConversationStatus, Field(..., description="Status of the conversation")
-    ]
-    current_turn: Annotated[
-        int, Field(..., description="Current turn in the conversation")
-    ]
-
-    prompt: Annotated[
-        Optional[QuestionResponse],
-        Field(None, description="Response to question in the conversation"),
-    ]
-
-    @classmethod
-    def from_conversation_schema(
-        cls, conversation: ConversationSchema
-    ) -> "ConversationResponse":
-        return cls(
-            conversation_uuid=conversation.conversation_uuid,
-            status=conversation.status,
-            current_turn=conversation.current_turn,
-            prompt=QuestionResponse.from_question_schema(conversation.prompt),
-        )
-
-    def to_conversation_schema(self) -> ConversationSchema:
-        return ConversationSchema(
             conversation_uuid=self.conversation_uuid,
-            status=self.status,
-            current_turn=self.current_turn,
-            prompt=self.prompt.to_question_schema(),
+            conversation_turn=self.conversation_turn,
         )
 
 
@@ -547,7 +509,6 @@ class BaseTestResponse(BaseModel):
         cls,
         test: TestOutSchema,
         questions: Optional[List[QuestionSchema]] = None,
-        conversations: Optional[List[ConversationSchema]] = None,
         failure_reason: Optional[str] = None,
     ) -> "BaseTestResponse":
         base_attributes = {
@@ -573,7 +534,11 @@ class BaseTestResponse(BaseModel):
             if test.test_examples
             else None,
         }
-        if test.test_type == TestType.SAFETY or test.test_type == TestType.IMAGE_SAFETY:
+        if (
+            test.test_type == TestType.SAFETY
+            or test.test_type == TestType.IMAGE_SAFETY
+            or test.test_type == TestType.MULTITURN_SAFETY
+        ):
             questions = (
                 [QuestionResponse.from_question_schema(q) for q in questions]
                 if questions
@@ -581,20 +546,6 @@ class BaseTestResponse(BaseModel):
             )
             return SafetyTestResponse(
                 **base_attributes, test_policy=test.test_policy, questions=questions
-            )
-        elif test.test_type == TestType.MULTITURN_SAFETY:
-            conversations = (
-                [
-                    ConversationResponse.from_conversation_schema(c)
-                    for c in conversations
-                ]
-                if conversations
-                else None
-            )
-            return MultiturnSafetyTestResponse(
-                **base_attributes,
-                test_policy=test.test_policy,
-                conversations=conversations,
             )
         elif test.test_type == TestType.JAILBREAK:
             questions = (
@@ -669,10 +620,6 @@ class MultiturnSafetyTestResponse(BaseTestResponse):
     """
 
     test_policy: Annotated[str, Field(..., description="Safety Policy to test against")]
-    conversations: Annotated[
-        Optional[List[ConversationResponse]],
-        Field(None, description="Conversations in the test"),
-    ]
 
 
 class ListTestResponse(RootModel):
