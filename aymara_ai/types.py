@@ -271,8 +271,8 @@ class QuestionResponse(BaseModel):
         return cls(
             question_uuid=question.question_uuid,
             question_text=question.question_text,
-            conversation_uuid=question.conversation_uuid,
-            conversation_turn=question.conversation_turn,
+            conversation_uuid=question.conversation_uuid or None,
+            conversation_turn=question.conversation_turn or None,
         )
 
     def to_question_schema(self) -> QuestionSchema:
