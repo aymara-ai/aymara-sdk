@@ -292,7 +292,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             Status.UPLOADING if any(a.answer_image_path for a in score_data.answers) else Status.PENDING,
             upload_total=len([a for a in score_data.answers if a.answer_image_path]),
         ) as pbar:
-            if test.modality == ContentType.IMAGE:
+            if test.modality == ContentType.IMAGE or test.test_type == TestType.IMAGE_SAFETY:
                 uploaded_keys = self.upload_images(
                     score_data.test_uuid,
                     score_data.answers,
@@ -378,7 +378,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             Status.UPLOADING if any(a.answer_image_path for a in score_data.answers) else Status.PENDING,
             upload_total=len([a for a in score_data.answers]),
         ) as pbar:
-            if test.modality == ContentType.IMAGE:
+            if test.modality == ContentType.IMAGE or test.test_type == TestType.IMAGE_SAFETY:
                 uploaded_keys = await self.upload_images_async(
                     score_data.test_uuid,
                     score_data.answers,
