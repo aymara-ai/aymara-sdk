@@ -15,6 +15,7 @@ from aymara_ai.generated.aymara_api_client.api.score_runs import (
     list_score_runs,
 )
 from aymara_ai.generated.aymara_api_client.api.tests import get_test
+from aymara_ai.generated.aymara_api_client.models.content_type import ContentType
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
 from aymara_ai.types import (
     BaseStudentAnswerInput,
@@ -291,7 +292,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             Status.UPLOADING if any(a.answer_image_path for a in score_data.answers) else Status.PENDING,
             upload_total=len([a for a in score_data.answers if a.answer_image_path]),
         ) as pbar:
-            if test.test_type == TestType.IMAGE_SAFETY:
+            if test.modality == ContentType.IMAGE:
                 uploaded_keys = self.upload_images(
                     score_data.test_uuid,
                     score_data.answers,
@@ -377,7 +378,7 @@ class ScoreRunMixin(UploadMixin, AymaraAIProtocol):
             Status.UPLOADING if any(a.answer_image_path for a in score_data.answers) else Status.PENDING,
             upload_total=len([a for a in score_data.answers]),
         ) as pbar:
-            if test.test_type == TestType.IMAGE_SAFETY:
+            if test.modality == ContentType.IMAGE:
                 uploaded_keys = await self.upload_images_async(
                     score_data.test_uuid,
                     score_data.answers,

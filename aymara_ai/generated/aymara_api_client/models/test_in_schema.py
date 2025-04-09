@@ -28,7 +28,7 @@ class TestInSchema:
         additional_instructions (Union[None, Unset, str]):
         test_examples (Union[List['ExampleInSchema'], None, Unset]):
         is_jailbreak (Union[Unset, bool]):  Default: False.
-        modality (Union[Unset, ContentType]): Content type for question items. Default: ContentType.TEXT.
+        modality (Union[Unset, ContentType]): Content type for AI interactions. Default: ContentType.TEXT.
     """
 
     test_name: str

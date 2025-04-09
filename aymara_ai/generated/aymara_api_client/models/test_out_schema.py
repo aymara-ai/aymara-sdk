@@ -5,6 +5,7 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
+from ..models.content_type import ContentType
 from ..models.test_status import TestStatus
 from ..types import UNSET, Unset
 
@@ -31,6 +32,8 @@ class TestOutSchema:
         test_policy (Union[None, Unset, str]):
         knowledge_base (Union[None, Unset, str]):
         additional_instructions (Union[None, Unset, str]):
+        is_jailbreak (Union[Unset, bool]):  Default: False.
+        modality (Union[Unset, ContentType]): Content type for AI interactions. Default: ContentType.TEXT.
         test_examples (Union[List['ExampleOutSchema'], None, Unset]):
     """
 
@@ -46,6 +49,8 @@ class TestOutSchema:
     test_policy: Union[None, Unset, str] = UNSET
     knowledge_base: Union[None, Unset, str] = UNSET
     additional_instructions: Union[None, Unset, str] = UNSET
+    is_jailbreak: Union[Unset, bool] = False
+    modality: Union[Unset, ContentType] = ContentType.TEXT
     test_examples: Union[List["ExampleOutSchema"], None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -98,6 +103,12 @@ class TestOutSchema:
         else:
             additional_instructions = self.additional_instructions
 
+        is_jailbreak = self.is_jailbreak
+
+        modality: Union[Unset, str] = UNSET
+        if not isinstance(self.modality, Unset):
+            modality = self.modality.value
+
         test_examples: Union[List[Dict[str, Any]], None, Unset]
         if isinstance(self.test_examples, Unset):
             test_examples = UNSET
@@ -134,6 +145,10 @@ class TestOutSchema:
             field_dict["knowledge_base"] = knowledge_base
         if additional_instructions is not UNSET:
             field_dict["additional_instructions"] = additional_instructions
+        if is_jailbreak is not UNSET:
+            field_dict["is_jailbreak"] = is_jailbreak
+        if modality is not UNSET:
+            field_dict["modality"] = modality
         if test_examples is not UNSET:
             field_dict["test_examples"] = test_examples
 
@@ -210,6 +225,15 @@ class TestOutSchema:
 
         additional_instructions = _parse_additional_instructions(d.pop("additional_instructions", UNSET))
 
+        is_jailbreak = d.pop("is_jailbreak", UNSET)
+
+        _modality = d.pop("modality", UNSET)
+        modality: Union[Unset, ContentType]
+        if isinstance(_modality, Unset):
+            modality = UNSET
+        else:
+            modality = ContentType(_modality)
+
         def _parse_test_examples(data: object) -> Union[List["ExampleOutSchema"], None, Unset]:
             if data is None:
                 return data
@@ -245,6 +269,8 @@ class TestOutSchema:
             test_policy=test_policy,
             knowledge_base=knowledge_base,
             additional_instructions=additional_instructions,
+            is_jailbreak=is_jailbreak,
+            modality=modality,
             test_examples=test_examples,
         )
 

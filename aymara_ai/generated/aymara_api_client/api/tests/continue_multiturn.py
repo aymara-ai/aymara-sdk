@@ -15,12 +15,15 @@ def _get_kwargs(
     *,
     body: MultiturnContinueInSchema,
     continue_eval: Union[Unset, bool] = True,
+    is_sandbox: Union[Unset, bool] = False,
 ) -> Dict[str, Any]:
     headers: Dict[str, Any] = {}
 
     params: Dict[str, Any] = {}
 
     params["continue_eval"] = continue_eval
+
+    params["is_sandbox"] = is_sandbox
 
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
@@ -104,6 +107,7 @@ def sync_detailed(
     client: AuthenticatedClient,
     body: MultiturnContinueInSchema,
     continue_eval: Union[Unset, bool] = True,
+    is_sandbox: Union[Unset, bool] = False,
 ) -> Response[Union[ErrorResponseSchema, MultiturnOutSchema]]:
     """Continue Multiturn
 
@@ -111,6 +115,7 @@ def sync_detailed(
 
     Args:
         continue_eval (Union[Unset, bool]):  Default: True.
+        is_sandbox (Union[Unset, bool]):  Default: False.
         body (MultiturnContinueInSchema): Schema for continuing a specific conversation in a
             multiturn test.
 
@@ -125,6 +130,7 @@ def sync_detailed(
     kwargs = _get_kwargs(
         body=body,
         continue_eval=continue_eval,
+        is_sandbox=is_sandbox,
     )
 
     response = client.get_httpx_client().request(
@@ -139,6 +145,7 @@ def sync(
     client: AuthenticatedClient,
     body: MultiturnContinueInSchema,
     continue_eval: Union[Unset, bool] = True,
+    is_sandbox: Union[Unset, bool] = False,
 ) -> Optional[Union[ErrorResponseSchema, MultiturnOutSchema]]:
     """Continue Multiturn
 
@@ -146,6 +153,7 @@ def sync(
 
     Args:
         continue_eval (Union[Unset, bool]):  Default: True.
+        is_sandbox (Union[Unset, bool]):  Default: False.
         body (MultiturnContinueInSchema): Schema for continuing a specific conversation in a
             multiturn test.
 
@@ -161,6 +169,7 @@ def sync(
         client=client,
         body=body,
         continue_eval=continue_eval,
+        is_sandbox=is_sandbox,
     ).parsed
 
 
@@ -169,6 +178,7 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     body: MultiturnContinueInSchema,
     continue_eval: Union[Unset, bool] = True,
+    is_sandbox: Union[Unset, bool] = False,
 ) -> Response[Union[ErrorResponseSchema, MultiturnOutSchema]]:
     """Continue Multiturn
 
@@ -176,6 +186,7 @@ async def asyncio_detailed(
 
     Args:
         continue_eval (Union[Unset, bool]):  Default: True.
+        is_sandbox (Union[Unset, bool]):  Default: False.
         body (MultiturnContinueInSchema): Schema for continuing a specific conversation in a
             multiturn test.
 
@@ -190,6 +201,7 @@ async def asyncio_detailed(
     kwargs = _get_kwargs(
         body=body,
         continue_eval=continue_eval,
+        is_sandbox=is_sandbox,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -202,6 +214,7 @@ async def asyncio(
     client: AuthenticatedClient,
     body: MultiturnContinueInSchema,
     continue_eval: Union[Unset, bool] = True,
+    is_sandbox: Union[Unset, bool] = False,
 ) -> Optional[Union[ErrorResponseSchema, MultiturnOutSchema]]:
     """Continue Multiturn
 
@@ -209,6 +222,7 @@ async def asyncio(
 
     Args:
         continue_eval (Union[Unset, bool]):  Default: True.
+        is_sandbox (Union[Unset, bool]):  Default: False.
         body (MultiturnContinueInSchema): Schema for continuing a specific conversation in a
             multiturn test.
 
@@ -225,5 +239,6 @@ async def asyncio(
             client=client,
             body=body,
             continue_eval=continue_eval,
+            is_sandbox=is_sandbox,
         )
     ).parsed
