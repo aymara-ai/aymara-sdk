@@ -17,9 +17,7 @@ class SDKLogger(logging.Logger):
 
         # Set up logging
         handler = logging.StreamHandler()
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         handler.setFormatter(formatter)
         self.addHandler(handler)
 
@@ -97,9 +95,7 @@ class SDKLogger(logging.Logger):
             else:
                 status_str = f"{Fore.YELLOW}{status_str}{Style.RESET_ALL}"
 
-        description = (
-            f"{task['test_name']} | {task['uuid']} | {elapsed_time}s | {status_str}"
-        )
+        description = f"{task['test_name']} | {task['uuid']} | {elapsed_time}s | {status_str}"
 
         # Only add upload progress if we're in the UPLOADING status
         if task.get("upload_total") and task["status"] == Status.UPLOADING:

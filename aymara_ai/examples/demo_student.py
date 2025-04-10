@@ -11,7 +11,9 @@ from typing import Optional
 import boto3
 from PIL import Image
 
+from aymara_ai.generated.aymara_api_client.models.eval_response_in_schema import EvalResponseInSchema
 from aymara_ai.types import ImageStudentAnswerInput, TextStudentAnswerInput
+from aymara_ai.v2_types import EvalResponse
 
 ACCURACY_SYSTEM_PROMPT = """<role>
 Assume this role for the following task: [{student_description}].
@@ -74,20 +76,18 @@ class OpenAIStudent:
         return completion.choices[0].message.content
 
     async def get_student_answer(self, question, system_prompt):
-        answer_text = await asyncio.to_thread(
-            self.answer_question, question.question_text, system_prompt
-        )
-        return TextStudentAnswerInput(
-            question_uuid=question.question_uuid, answer_text=answer_text
-        )
+        answer_text = await asyncio.to_thread(self.answer_question, question.question_text, system_prompt)
+        return TextStudentAnswerInput(question_uuid=question.question_uuid, answer_text=answer_text)
 
     async def get_all_student_answers(self, questions, system_prompt):
-        return await asyncio.gather(
-            *[
-                self.get_student_answer(question, system_prompt)
-                for question in questions
-            ]
-        )
+        return await asyncio.gather(*[self.get_student_answer(question, system_prompt) for question in questions])
+
+    async def get_ai_response(self, prompt, system_prompt):
+        answer_text = await asyncio.to_thread(self.answer_question, prompt.content, system_prompt)
+        return EvalResponseInSchema(prompt_uuid=prompt.prompt_uuid, content=answer_text)
+
+    async def get_all_ai_responses(self, prompts, system_prompt):
+        return await asyncio.gather(*[self.get_ai_response(prompt, system_prompt) for prompt in prompts])
 
     @observe
     async def answer_test_questions(self, tests, system_prompts=None):
@@ -108,6 +108,26 @@ class OpenAIStudent:
         for test, student_answers in zip(tests, all_student_answers):
             student_answers_dict[test.test_uuid] = student_answers
         return student_answers_dict
+
+    @observe
+    async def generate_ai_responses(self, evals, system_prompts=None):
+        langfuse_context.update_current_observation(
+            tags=["demo_student"],
+        )
+        if system_prompts is None:
+            system_prompts = [None] * len(evals)
+
+        all_ai_responses = await asyncio.gather(
+            *[
+                self.get_all_ai_responses(eval.prompts, system_prompt)
+                for eval, system_prompt in zip(evals, system_prompts)
+            ]
+        )
+
+        ai_responses_dict = {}
+        for eval, ai_responses in zip(evals, all_ai_responses):
+            ai_responses_dict[eval.eval.eval_uuid] = ai_responses
+        return ai_responses_dict
 
 
 class BedrockStudent:
@@ -163,9 +183,7 @@ class BedrockStudent:
             )
 
         except Exception as e:
-            print(
-                f"Error generating image for question {question.question_uuid}: {str(e)}"
-            )
+            print(f"Error generating image for question {question.question_uuid}: {str(e)}")
             return ImageStudentAnswerInput(
                 question_uuid=question.question_uuid,
                 is_refusal=True,
@@ -173,18 +191,23 @@ class BedrockStudent:
 
     async def generate_all_images(self, questions):
         """Generate images for all questions in parallel."""
-        results = await asyncio.gather(
-            *[self.generate_image(question) for question in questions]
-        )
+        results = await asyncio.gather(*[self.generate_image(question) for question in questions])
         return [result for result in results]
 
     async def generate_all_images_for_tests(self, tests):
-        all_images = await asyncio.gather(
-            *[self.generate_all_images(test.questions) for test in tests]
-        )
+        all_images = await asyncio.gather(*[self.generate_all_images(test.questions) for test in tests])
 
         images_dict = {}
         for test, images in zip(tests, all_images):
             images_dict[test.test_uuid] = images
+
+        return images_dict
+
+    async def generate_all_images_for_evals(self, evals: list[EvalResponse]):
+        all_images = await asyncio.gather(*[self.generate_all_images(eval.prompts) for eval in evals])
+
+        images_dict = {}
+        for eval, images in zip(evals, all_images):
+            images_dict[eval.eval_uuid] = images
 
         return images_dict

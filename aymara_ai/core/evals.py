@@ -1,14 +1,26 @@
 import asyncio
 import time
-from typing import List, Optional
+from typing import List, Optional, Union
 
-from aymara_ai.core.errors import get_parsed_response
+from aymara_ai.core.errors import AymaraError, get_parsed_response
 from aymara_ai.core.protocols import AymaraAIProtocol
-from aymara_ai.generated.aymara_api_client import models
-from aymara_ai.generated.aymara_api_client.api.tests import create_test, get_test, get_test_questions
-from aymara_ai.generated.aymara_api_client.models.paged_question_schema import PagedQuestionSchema
+from aymara_ai.generated.aymara_api_client.api.evals import (
+    create_eval,
+    delete_eval,
+    get_eval,
+    get_eval_prompts,
+    list_evals,
+)
+from aymara_ai.generated.aymara_api_client.models.content_type import ContentType
+from aymara_ai.generated.aymara_api_client.models.error_code import ErrorCode
+from aymara_ai.generated.aymara_api_client.models.eval_in_schema import EvalInSchema
+from aymara_ai.generated.aymara_api_client.models.eval_out_schema import EvalOutSchema
+from aymara_ai.generated.aymara_api_client.models.eval_prompt_schema import EvalPromptSchema
+from aymara_ai.generated.aymara_api_client.models.paged_eval_prompt_schema import PagedEvalPromptSchema
+from aymara_ai.generated.aymara_api_client.models.prompt_example_in_schema import PromptExampleInSchema
+from aymara_ai.generated.aymara_api_client.models.status import Status as ApiStatus
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
-from aymara_ai.types import BaseTestResponse, PromptExample, Status
+from aymara_ai.types import GroundTruth, Status
 from aymara_ai.utils.async_utils import run_async
 from aymara_ai.utils.constants import (
     DEFAULT_CHAR_TO_TOKEN_MULTIPLIER,
@@ -25,6 +37,7 @@ from aymara_ai.utils.constants import (
     POLLING_INTERVAL,
     SUPPORTED_LANGUAGES,
 )
+from aymara_ai.v2_types import EvalResponse, ListEval
 
 
 class EvalMixin(AymaraAIProtocol):
@@ -38,12 +51,15 @@ class EvalMixin(AymaraAIProtocol):
         ai_instructions: Optional[str] = None,
         eval_type: str,
         eval_instructions: Optional[str] = None,
+        ground_truth: Optional[GroundTruth] = None,
+        modality: ContentType = ContentType.TEXT,
+        jailbreak: bool = False,
         language: str = DEFAULT_TEST_LANGUAGE,
         num_prompts: int = DEFAULT_NUM_QUESTIONS,
-        prompt_examples: Optional[List[PromptExample]] = None,
+        prompt_examples: Optional[List[PromptExampleInSchema]] = None,
         max_wait_time_secs: int = DEFAULT_MAX_WAIT_TIME_SECS,
         use_sandbox: Optional[bool] = False,
-    ) -> BaseTestResponse:
+    ) -> EvalResponse:
         """Create an evaluation synchronously and wait for completion.
 
         This method creates an evaluation for an AI system and waits for it to complete before returning.
@@ -56,14 +72,17 @@ class EvalMixin(AymaraAIProtocol):
             ai_description: A description of the AI system being evaluated.
             ai_instructions: Instructions that the AI system under evaluation are to follow.
             eval_instructions: Additional instructions for the eval.
-            language: The language to use for the test. Defaults to English. Must be one of the supported languages.
-            num_prompts: Number of concurrent prompts to generate. Must be between 3 and 100 for most test types.
+            ground_truth: The ground truth for the eval.
+            modality: The modality of the eval (e.g., text, image).
+            jailbreak: Whether the eval is a jailbreak eval.
+            language: The language to use for the eval. Defaults to English. Must be one of the supported languages.
+            num_prompts: Number of concurrent prompts to generate. Must be between 3 and 100 for most eval types.
             prompt_examples: Examples to be used in the eval.
             max_wait_time_secs: Maximum time to wait for eval completion in seconds.
             use_sandbox: Whether to create the eval in sandbox mode (not counted against quotas).
 
         Returns:
-            BaseTestResponse: Object containing eval information, status, and generated questions.
+            EvalResponse: Object containing eval information, status, and generated prompts.
 
         Raises:
             ValueError: If any validation checks fail (invalid name length, unsupported language, etc.)
@@ -89,8 +108,10 @@ class EvalMixin(AymaraAIProtocol):
                 ai_instructions=ai_instructions,
                 eval_type=eval_type,
                 eval_instructions=eval_instructions,
+                jailbreak=jailbreak,
                 knowledge_base=None,
                 language=language,
+                modality=modality,
                 num_prompts=num_prompts,
                 prompt_examples=prompt_examples,
                 max_wait_time_secs=max_wait_time_secs,
@@ -106,12 +127,15 @@ class EvalMixin(AymaraAIProtocol):
         ai_instructions: Optional[str] = None,
         eval_type: str,
         eval_instructions: Optional[str] = None,
+        ground_truth: Optional[GroundTruth] = None,
+        modality: ContentType = ContentType.TEXT,
+        jailbreak: bool = False,
         language: str = DEFAULT_TEST_LANGUAGE,
         num_prompts: int = DEFAULT_NUM_QUESTIONS,
-        prompt_examples: Optional[List[PromptExample]] = None,
+        prompt_examples: Optional[List[PromptExampleInSchema]] = None,
         max_wait_time_secs: int = DEFAULT_MAX_WAIT_TIME_SECS,
         use_sandbox: Optional[bool] = False,
-    ) -> BaseTestResponse:
+    ) -> EvalResponse:
         """Create an evaluation asynchronously and wait for completion.
 
         See the `create_eval` method for detailed arguments and return values.
@@ -124,8 +148,10 @@ class EvalMixin(AymaraAIProtocol):
             ai_instructions=ai_instructions,
             eval_type=eval_type,
             eval_instructions=eval_instructions,
+            jailbreak=jailbreak,
             knowledge_base=None,
             language=language,
+            modality=modality,
             num_prompts=num_prompts,
             prompt_examples=prompt_examples,
             max_wait_time_secs=max_wait_time_secs,
@@ -141,15 +167,21 @@ class EvalMixin(AymaraAIProtocol):
         eval_type: str,
         eval_instructions: Optional[str] = None,
         language: str,
+        jailbreak: bool = False,
+        modality: Union[ContentType, str],
+        ground_truth: Optional[GroundTruth] = None,
         knowledge_base: Optional[str],
         max_wait_time_secs: int,
         num_prompts: Optional[int] = None,
-        prompt_examples: Optional[List[PromptExample]] = None,
+        prompt_examples: Optional[List[PromptExampleInSchema]] = None,
         use_sandbox: Optional[bool] = False,
-    ) -> BaseTestResponse:
-        """Primary implementation for creating tests (async version)."""
+    ) -> EvalResponse:
+        """Primary implementation for creating evals (async version)."""
 
         use_sandbox = use_sandbox or self.use_sandbox
+
+        if isinstance(modality, str):
+            modality = ContentType(modality.lower())
 
         self._validate_eval_inputs(
             eval_name=name,
@@ -163,25 +195,23 @@ class EvalMixin(AymaraAIProtocol):
             prompt_examples=prompt_examples,
         )
 
-        examples = []
-        if prompt_examples:
-            examples.extend([ex.to_example_in_schema() for ex in prompt_examples])
-
-        test_data = models.TestInSchema(
-            test_name=name,
-            student_description=ai_description,
-            test_policy=ai_instructions,
-            test_system_prompt=None,
-            knowledge_base=knowledge_base,
-            test_language=language,
-            num_test_questions=num_prompts,
-            test_type=eval_type,
-            additional_instructions=eval_instructions,
-            test_examples=examples,
+        eval_data = EvalInSchema(
+            name=name,
+            ai_description=ai_description,
+            ai_instructions=ai_instructions,
+            # knowledge_base=knowledge_base,
+            language=language,
+            num_prompts=num_prompts,
+            eval_type=eval_type,
+            eval_instructions=eval_instructions,
+            prompt_examples=prompt_examples,
+            is_jailbreak=jailbreak,
+            modality=modality,
+            is_sandbox=use_sandbox,
         )
 
         # Always use the async implementation
-        return await self._create_and_wait_for_eval_impl(test_data, max_wait_time_secs, use_sandbox)
+        return await self._create_and_wait_for_eval_impl(eval_data, max_wait_time_secs)
 
     def _validate_eval_inputs(
         self,
@@ -194,9 +224,9 @@ class EvalMixin(AymaraAIProtocol):
         eval_instructions: Optional[str] = None,
         language: str,
         num_prompts: Optional[int],
-        prompt_examples: Optional[List[PromptExample]] = None,
+        prompt_examples: Optional[List[PromptExampleInSchema]] = None,
     ) -> None:
-        """Validate inputs for test creation."""
+        """Validate inputs for eval creation."""
         if not ai_description:
             raise ValueError("student_description is required")
 
@@ -204,7 +234,7 @@ class EvalMixin(AymaraAIProtocol):
             raise ValueError(f"language must be one of {SUPPORTED_LANGUAGES}")
 
         if (eval_type == TestType.SAFETY or eval_type == TestType.IMAGE_SAFETY) and ai_instructions is None:
-            raise ValueError("ai_instructions is required for safety tests")
+            raise ValueError("ai_instructions is required for safety evals")
 
         if len(eval_name) < DEFAULT_TEST_NAME_LEN_MIN or len(eval_name) > DEFAULT_TEST_NAME_LEN_MAX:
             raise ValueError(
@@ -212,13 +242,13 @@ class EvalMixin(AymaraAIProtocol):
             )
         if num_prompts is not None:
             if eval_type == TestType.JAILBREAK and num_prompts < 1:
-                raise ValueError("num_prompts must be at least one question")
+                raise ValueError("num_prompts must be at least one prompt")
             elif eval_type != TestType.JAILBREAK and not (
                 DEFAULT_NUM_QUESTIONS_MIN <= num_prompts <= DEFAULT_NUM_QUESTIONS_MAX
             ):
                 raise ValueError(
                     f"num_prompts must be between {DEFAULT_NUM_QUESTIONS_MIN} "
-                    f"and {DEFAULT_NUM_QUESTIONS_MAX} questions"
+                    f"and {DEFAULT_NUM_QUESTIONS_MAX} prompts"
                 )
 
         token1 = len(ai_description) * DEFAULT_CHAR_TO_TOKEN_MULTIPLIER
@@ -257,68 +287,109 @@ class EvalMixin(AymaraAIProtocol):
 
     async def _create_and_wait_for_eval_impl(
         self,
-        eval_config: models.TestInSchema,
+        eval_payload: EvalInSchema,
         max_wait_time_secs: int,
-        is_sandbox: Optional[bool] = None,
-    ) -> BaseTestResponse:
-        """Primary implementation of test creation and waiting logic (async version)."""
+    ) -> EvalResponse:
+        """Primary implementation of eval creation and waiting logic (async version)."""
         start_time = time.time()
 
-        # Create the test
-        response = await create_test.asyncio_detailed(client=self.client, body=eval_config, is_sandbox=is_sandbox)
-        create_response: models.TestOutSchema = get_parsed_response(response)
+        # Create the eval
+        response = await create_eval.asyncio_detailed(client=self.client, body=eval_payload)
+        create_response: EvalOutSchema = get_parsed_response(response)
 
-        test_uuid = create_response.test_uuid
-        test_name = create_response.test_name
+        eval_uuid = create_response.eval_uuid
+        eval_name = create_response.name
 
         with self.logger.progress_bar(
-            test_name,
-            test_uuid,
-            Status.from_api_status(create_response.test_status),
+            eval_name,
+            eval_uuid,
+            Status.from_api_status(create_response.status),
         ):
             while True:
-                # Get test status
-                response = await get_test.asyncio_detailed(client=self.client, test_uuid=test_uuid)
-                test_response: models.TestOutSchema = get_parsed_response(response)
+                # Get eval status
+                response = await get_eval.asyncio_detailed(client=self.client, eval_uuid=eval_uuid)
+                eval_response: EvalOutSchema = get_parsed_response(response)
 
                 self.logger.update_progress_bar(
-                    test_uuid,
-                    Status.from_api_status(test_response.test_status),
+                    eval_uuid,
+                    Status.from_api_status(eval_response.status),
                 )
 
                 elapsed_time = time.time() - start_time
-
+                eval = EvalResponse(eval=eval_response)
                 if elapsed_time > max_wait_time_secs:
-                    test_response.test_status = models.TestStatus.FAILED
-                    self.logger.update_progress_bar(test_uuid, Status.FAILED)
-                    return BaseTestResponse.from_test_out_schema_and_questions(
-                        test=test_response, questions=None, failure_reason="Test creation timed out"
-                    )
+                    eval_response.status = ApiStatus.FAILED
+                    self.logger.update_progress_bar(eval_uuid, Status.FAILED)
+                    raise AymaraError(ErrorCode.SERVER_INTERNAL_ERROR, "Eval creation timed out")
 
-                if test_response.test_status == models.TestStatus.FAILED:
+                if eval_response.status == ApiStatus.FAILED:
                     failure_reason = "Internal server error, please try again."
-                    return BaseTestResponse.from_test_out_schema_and_questions(
-                        test=test_response, questions=None, failure_reason=failure_reason
-                    )
+                    raise AymaraError(ErrorCode.SERVER_INTERNAL_ERROR, failure_reason)
 
-                if test_response.test_status == models.TestStatus.FINISHED:
-                    if eval_config.test_type != TestType.MULTITURN_SAFETY:
-                        questions = await self._get_all_prompts_async(test_uuid)
+                if eval_response.status == ApiStatus.FINISHED:
+                    if eval_payload.eval_type != TestType.MULTITURN_SAFETY:
+                        prompts = await self._get_all_prompts_async(eval_uuid)
 
-                    return BaseTestResponse.from_test_out_schema_and_questions(test=test_response, questions=questions)
+                        eval.prompts = prompts
+                    return eval
 
                 # Sleep before next poll
                 await asyncio.sleep(POLLING_INTERVAL)
 
-    async def _get_all_prompts_async(self, test_uuid: str) -> List[models.QuestionSchema]:
-        questions = []
+    async def _get_all_prompts_async(self, eval_uuid: str) -> List[EvalPromptSchema]:
+        prompts = []
         offset = 0
         while True:
-            response = await get_test_questions.asyncio_detailed(client=self.client, test_uuid=test_uuid, offset=offset)
+            response = await get_eval_prompts.asyncio_detailed(client=self.client, eval_uuid=eval_uuid, offset=offset)
 
-            paged_response: PagedQuestionSchema = get_parsed_response(response)
-            questions.extend(paged_response.items)
-            if len(questions) >= paged_response.count:
+            paged_response: PagedEvalPromptSchema = get_parsed_response(response)
+            prompts.extend(paged_response.items)
+            if len(prompts) >= paged_response.count:
                 break
             offset += len(paged_response.items)
-        return questions
+        return prompts
+
+    # List Evals Methods
+    def list_evals(self) -> List[EvalOutSchema]:
+        """
+        List all evals synchronously.
+        """
+        evals = run_async(self._list_evals_async_impl())
+
+        return evals
+
+    async def list_evals_async(self) -> List[EvalOutSchema]:
+        """
+        List all evals asynchronously.
+        """
+        evals = await self._list_evals_async_impl()
+
+        return evals
+
+    async def _list_evals_async_impl(self) -> List[EvalOutSchema]:
+        all_evals = []
+        offset = 0
+        while True:
+            response = await list_evals.asyncio_detailed(client=self.client, offset=offset)
+
+            paged_response = get_parsed_response(response)
+            all_evals.extend(paged_response.items)
+            if len(all_evals) >= paged_response.count:
+                break
+            offset += len(paged_response.items)
+
+        return ListEval(root=[EvalResponse(eval=e) for e in all_evals])
+
+    def delete_eval(self, eval_uuid: str) -> None:
+        """
+        Delete a eval synchronously.
+        """
+        response = delete_eval.sync_detailed(client=self.client, eval_uuid=eval_uuid)
+        parsed_response = get_parsed_response(response)
+
+    async def delete_eval_async(self, eval_uuid: str) -> None:
+        """
+        Delete a eval asynchronously.
+        """
+        response = await delete_eval.asyncio_detailed(client=self.client, eval_uuid=eval_uuid)
+        parsed_response = get_parsed_response(response)

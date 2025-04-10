@@ -15,6 +15,8 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
+from aymara_ai.core.eval_runs import EvalRunMixin
+from aymara_ai.core.eval_summary import EvalSummaryMixin
 from aymara_ai.core.evals import EvalMixin
 from aymara_ai.core.multiturn_tests import MultiturnTestMixin
 from aymara_ai.core.policies import PolicyMixin
@@ -27,12 +29,15 @@ from aymara_ai.generated.aymara_api_client import client
 from aymara_ai.types import AccuracyScoreRunResponse, ImageStudentAnswerInput, SafetyTestResponse, ScoreRunResponse
 from aymara_ai.utils.async_utils import get_loop
 from aymara_ai.utils.logger import SDKLogger
+from aymara_ai.v2_types import EvalRunResponse
 from aymara_ai.version import __version__
 
 
 class AymaraAI(
     TestMixin,
     EvalMixin,
+    EvalRunMixin,
+    EvalSummaryMixin,
     ScoreRunMixin,
     SummaryMixin,
     UploadMixin,
@@ -60,7 +65,7 @@ class AymaraAI(
     def __init__(
         self,
         api_key: Optional[str] = None,
-        base_url: str = "https://api.aymara.ai",
+        base_url: Optional[str] = None,
         use_sandbox: bool = False,
     ):
         self.logger = SDKLogger()
@@ -71,6 +76,9 @@ class AymaraAI(
         if api_key is None:
             self.logger.error("API key is required")
             raise ValueError("API key is required")
+
+        if base_url is None:
+            base_url = os.getenv("AYMARA_BASE_URL", "https://api.aymara.ai")
         self.loop = get_loop()
         self.client = client.Client(
             base_url=base_url,
@@ -162,6 +170,36 @@ class AymaraAI(
             data=data,
             columns=["test_name", "pass_rate", "pass_total"],
             index=pd.Index([score.score_run_uuid for score in score_runs], name="score_run_uuid"),
+        )
+
+    @staticmethod
+    def eval_pass_stats(
+        eval_runs: Union[EvalRunResponse, List[EvalRunResponse]],
+    ) -> pd.DataFrame:
+        """
+        Create a DataFrame of pass rates and pass totals from one or more score runs.
+
+        :param score_runs: One or a list of test score runs to graph.
+        :type score_runs: Union[ScoreRunResponse, List[ScoreRunResponse]]
+        :return: DataFrame of pass rates per test score run.
+        :rtype: pd.DataFrame
+        """
+        if not isinstance(eval_runs, list):
+            eval_runs = [eval_runs]
+
+        data = [
+            (
+                score.run.evaluation.name,
+                score.run.pass_rate,
+                score.run.pass_rate * score.run.num_responses_scored,
+            )
+            for score in eval_runs
+        ]
+
+        return pd.DataFrame(
+            data=data,
+            columns=["eval_name", "pass_rate", "pass_total"],
+            index=pd.Index([score.run.eval_run_uuid for score in eval_runs], name="eval_run_uuid"),
         )
 
     @staticmethod
@@ -285,6 +323,72 @@ class AymaraAI(
 
         AymaraAI._plot_pass_stats(
             names=df_pass_stats["score_run_uuid" if xaxis_is_score_run_uuids else "test_name"],
+            pass_stats=df_pass_stats["pass_rate" if yaxis_is_percent else "pass_total"],
+            title=title,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            xtick_rot=xtick_rot,
+            xtick_labels_dict=xtick_labels_dict,
+            yaxis_is_percent=yaxis_is_percent,
+            ylim_min=ylim_min,
+            ylim_max=ylim_max,
+            **kwargs,
+        )
+
+    @staticmethod
+    def graph_eval_stats(
+        eval_runs: Union[List[EvalRunResponse], EvalRunResponse],
+        title: Optional[str] = None,
+        ylim_min: Optional[float] = None,
+        ylim_max: Optional[float] = None,
+        yaxis_is_percent: Optional[bool] = True,
+        ylabel: Optional[str] = "Responses Passed",
+        xaxis_is_eval_run_uuids: Optional[bool] = False,
+        xlabel: Optional[str] = None,
+        xtick_rot: Optional[float] = 30.0,
+        xtick_labels_dict: Optional[dict] = None,
+        **kwargs,
+    ) -> None:
+        """
+        Draw a bar graph of pass rates from one or more score runs.
+
+        :param eval_runs: One or a list of eval runs to graph.
+        :type score_runs: Union[List[EvalRunResponse], EvalRunResponse]
+        :param title: Graph title.
+        :type title: str, optional
+        :param ylim_min: y-axis lower limit, defaults to rounding down to the nearest ten.
+        :type ylim_min: float, optional
+        :param ylim_max: y-axis upper limit, defaults to matplotlib's preference but is capped at 100.
+        :type ylim_max: float, optional
+        :param yaxis_is_percent: Whether to show the pass rate as a percent (instead of the total number of questions passed), defaults to True.
+        :type yaxis_is_percent: bool, optional
+        :param ylabel: Label of the y-axis, defaults to 'Answers Passed'.
+        :type ylabel: str
+        :param xaxis_is_eval_run_uuids: Whether the x-axis represents tests (True) or score runs (False), defaults to True.
+        :type xaxis_is_test: bool, optional
+        :param xlabel: Label of the x-axis, defaults to 'Eval Runs' if xaxis_is_eval_run_uuids=True and 'Evals' otherwise.
+        :type xlabel: str
+        :param xtick_rot: rotation of the x-axis tick labels, defaults to 30.
+        :type xtick_rot: float
+        :param xtick_labels_dict: Maps test_names (keys) to x-axis tick labels (values).
+        :type xtick_labels_dict: dict, optional
+        :param kwargs: Options to pass to matplotlib.pyplot.bar.
+        """
+
+        if not isinstance(eval_runs, list):
+            eval_runs = [eval_runs]
+
+        for eval_run in eval_runs:
+            if not eval_run.responses:
+                raise ValueError(f"Eval run {eval_run.eval_run_uuid} has no answers")
+
+        df_pass_stats = AymaraAI.eval_pass_stats(eval_runs)
+
+        if not xlabel:
+            xlabel = "Eval Runs" if xaxis_is_eval_run_uuids else "Evals"
+
+        AymaraAI._plot_pass_stats(
+            names=df_pass_stats["eval_run_uuid" if xaxis_is_eval_run_uuids else "eval_name"],
             pass_stats=df_pass_stats["pass_rate" if yaxis_is_percent else "pass_total"],
             title=title,
             xlabel=xlabel,
