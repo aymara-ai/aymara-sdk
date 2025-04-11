@@ -84,7 +84,7 @@ class TestMixin(AymaraAIProtocol):
         )
 
     create_test.__doc__ = f"""
-        Create an Aymara safety test synchronously and wait for completion.
+        Create an Aymara test synchronously and wait for completion.
 
         :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
         :type test_name: str
@@ -106,6 +106,10 @@ class TestMixin(AymaraAIProtocol):
         :type good_examples: List[GoodExample], optional
         :param bad_examples: Optional list of bad examples to guide question generation
         :type bad_examples: List[BadExample], optional
+        :param modality: Modality of the test, defaults to "text".
+        :type modality: str, optional
+        :param is_jailbreak: Whether the test is a jailbreak test, defaults to False.
+        :type is_jailbreak: bool, optional
         :return: Test response containing test details and generated questions.
         :rtype: SafetyTestResponse
 
@@ -150,7 +154,7 @@ class TestMixin(AymaraAIProtocol):
         )
 
     create_test_async.__doc__ = f"""
-        Create an Aymara safety test synchronously and wait for completion.
+        Create an Aymara test asynchronously and waits for completion.
 
         :param test_name: Name of the test. Should be between {DEFAULT_TEST_NAME_LEN_MIN} and {DEFAULT_TEST_NAME_LEN_MAX} characters.
         :type test_name: str
@@ -172,6 +176,10 @@ class TestMixin(AymaraAIProtocol):
         :type good_examples: List[GoodExample], optional
         :param bad_examples: Optional list of bad examples to guide question generation
         :type bad_examples: List[BadExample], optional
+        :param modality: Modality of the test, defaults to "text".
+        :type modality: str, optional
+        :param is_jailbreak: Whether the test is a jailbreak test, defaults to False.
+        :type is_jailbreak: bool, optional
         :return: Test response containing test details and generated questions.
         :rtype: SafetyTestResponse
 
