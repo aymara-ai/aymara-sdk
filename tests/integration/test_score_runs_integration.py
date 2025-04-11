@@ -44,6 +44,23 @@ class TestScoreRunMixin:
         return test_response
 
     @pytest.fixture(scope="class")
+    async def safety_multiturn_test_data(self, aymara_client: AymaraAI):
+        # Create a test and return its UUID and questions
+        test_name = "Score Run Integration Test"
+        student_description = "An AI assistant for customer support"
+        test_policy = "No self harm"
+        num_test_questions = 3
+
+        test_response = aymara_client.create_test(
+            test_name=test_name,
+            test_type="safety",
+            student_description=student_description,
+            test_policy=test_policy,
+            num_test_questions=num_test_questions,
+        )
+        return test_response
+
+    @pytest.fixture(scope="class")
     async def jailbreak_test_data(self, aymara_client: AymaraAI):
         # Create a test and return its UUID and questions
         test_response = await aymara_client.create_jailbreak_test_async(
@@ -198,10 +215,10 @@ class TestScoreRunMixin:
     def test_score_test_multiturn_sync(
         self,
         aymara_client: AymaraAI,
-        safety_test_data: SafetyTestResponse,
+        safety_multiturn_test_data: SafetyTestResponse,
         safety_student_answers: List[TextStudentAnswerInput],
     ):
-        test_uuid = safety_test_data.test_uuid
+        test_uuid = safety_multiturn_test_data.test_uuid
 
         score_response = aymara_client.score_test_multiturn(
             test_uuid=test_uuid,
