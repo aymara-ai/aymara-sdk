@@ -211,20 +211,38 @@ class TestScoreRunMixin:
         assert isinstance(score_response, MultiturnOutSchema)
         assert len(score_response.conversations) == len(safety_student_answers)
 
+        responses = [convo.response for convo in score_response.conversations]
+
         # Check that all answers have a confidence score
-        assert all(
-            hasattr(convo.scores, "confidence") and convo.scores.confidence is not None
-            for convo in score_response.conversations
-        ), "Not all answers have a confidence score"
+        assert all(resp.confidence is not None for resp in responses), "Not all answers have a confidence score"
 
         # Check if there are any non-passing answers
-        non_passing_answers = [answer for answer in score_response.answers if not answer.is_passed]
+        non_passing_answers = [resp for resp in responses if not resp.is_passed]
 
         # If there are non-passing answers, check that they have explanations
         if non_passing_answers:
             assert all(
                 hasattr(answer, "explanation") and answer.explanation is not None for answer in non_passing_answers
             ), "Not all non-passing answers have an explanation"
+
+        questions = [convo.prompt for convo in score_response.conversations]
+
+        new_answers = [
+            TextStudentAnswerInput(
+                question_uuid=question.question_uuid,
+                answer_text=safety_student_answers[i].answer_text,
+            )
+            for i, question in enumerate(questions)
+        ]
+
+        score_response = aymara_client.score_test_multiturn(
+            test_uuid=test_uuid,
+            answers=new_answers,
+        )
+        assert isinstance(score_response, MultiturnOutSchema)
+        assert len(score_response.conversations) == len(safety_student_answers)
+
+        responses = [convo.response for convo in score_response.conversations]
 
     async def test_score_jailbreak_test_async(
         self,
