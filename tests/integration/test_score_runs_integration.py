@@ -5,6 +5,7 @@ import pytest
 
 from aymara_ai.core.errors import QuotaError, ValidationError
 from aymara_ai.core.sdk import AymaraAI
+from aymara_ai.generated.aymara_api_client.models.multiturn_out_schema import MultiturnOutSchema
 from aymara_ai.generated.aymara_api_client.models.test_type import TestType
 from aymara_ai.types import (
     AccuracyScoreRunResponse,
@@ -99,9 +100,7 @@ class TestScoreRunMixin:
         return answers
 
     @pytest.fixture(scope="class")
-    def jailbreak_student_answers(
-        self, jailbreak_test_data
-    ) -> List[TextStudentAnswerInput]:
+    def jailbreak_student_answers(self, jailbreak_test_data) -> List[TextStudentAnswerInput]:
         questions = jailbreak_test_data.questions
 
         answers = [
@@ -114,9 +113,7 @@ class TestScoreRunMixin:
         return answers
 
     @pytest.fixture(scope="class")
-    def image_safety_student_answers(
-        self, image_safety_test_data, test_image_path
-    ) -> List[ImageStudentAnswerInput]:
+    def image_safety_student_answers(self, image_safety_test_data, test_image_path) -> List[ImageStudentAnswerInput]:
         questions = image_safety_test_data.questions
 
         answers = [
@@ -156,20 +153,16 @@ class TestScoreRunMixin:
 
         # Check that all answers have a confidence score
         assert all(
-            hasattr(answer, "confidence") and answer.confidence is not None
-            for answer in score_response.answers
+            hasattr(answer, "confidence") and answer.confidence is not None for answer in score_response.answers
         ), "Not all answers have a confidence score"
 
         # Check if there are any non-passing answers
-        non_passing_answers = [
-            answer for answer in score_response.answers if not answer.is_passed
-        ]
+        non_passing_answers = [answer for answer in score_response.answers if not answer.is_passed]
 
         # If there are non-passing answers, check that they have explanations
         if non_passing_answers:
             assert all(
-                hasattr(answer, "explanation") and answer.explanation is not None
-                for answer in non_passing_answers
+                hasattr(answer, "explanation") and answer.explanation is not None for answer in non_passing_answers
             ), "Not all non-passing answers have an explanation"
 
     def test_score_safety_test_sync(
@@ -190,20 +183,47 @@ class TestScoreRunMixin:
 
         # Check that all answers have a confidence score
         assert all(
-            hasattr(answer, "confidence") and answer.confidence is not None
-            for answer in score_response.answers
+            hasattr(answer, "confidence") and answer.confidence is not None for answer in score_response.answers
         ), "Not all answers have a confidence score"
 
         # Check if there are any non-passing answers
-        non_passing_answers = [
-            answer for answer in score_response.answers if not answer.is_passed
-        ]
+        non_passing_answers = [answer for answer in score_response.answers if not answer.is_passed]
 
         # If there are non-passing answers, check that they have explanations
         if non_passing_answers:
             assert all(
-                hasattr(answer, "explanation") and answer.explanation is not None
-                for answer in non_passing_answers
+                hasattr(answer, "explanation") and answer.explanation is not None for answer in non_passing_answers
+            ), "Not all non-passing answers have an explanation"
+
+    def test_score_test_multiturn_sync(
+        self,
+        aymara_client: AymaraAI,
+        safety_test_data: SafetyTestResponse,
+        safety_student_answers: List[TextStudentAnswerInput],
+    ):
+        test_uuid = safety_test_data.test_uuid
+
+        score_response = aymara_client.score_test_multiturn(
+            test_uuid=test_uuid,
+            answers=safety_student_answers,
+            continue_test=True,
+        )
+        assert isinstance(score_response, MultiturnOutSchema)
+        assert len(score_response.conversations) == len(safety_student_answers)
+
+        # Check that all answers have a confidence score
+        assert all(
+            hasattr(convo.scores, "confidence") and convo.scores.confidence is not None
+            for convo in score_response.conversations
+        ), "Not all answers have a confidence score"
+
+        # Check if there are any non-passing answers
+        non_passing_answers = [answer for answer in score_response.answers if not answer.is_passed]
+
+        # If there are non-passing answers, check that they have explanations
+        if non_passing_answers:
+            assert all(
+                hasattr(answer, "explanation") and answer.explanation is not None for answer in non_passing_answers
             ), "Not all non-passing answers have an explanation"
 
     async def test_score_jailbreak_test_async(
@@ -222,20 +242,16 @@ class TestScoreRunMixin:
 
         # Check that all answers have a confidence score
         assert all(
-            hasattr(answer, "confidence") and answer.confidence is not None
-            for answer in score_response.answers
+            hasattr(answer, "confidence") and answer.confidence is not None for answer in score_response.answers
         ), "Not all answers have a confidence score"
 
         # Check if there are any non-passing answers
-        non_passing_answers = [
-            answer for answer in score_response.answers if not answer.is_passed
-        ]
+        non_passing_answers = [answer for answer in score_response.answers if not answer.is_passed]
 
         # If there are non-passing answers, check that they have explanations
         if non_passing_answers:
             assert all(
-                hasattr(answer, "explanation") and answer.explanation is not None
-                for answer in non_passing_answers
+                hasattr(answer, "explanation") and answer.explanation is not None for answer in non_passing_answers
             ), "Not all non-passing answers have an explanation"
 
     def test_score_jailbreak_test_sync(
@@ -256,20 +272,16 @@ class TestScoreRunMixin:
 
         # Check that all answers have a confidence score
         assert all(
-            hasattr(answer, "confidence") and answer.confidence is not None
-            for answer in score_response.answers
+            hasattr(answer, "confidence") and answer.confidence is not None for answer in score_response.answers
         ), "Not all answers have a confidence score"
 
         # Check if there are any non-passing answers
-        non_passing_answers = [
-            answer for answer in score_response.answers if not answer.is_passed
-        ]
+        non_passing_answers = [answer for answer in score_response.answers if not answer.is_passed]
 
         # If there are non-passing answers, check that they have explanations
         if non_passing_answers:
             assert all(
-                hasattr(answer, "explanation") and answer.explanation is not None
-                for answer in non_passing_answers
+                hasattr(answer, "explanation") and answer.explanation is not None for answer in non_passing_answers
             ), "Not all non-passing answers have an explanation"
 
     async def test_get_safety_score_run_async(
@@ -282,29 +294,23 @@ class TestScoreRunMixin:
             test_uuid=safety_test_data.test_uuid,
             student_answers=safety_student_answers,
         )
-        get_response = await aymara_client.get_score_run_async(
-            score_response.score_run_uuid
-        )
+        get_response = await aymara_client.get_score_run_async(score_response.score_run_uuid)
         assert isinstance(get_response, ScoreRunResponse)
         assert get_response.score_run_status == Status.COMPLETED
         assert len(score_response.answers) == len(safety_student_answers)
 
         # Check that all answers have a confidence score
         assert all(
-            hasattr(answer, "confidence") and answer.confidence is not None
-            for answer in score_response.answers
+            hasattr(answer, "confidence") and answer.confidence is not None for answer in score_response.answers
         ), "Not all answers have a confidence score"
 
         # Check if there are any non-passing answers
-        non_passing_answers = [
-            answer for answer in score_response.answers if not answer.is_passed
-        ]
+        non_passing_answers = [answer for answer in score_response.answers if not answer.is_passed]
 
         # If there are non-passing answers, check that they have explanations
         if non_passing_answers:
             assert all(
-                hasattr(answer, "explanation") and answer.explanation is not None
-                for answer in non_passing_answers
+                hasattr(answer, "explanation") and answer.explanation is not None for answer in non_passing_answers
             ), "Not all non-passing answers have an explanation"
 
     def test_get_safety_score_run_sync(
@@ -324,20 +330,16 @@ class TestScoreRunMixin:
 
         # Check that all answers have a confidence score
         assert all(
-            hasattr(answer, "confidence") and answer.confidence is not None
-            for answer in score_response.answers
+            hasattr(answer, "confidence") and answer.confidence is not None for answer in score_response.answers
         ), "Not all answers have a confidence score"
 
         # Check if there are any non-passing answers
-        non_passing_answers = [
-            answer for answer in score_response.answers if not answer.is_passed
-        ]
+        non_passing_answers = [answer for answer in score_response.answers if not answer.is_passed]
 
         # If there are non-passing answers, check that they have explanations
         if non_passing_answers:
             assert all(
-                hasattr(answer, "explanation") and answer.explanation is not None
-                for answer in non_passing_answers
+                hasattr(answer, "explanation") and answer.explanation is not None for answer in non_passing_answers
             ), "Not all non-passing answers have an explanation"
 
     async def test_list_score_runs_async(
@@ -350,16 +352,12 @@ class TestScoreRunMixin:
             test_uuid=safety_test_data.test_uuid,
             student_answers=safety_student_answers,
         )
-        score_runs = await aymara_client.list_score_runs_async(
-            safety_test_data.test_uuid
-        )
+        score_runs = await aymara_client.list_score_runs_async(safety_test_data.test_uuid)
         assert isinstance(score_runs, ListScoreRunResponse)
         assert len(score_runs) > 0
         assert all(isinstance(run, ScoreRunResponse) for run in score_runs)
 
-        df = (
-            await aymara_client.list_score_runs_async(safety_test_data.test_uuid)
-        ).to_df()
+        df = (await aymara_client.list_score_runs_async(safety_test_data.test_uuid)).to_df()
         assert isinstance(df, pd.DataFrame)
         assert len(df) > 0
 
@@ -382,9 +380,7 @@ class TestScoreRunMixin:
         assert isinstance(df, pd.DataFrame)
         assert len(df) > 0
 
-    def test_score_test_with_partial_answers(
-        self, aymara_client: AymaraAI, safety_test_data: SafetyTestResponse
-    ):
+    def test_score_test_with_partial_answers(self, aymara_client: AymaraAI, safety_test_data: SafetyTestResponse):
         # Not all questions have been answered
         partial_answers = [
             TextStudentAnswerInput(
@@ -406,9 +402,7 @@ class TestScoreRunMixin:
                 question_uuid=safety_test_data.questions[0].question_uuid,
                 answer_text="4",
             ),
-            TextStudentAnswerInput(
-                question_uuid="non-existent-question-uuid", answer_text="5"
-            ),
+            TextStudentAnswerInput(question_uuid="non-existent-question-uuid", answer_text="5"),
         ]
 
         with pytest.raises(ValidationError) as exc_info:
@@ -424,9 +418,7 @@ class TestScoreRunMixin:
                 question_uuid=safety_test_data.questions[0].question_uuid,
                 answer_text=None,
             )
-            assert "Either answer_text or answer_image_path must be provided" in str(
-                exc_info.value
-            )
+            assert "Either answer_text or answer_image_path must be provided" in str(exc_info.value)
 
     def test_get_non_existent_score_run(self, aymara_client: AymaraAI):
         with pytest.raises(Exception):
@@ -437,9 +429,7 @@ class TestScoreRunMixin:
         assert isinstance(score_runs, ListScoreRunResponse)
         assert len(score_runs) == 0
 
-    def test_score_test_with_empty_answers(
-        self, aymara_client: AymaraAI, safety_test_data: SafetyTestResponse
-    ):
+    def test_score_test_with_empty_answers(self, aymara_client: AymaraAI, safety_test_data: SafetyTestResponse):
         empty_answers = []
         with pytest.raises(ValueError):
             aymara_client.score_test(
@@ -535,20 +525,16 @@ class TestScoreRunMixin:
 
         # Check that all answers have a confidence score
         assert all(
-            hasattr(answer, "confidence") and answer.confidence is not None
-            for answer in score_response.answers
+            hasattr(answer, "confidence") and answer.confidence is not None for answer in score_response.answers
         ), "Not all answers have a confidence score"
 
         # Check if there are any non-passing answers
-        non_passing_answers = [
-            answer for answer in score_response.answers if not answer.is_passed
-        ]
+        non_passing_answers = [answer for answer in score_response.answers if not answer.is_passed]
 
         # If there are non-passing answers, check that they have explanations
         if non_passing_answers:
             assert all(
-                hasattr(answer, "explanation") and answer.explanation is not None
-                for answer in non_passing_answers
+                hasattr(answer, "explanation") and answer.explanation is not None for answer in non_passing_answers
             ), "Not all non-passing answers have an explanation"
 
     def test_score_image_safety_test_sync(
@@ -567,20 +553,16 @@ class TestScoreRunMixin:
 
         # Check that all answers have a confidence score
         assert all(
-            hasattr(answer, "confidence") and answer.confidence is not None
-            for answer in score_response.answers
+            hasattr(answer, "confidence") and answer.confidence is not None for answer in score_response.answers
         ), "Not all answers have a confidence score"
 
         # Check if there are any non-passing answers
-        non_passing_answers = [
-            answer for answer in score_response.answers if not answer.is_passed
-        ]
+        non_passing_answers = [answer for answer in score_response.answers if not answer.is_passed]
 
         # If there are non-passing answers, check that they have explanations
         if non_passing_answers:
             assert all(
-                hasattr(answer, "explanation") and answer.explanation is not None
-                for answer in non_passing_answers
+                hasattr(answer, "explanation") and answer.explanation is not None for answer in non_passing_answers
             ), "Not all non-passing answers have an explanation"
 
     def test_score_image_safety_test_with_invalid_file(
@@ -702,9 +684,7 @@ class TestScoreRunMixin:
                 student_answers=safety_student_answers,
                 scoring_examples=scoring_examples,
             )
-        assert f"Scoring examples must be less than {MAX_EXAMPLES_LENGTH}" in str(
-            exc_info.value
-        )
+        assert f"Scoring examples must be less than {MAX_EXAMPLES_LENGTH}" in str(exc_info.value)
 
     def test_score_safety_test_with_invalid_examples(
         self,
@@ -713,9 +693,7 @@ class TestScoreRunMixin:
         safety_student_answers: List[TextStudentAnswerInput],
     ):
         # Test with invalid example (missing required fields)
-        invalid_examples = [
-            {"question_text": "Example"}
-        ]  # Not a proper ScoringExample object
+        invalid_examples = [{"question_text": "Example"}]  # Not a proper ScoringExample object
 
         with pytest.raises(ValueError) as exc_info:
             aymara_client.score_test(
@@ -723,14 +701,10 @@ class TestScoreRunMixin:
                 student_answers=safety_student_answers,
                 scoring_examples=invalid_examples,  # type: ignore
             )
-        assert "All items in scoring examples must be ScoringExample" in str(
-            exc_info.value
-        )
+        assert "All items in scoring examples must be ScoringExample" in str(exc_info.value)
 
     @pytest.fixture(scope="class")
-    def accuracy_student_answers(
-        self, accuracy_test_data
-    ) -> List[TextStudentAnswerInput]:
+    def accuracy_student_answers(self, accuracy_test_data) -> List[TextStudentAnswerInput]:
         questions = accuracy_test_data.questions
 
         answers = [
@@ -758,20 +732,16 @@ class TestScoreRunMixin:
 
         # Check that all answers have a confidence score
         assert all(
-            hasattr(answer, "confidence") and answer.confidence is not None
-            for answer in score_response.answers
+            hasattr(answer, "confidence") and answer.confidence is not None for answer in score_response.answers
         ), "Not all answers have a confidence score"
 
         # Check if there are any non-passing answers
-        non_passing_answers = [
-            answer for answer in score_response.answers if not answer.is_passed
-        ]
+        non_passing_answers = [answer for answer in score_response.answers if not answer.is_passed]
 
         # If there are non-passing answers, check that they have explanations
         if non_passing_answers:
             assert all(
-                hasattr(answer, "explanation") and answer.explanation is not None
-                for answer in non_passing_answers
+                hasattr(answer, "explanation") and answer.explanation is not None for answer in non_passing_answers
             ), "Not all non-passing answers have an explanation"
 
     def test_score_accuracy_test_sync(
@@ -792,20 +762,16 @@ class TestScoreRunMixin:
 
         # Check that all answers have a confidence score
         assert all(
-            hasattr(answer, "confidence") and answer.confidence is not None
-            for answer in score_response.answers
+            hasattr(answer, "confidence") and answer.confidence is not None for answer in score_response.answers
         ), "Not all answers have a confidence score"
 
         # Check if there are any non-passing answers
-        non_passing_answers = [
-            answer for answer in score_response.answers if not answer.is_passed
-        ]
+        non_passing_answers = [answer for answer in score_response.answers if not answer.is_passed]
 
         # If there are non-passing answers, check that they have explanations
         if non_passing_answers:
             assert all(
-                hasattr(answer, "explanation") and answer.explanation is not None
-                for answer in non_passing_answers
+                hasattr(answer, "explanation") and answer.explanation is not None for answer in non_passing_answers
             ), "Not all non-passing answers have an explanation"
 
     async def test_score_accuracy_test_async_timeout(

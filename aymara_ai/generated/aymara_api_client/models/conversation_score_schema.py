@@ -18,13 +18,13 @@ class ConversationScoreSchema:
     """
     Attributes:
         conversation_uuid (str):
-        scores (List['AnswerOutSchema']):
+        response (AnswerOutSchema):
         current_turn (int):
         prompt (Union['QuestionSchema', None, Unset]):
     """
 
     conversation_uuid: str
-    scores: List["AnswerOutSchema"]
+    response: "AnswerOutSchema"
     current_turn: int
     prompt: Union["QuestionSchema", None, Unset] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -34,10 +34,7 @@ class ConversationScoreSchema:
 
         conversation_uuid = self.conversation_uuid
 
-        scores = []
-        for scores_item_data in self.scores:
-            scores_item = scores_item_data.to_dict()
-            scores.append(scores_item)
+        response = self.response.to_dict()
 
         current_turn = self.current_turn
 
@@ -54,7 +51,7 @@ class ConversationScoreSchema:
         field_dict.update(
             {
                 "conversation_uuid": conversation_uuid,
-                "scores": scores,
+                "response": response,
                 "current_turn": current_turn,
             }
         )
@@ -71,12 +68,7 @@ class ConversationScoreSchema:
         d = src_dict.copy()
         conversation_uuid = d.pop("conversation_uuid")
 
-        scores = []
-        _scores = d.pop("scores")
-        for scores_item_data in _scores:
-            scores_item = AnswerOutSchema.from_dict(scores_item_data)
-
-            scores.append(scores_item)
+        response = AnswerOutSchema.from_dict(d.pop("response"))
 
         current_turn = d.pop("current_turn")
 
@@ -99,7 +91,7 @@ class ConversationScoreSchema:
 
         conversation_score_schema = cls(
             conversation_uuid=conversation_uuid,
-            scores=scores,
+            response=response,
             current_turn=current_turn,
             prompt=prompt,
         )
