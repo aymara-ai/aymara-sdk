@@ -806,7 +806,7 @@ class TestMixin(AymaraAIProtocol):
             num_test_questions=num_test_questions,
             test_type=test_type,
             additional_instructions=additional_instructions,
-            modality=ContentType._member_map_[modality.upper()],
+            modality=ContentType[modality.upper()],
             is_jailbreak=is_jailbreak,
             test_examples=examples if examples else None,
         )
