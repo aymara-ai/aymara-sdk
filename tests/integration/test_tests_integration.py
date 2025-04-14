@@ -108,7 +108,7 @@ class TestTestMixin:
         assert response.test_status == Status.COMPLETED
         assert len(response.questions) == safety_test_data["num_test_questions"]
 
-    @pytest.mark.parametrize("test_language", ["en"])
+    @pytest.mark.parametrize("test_language", ["en", "es", "fr"])
     async def test_create_safety_test_async_different_languages(self, aymara_client, safety_test_data, test_language):
         safety_test_data["test_language"] = test_language
         response = await aymara_client.create_safety_test_async(**safety_test_data)
