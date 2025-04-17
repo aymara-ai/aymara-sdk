@@ -610,9 +610,7 @@ class TestTestMixin:
                 questions_by_type[question.accuracy_question_type] = []
             questions_by_type[question.accuracy_question_type].append(question)
 
-        # Check count for each type matches expected
-        for question_type, questions in questions_by_type.items():
-            assert len(questions) == accuracy_test_data["num_test_questions"]
+        assert len(response.questions) == accuracy_test_data["num_test_questions"]
         assert response.knowledge_base == accuracy_test_data["knowledge_base"]
 
     @pytest.mark.parametrize(
@@ -651,9 +649,7 @@ class TestTestMixin:
                 questions_by_type[question.accuracy_question_type] = []
             questions_by_type[question.accuracy_question_type].append(question)
 
-        # Check count for each type matches expected
-        for question_type, questions in questions_by_type.items():
-            assert len(questions) == accuracy_test_data["num_test_questions"]
+        assert len(response.questions) == accuracy_test_data["num_test_questions"]
 
     def test_create_accuracy_test_timeout(self, aymara_client, accuracy_test_data):
         response = aymara_client.create_accuracy_test(**accuracy_test_data, max_wait_time_secs=0)
