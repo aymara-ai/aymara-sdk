@@ -82,7 +82,7 @@ class TestScoreRunMixin:
             test_name=test_name,
             student_description=student_description,
             knowledge_base=knowledge_base,
-            num_test_questions_per_question_type=num_test_questions,
+            num_test_questions=num_test_questions,
         )
         return test_response
 

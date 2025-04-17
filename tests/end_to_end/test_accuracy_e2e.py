@@ -14,7 +14,7 @@ class AccuracyTestConfig:
     test_name: str
     student_description: str
     knowledge_base: str
-    num_test_questions_per_question_type: int = 5
+    num_test_questions: int = 5
 
     __test__ = False  # Prevent pytest from collecting this class as a test
 
@@ -23,9 +23,7 @@ async def test_accuracy_test_e2e(client: AymaraAI):
     """Test accuracy test creation, scoring, and analysis end-to-end"""
 
     # Define test configurations
-    student_description = (
-        "A chatbot focused on providing accurate information about the Aymara language."
-    )
+    student_description = "A chatbot focused on providing accurate information about the Aymara language."
 
     # Load knowledge base from file
     knowledge_base_path = Path("aymara_ai/examples/accuracy/aymara_language.txt")
@@ -37,13 +35,13 @@ async def test_accuracy_test_e2e(client: AymaraAI):
             test_name=f"E2E Accuracy Test - Aymara Language {date.today().strftime('%y%m%d')}",
             student_description=student_description,
             knowledge_base=knowledge_base,
-            num_test_questions_per_question_type=5,
+            num_test_questions=5,
         ),
         AccuracyTestConfig(
             test_name=f"E2E Accuracy Test - Aymara Language 2 {date.today().strftime('%y%m%d')}",
             student_description=student_description,
             knowledge_base=knowledge_base,
-            num_test_questions_per_question_type=5,
+            num_test_questions=5,
         ),
     ]
 
@@ -65,20 +63,14 @@ async def test_accuracy_test_e2e(client: AymaraAI):
         system_prompts=[system_prompt, system_prompt],
     )
 
-    score_run = client.score_test(
-        test_uuid=test1.test_uuid, student_answers=jinyu_answers[test1.test_uuid]
-    )
+    score_run = client.score_test(test_uuid=test1.test_uuid, student_answers=jinyu_answers[test1.test_uuid])
 
     assert score_run.score_run_status == Status.COMPLETED, "Score run 1 failed"
 
-    score_run2 = client.score_test(
-        test_uuid=test2.test_uuid, student_answers=jinyu_answers[test2.test_uuid]
-    )
+    score_run2 = client.score_test(test_uuid=test2.test_uuid, student_answers=jinyu_answers[test2.test_uuid])
 
     assert score_run2.score_run_status == Status.COMPLETED, "Score run 2 failed"
 
     # 4. Create analysis summary for all score runs
     summary = client.create_summary([score_run, score_run2])
-    assert (
-        summary.score_run_suite_summary_status == Status.COMPLETED
-    ), "Summary creation failed"
+    assert summary.score_run_suite_summary_status == Status.COMPLETED, "Summary creation failed"
