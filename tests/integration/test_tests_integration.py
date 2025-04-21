@@ -637,6 +637,19 @@ class TestTestMixin:
                 questions_by_type[question.accuracy_question_type] = []
             questions_by_type[question.accuracy_question_type].append(question)
 
+    def test_create_accuracy_test_create_test_fn(self, aymara_client, accuracy_test_data):
+        accuracy_test_data["test_type"] = TestType.ACCURACY
+        response = aymara_client.create_test(**accuracy_test_data)
+        assert isinstance(response, AccuracyTestResponse)
+        assert response.test_status == Status.COMPLETED
+
+        # Group questions by type
+        questions_by_type = {}
+        for question in response.questions:
+            if question.accuracy_question_type not in questions_by_type:
+                questions_by_type[question.accuracy_question_type] = []
+            questions_by_type[question.accuracy_question_type].append(question)
+
     async def test_create_accuracy_test_async_with_examples(self, aymara_client, accuracy_test_data):
         response = await aymara_client.create_accuracy_test_async(**accuracy_test_data)
         assert isinstance(response, AccuracyTestResponse)
