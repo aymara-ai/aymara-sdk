@@ -60,12 +60,14 @@ class AymaraAI(
     def __init__(
         self,
         api_key: Optional[str] = None,
-        base_url: str = "https://api.aymara.ai",
+        base_url: Optional[str] = None,
         use_sandbox: bool = False,
     ):
         self.logger = SDKLogger()
         self.use_sandbox = use_sandbox or os.getenv("AYMARA_USE_SANDBOX", "false").lower() == "true"
 
+        if base_url is None:
+            base_url = os.getenv("AYMARA_BASE_URL", "https://api.aymara.ai")
         if api_key is None:
             api_key = os.getenv("AYMARA_API_KEY")
         if api_key is None:
