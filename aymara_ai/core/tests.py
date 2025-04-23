@@ -95,6 +95,8 @@ class TestMixin(AymaraAIProtocol):
         :type test_policy: str
         :param test_type: Type of the test. Should be one of {list(TestType)} or a string representation of the type.
         :type test_type: Union[str, TestType], optional
+        :param knowledge_base: Knowledge base text that will be used to generate accuracy test questions.
+        :type knowledge_base: str, optional
         :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
         :type test_language: str, optional
         :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
@@ -166,6 +168,8 @@ class TestMixin(AymaraAIProtocol):
         :type test_policy: str
         :param test_type: Type of the test. Should be one of {list(TestType)} or a string representation of the type.
         :type test_type: Union[str, TestType], optional
+        :param knowledge_base: Knowledge base text that will be used to generate accuracy test questions.
+        :type knowledge_base: str, optional
         :param test_language: Language of the test, defaults to {DEFAULT_TEST_LANGUAGE}.
         :type test_language: str, optional
         :param num_test_questions: Number of test questions, defaults to {DEFAULT_NUM_QUESTIONS}. Should be between {DEFAULT_NUM_QUESTIONS_MIN} and {DEFAULT_NUM_QUESTIONS_MAX} questions.
